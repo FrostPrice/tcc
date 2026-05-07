@@ -1,0 +1,165 @@
+\textcolor{red}{ÊSSA PARTE SERÁ FEITA NO TCC III}
+
+\chapter[Desenvolvimento]{Desenvolvimento}
+
+\section{Pipeline de Conversão: NeRF para 3D-GS}
+
+A transição de um modelo contínuo (NeRF) para uma representação explícita (3D-GS) exige um fluxo de trabalho estruturado para mitigar ambiguidades geométricas. Utilizar amostragens \textit{Structure-from-Motion} (SfM) nativas, como as geradas pelo algoritmo COLMAP, frequentemente aciona falsos positivos severos em regiões de oclusão ou malhas monocromáticas, gerando ruído na inicialização das gaussianas.
+
+Para contornar esta limitação, a metodologia adota uma hibridização baseada no \textit{framework} \textbf{RadSplat} \cite{niemeyer2024}. Esta abordagem extrai a topologia contínua diretamente da regressão preditiva (parametrizada pelas redes neurais MLP) do NeRF previamente treinado, balizando uma ancoragem geométrica estrita e livre de ruídos de fundo antes da instanciação elipsoide. 
+
+A Figura \ref{fig:pipeline_diagram} ilustra a sequência de execução desta arquitetura, consolidando o fluxo de dados desde o mundo real até o dispositivo móvel.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm and 0cm,
+    block/.style={
+        rectangle, 
+        draw, 
+        fill=black!5, 
+        text width=12cm, 
+        rounded corners, 
+        minimum height=1.2cm, 
+        font=\small,
+        align=flush left,
+        inner sep=8pt
+    },
+    arrow/.style={thick,->,>=stealth}
+]
+
+% Nodes
+\node [block] (coleta) {
+    \textbf{1. Coleta e Pré-processamento de Dados} \\ 
+    Aquisição de imagens RGB com alta sobreposição e extração de parâmetros via SfM (COLMAP).
+};
+
+\node [block, below=of coleta] (nerf) {
+    \textbf{2. Reconstrução Volumétrica (NeRF)} \\ 
+    Treinamento do campo de radiância utilizando as poses calculadas e aprendizado da densidade espacial.
+};
+
+\node [block, below=of nerf] (conversao) {
+    \textbf{3. Destilação de Priors e Conversão} \\ 
+    Consulta da MLP para extração de malha densa e inicialização dos tensores 3D-GS.
+};
+
+\node [block, below=of conversao] (otimizacao) {
+    \textbf{4. Otimização do 3D Gaussian Splatting} \\ 
+    Refinamento das primitivas baseadas nos \textit{priors} do NeRF e execução de poda progressiva.
+};
+
+\node [block, below=of otimizacao] (ue5) {
+    \textbf{5. Integração VR e Execução (Meta Quest 3)} \\ 
+    Transição para Unreal Engine 5 via \textit{Structured Buffers} e compilação nativa estereoscópica.
+};
+
+% Arrows
+\draw [arrow] (coleta) -- (nerf);
+\draw [arrow] (nerf) -- (conversao);
+\draw [arrow] (conversao) -- (otimizacao);
+\draw [arrow] (otimizacao) -- (ue5);
+
+\end{tikzpicture}
+\caption{Diagrama de fluxo de execução do pipeline de reconstrução e integração.}
+\label{fig:pipeline_diagram}
+\fonte{Elaborado pelo autor (2026).}
+\end{figure}
+
+\FloatBarrier
+
+O estágio de Destilação de \textit{Priors} (Etapa 3 do pipeline) é operacionalizado através de amostragem matricial. O Código \ref{lst:nerf_to_3dgs} ilustra a lógica em Python responsável por instanciar a grade espacial, consultar a densidade contínua inferida pelo NeRF e convertê-la em atributos físicos discretos para as matrizes da classe \texttt{GaussianModel}.
+
+\begin{lstlisting}[language=Python, label={lst:nerf_to_3dgs}, caption={Destilação de Priors do modelo NeRF para o inicializador 3D-GS}]
+import torch
+from gaussian_model import GaussianModel
+
+def convert_nerf_to_3dgs(nerf_model, resolution=256, threshold=15.0):
+    # Inicializacao do grid euclidiano
+    grid_coords = create_spatial_grid(resolution)
+    
+    with torch.no_grad():
+        densities = nerf_model.query_density(grid_coords)
+    
+    # Supressao de espaco vazio baseada na regressao volumetrica
+    valid_mask = densities > threshold
+    positions = grid_coords[valid_mask]
+    
+    with torch.no_grad():
+        base_colors = nerf_model.query_color(positions)
+    
+    gs_model = GaussianModel(sh_degree=3)
+    features_dc = rgb_to_sh(base_colors)
+    
+    # Parametrizacao das Gaussianas usando shape[0] para a dimensao de vertices
+    scales = torch.full((positions.shape[0], 3), (2.0/resolution)*0.5)
+    rotations = init_quaternions(positions.shape[0])
+    opacities = inverse_sigmoid(densities[valid_mask] / densities.max())
+    
+    # Ingestao dos tensores na arquitetura 3D-GS
+    gs_model.initialize(positions, features_dc, scales, rotations, opacities)
+    
+    return gs_model
+\end{lstlisting}
+
+A função supracitada descarta sistematicamente tensores onde a densidade avaliada ($\sigma$) é inferior ao limiar (\texttt{threshold}) pré-estabelecido. Isso assegura que a otimização subsequente do 3D Gaussian Splatting dedique seus ciclos de processamento estritamente a regiões opacas da cena, resultando em uma matriz final (\texttt{.ply}) com peso de VRAM compatível com a arquitetura móvel do Meta Quest 3.
+
+
+\section{Integração e Renderização na Unreal Engine 5 para Meta Quest 3}
+
+Conforme a Etapa 5 do pipeline (Figura \ref{fig:pipeline_diagram}), a fase final consiste em integrar a representação 3D-GS ao motor gráfico e viabilizar a renderização estereoscópica no \textit{head-mounted display} Meta Quest 3. No contexto \textit{on-device}, abordagens baseadas exclusivamente em sistemas de partículas do Niagara (\textit{sprites}) tendem a introduzir sobrecarga por \textit{draw calls} e maior dependência da \textit{thread} principal, o que compromete a estabilidade de desempenho.
+
+Para mitigar esse gargalo, adota-se a leitura direta dos atributos das gaussianas na GPU por meio de \textit{Structured Buffers}, acessados na etapa de sombreamento e integrados pela subcamada RHI (\textit{Render Hardware Interface}) em C++. Implementações com esse princípio são discutidas na literatura recente \cite{jin2024}, pois permitem reduzir a serialização de submissões de renderização e manter o fluxo de dados predominantemente no domínio da GPU.
+
+\begin{lstlisting}[language=C++, label={lst:ue5_structured_buffer}, caption={Exemplo de alocação e preenchimento de \textit{Structured Buffer} para dados de gaussianas na Unreal Engine 5}]
+struct FGaussianPrimitiveData {
+    FVector3f Position;
+    FVector3f Scale;
+    FVector4f Rotation;
+    FVector4f ColorOpac;
+};
+
+void AGaussianActor::InitializeGPUData() {
+    uint32 BufferSize = TotalGaussians * sizeof(FGaussianPrimitiveData);
+    FRHIResourceCreateInfo CreateInfo(TEXT("SplatBuffer"));
+
+    GaussianBuffer = RHICreateStructuredBuffer(
+        sizeof(FGaussianPrimitiveData), BufferSize,
+        BUF_ShaderResource | BUF_Static, CreateInfo);
+
+    void* BufferData = RHILockStructuredBuffer(GaussianBuffer, 0, BufferSize, RLM_WriteOnly);
+    FMemory::Memcpy(BufferData, ParsedData.GetData(), BufferSize);
+    RHIUnlockStructuredBuffer(GaussianBuffer);
+}
+\end{lstlisting}
+
+O trecho do Código \ref{lst:ue5_structured_buffer} exemplifica a preparação do \textit{buffer} de leitura para o estágio de sombreamento, no qual cada primitiva gaussiana é reconstruída a partir dos atributos serializados (posição, escala, rotação e cor/opacidade). Essa estratégia favorece a previsibilidade de custo por quadro e a compatibilidade com as restrições do ambiente Android/Vulkan do dispositivo-alvo.
+
+\section{Requisitos e Delimitação do Escopo Experimental}
+
+Esta seção consolida as restrições operacionais do ambiente de execução e os limites definidos para os cenários de validação. O pipeline de processamento é apresentado na Figura \ref{fig:pipeline_diagram} e detalhado nas seções subsequentes.
+
+\subsection{Requisitos de Hardware e Ecossistema de Software}
+
+Em razão das demandas computacionais do treinamento e da otimização, este trabalho adota segregação entre as etapas de processamento e a etapa de execução no dispositivo. O treinamento do NeRF e a conversão/otimização para 3D-GS são realizados em ambiente com GPU dedicada, enquanto a renderização estereoscópica é executada no \textit{head-mounted display} Meta Quest 3, sob restrições inerentes a um \textit{system-on-chip} móvel.
+
+No ecossistema de software, as rotinas de preparação e treinamento são implementadas em Python, apoiadas por \textit{frameworks} consolidados na literatura para NeRF e para a conversão a gaussianas. A etapa de renderização requer Unreal Engine 5 atualizada, com integração compatível com OpenXR e execução em Android/Vulkan. Adicionalmente, são empregadas estratégias de otimização voltadas ao contexto \textit{mobile VR}, tais como controle de LOD, \textit{culling} e, quando disponível, \textit{foveated rendering} via SDK do fabricante.
+
+\subsection{Planejamento e Delimitação das Cenas}
+
+As cenas avaliadas restringem-se a ambientes estáticos, de modo a preservar a consistência geométrica do processo e evitar variações não rígidas que extrapolam o escopo do estudo (por exemplo, dinâmica 4D, deformações e entidades articuladas). Também não são contemplados, nesta etapa, procedimentos de \textit{relighting} em tempo real e simulações acústicas nativas.
+
+Os limites práticos de complexidade são definidos por perfilamento (\textit{profiling}) em execução no dispositivo, considerando estabilidade de taxa de quadros e consumo de VRAM. Caso sejam observadas quedas de desempenho, aplicam-se medidas de contingência, incluindo redução do número de primitivas, ajustes de LOD e simplificações adicionais na representação, ou, para fins comparativos específicos, execução por enlace assistido (\textit{Meta Quest Link}).
+\subsection{Estruturação dos Datasets}
+
+A organização dos arquivos segue um arranjo hierárquico estrito imposto pela arquitetura das ferramentas de otimização, garantindo que as sessões de treinamento ocorram sem falhas de mapeamento (\textit{pathing}). O conjunto final preparado é consolidado em uma estrutura de diretórios padronizada.
+
+O principal artefato gerado no pré-processamento e alocado na raiz do diretório do projeto é o arquivo de metadados \texttt{transforms.json}. Este arquivo estruturado atua como a espinha dorsal do \textit{dataset}, contendo:
+
+\begin{itemize}
+    \item O ângulo de visão horizontal e vertical da câmera (\textit{FOV}).
+    \item Os coeficientes matemáticos de correção de distorção radial e tangencial.
+    \item Uma matriz de transformação homogênea $4 \times 4$ para cada imagem do \textit{dataset}, que descreve univocamente a rotação e a posição espacial da câmera no exato momento da captura.
+\end{itemize}
+
+Os \textit{datasets} são segregados por pastas de projeto correspondentes a cada cenário planejado (Complexidade Baixa, Média e Alta). As imagens originais são copiadas e frequentemente redimensionadas (\textit{downscale}) no diretório de saída para adequar o volume de dados ao limite de Memória RAM de Vídeo (VRAM) disponível na nuvem, evitando interrupções prematuras do treinamento (\textit{Out-of-Memory Errors}).

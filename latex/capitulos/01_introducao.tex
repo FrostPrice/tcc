@@ -1,0 +1,45 @@
+\chapter{Introdução}
+
+\textcolor{red}{REVISAR ESSE CAPITULO DEPOIS DE TERMINAR O CAPITULO DO PROJETO}
+
+A reconstrução e a renderização de cenas tridimensionais com alto grau de realismo constituem temas centrais na Computação Gráfica e na Visão Computacional, especialmente em aplicações que demandam imersão visual e interatividade. No contexto da Realidade Virtual (VR), esse desafio torna-se ainda mais relevante, pois a experiência do usuário depende não apenas da qualidade visual da cena, mas também da capacidade do sistema de manter taxas elevadas de atualização com baixa latência. Em dispositivos autônomos, como o Meta Quest 3, essa exigência é reforçada pelas limitações de processamento gráfico, memória e dissipação térmica, o que impõe restrições concretas à adoção de técnicas de reconstrução visual computacionalmente custosas \cite{xu2023}.
+
+Nesse cenário, a renderização neural emergiu como uma abordagem promissora ao permitir que cenas complexas sejam modeladas a partir de dados visuais do mundo real por meio de representações aprendidas. Entre os avanços mais relevantes da área, os \textit{Neural Radiance Fields} (NeRF) destacaram-se por sua capacidade de sintetizar novas vistas com elevado grau de fidelidade a partir de conjuntos de imagens calibradas \cite{mildenhall2020}. Em sua formulação clássica, o NeRF representa a cena como uma função contínua aprendida por uma rede neural, mapeando coordenadas espaciais e direcionais em densidade e radiância. Essa formulação trouxe ganhos expressivos em qualidade visual, mas também introduziu limitações práticas relacionadas ao alto custo computacional da renderização volumétrica.
+
+Como resposta a esse problema, abordagens mais recentes passaram a investigar representações explícitas capazes de preservar boa qualidade visual com maior eficiência de renderização. Entre elas, o \textit{3D Gaussian Splatting} (3D-GS) consolidou-se como uma alternativa de destaque ao representar a cena por primitivas gaussianas anisotrópicas, permitindo síntese de imagem em tempo real com maior compatibilidade com pipelines gráficos tradicionais \cite{kerbl2023}. Essa mudança de paradigma é particularmente relevante para aplicações em VR, nas quais o desempenho de renderização deixa de ser apenas uma questão de eficiência e passa a ser um requisito de usabilidade e conforto.
+
+Neste cenário, este trabalho investiga a relação entre fidelidade visual e desempenho computacional na reconstrução de cenários 3D voltados à Realidade Virtual autônoma. A proposta consiste em utilizar o NeRF como linha de base para reconstrução fotorrealista de cenas estáticas capturadas por imagens RGB e, posteriormente, analisar a conversão dessa representação para o \textit{3D Gaussian Splatting}, com vistas à integração em um ambiente de execução compatível com o Meta Quest 3. Busca-se, assim, compreender em que medida a conversão para uma representação explícita pode favorecer a renderização em tempo real sem comprometer significativamente a qualidade visual da cena reconstruída.
+
+O problema de pesquisa torna-se relevante porque, embora técnicas neurais de reconstrução tenham avançado consideravelmente em qualidade, sua adoção em dispositivos VR \textit{standalone} ainda enfrenta barreiras práticas associadas a desempenho, consumo de memória e integração com motores gráficos. Assim, este trabalho situa-se na interseção entre reconstrução neural de cenas, otimização para renderização interativa e execução em hardware imersivo com recursos limitados, buscando contribuir com uma análise aplicada e experimental sobre a viabilidade desse pipeline no contexto de VR móvel.
+
+\section{Objetivos}
+
+\subsection{Objetivo Geral}
+
+Desenvolver um \textit{pipeline} de reconstrução de cenários 3D fotorrealistas para Realidade Virtual no Meta Quest 3, com base na conversão de modelos NeRF para a representação por \textit{3D Gaussian Splatting}, visando à renderização em tempo real com estabilidade de processamento e qualidade visual adequada.
+
+\subsection{Objetivos Específicos}
+
+\begin{itemize}
+    \item Capturar dados visuais do mundo real por meio de imagens RGB para posterior reconstrução computacional;
+    \item Treinar um modelo baseado em NeRF como linha de base de qualidade visual para síntese de novas vistas;
+    \item Converter e otimizar a representação implícita obtida para uma representação explícita baseada em \textit{3D Gaussian Splatting};
+    \item Integrar o modelo convertido a um motor gráfico compatível com a execução em Realidade Virtual, com foco no ecossistema do Meta Quest 3;
+    \item Avaliar a qualidade visual e o desempenho da solução por meio de métricas como PSNR, SSIM, LPIPS e FPS.
+\end{itemize}
+
+\section{Delimitação do Trabalho}
+
+Este trabalho restringe-se à reconstrução de cenas estáticas a partir de imagens RGB, não contemplando cenários dinâmicos, reconstrução temporal 4D, relighting avançado ou interação física complexa com os elementos da cena. O foco da investigação está na comparação entre a fidelidade visual oferecida pela representação implícita do NeRF e o desempenho obtido após sua conversão para \textit{3D Gaussian Splatting}, considerando a execução da cena em contexto de Realidade Virtual autônoma.
+
+Além disso, o estudo concentra-se na integração da solução em um fluxo compatível com motor gráfico e \textit{runtime} XR voltados ao Meta Quest 3, tomando como referência um cenário aplicado de visualização imersiva. Dessa forma, o trabalho prioriza a análise da viabilidade técnica do pipeline proposto em detrimento da construção de uma aplicação comercial completa.
+
+\section{Visão Geral da Metodologia}
+
+A metodologia adotada organiza-se em etapas sequenciais. Inicialmente, realiza-se a captura de imagens RGB de cenas reais, assegurando cobertura visual e sobreposição suficientes para reconstrução multivista. Em seguida, as imagens são processadas para treinamento de um modelo NeRF, utilizado como linha de base de qualidade visual. Posteriormente, investiga-se a conversão dessa representação para \textit{3D Gaussian Splatting}, com o objetivo de obter uma estrutura mais adequada à renderização em tempo real.
+
+Na etapa final, a representação convertida é integrada a um ambiente de execução em VR, permitindo a análise prática do comportamento da cena no dispositivo-alvo. A avaliação experimental considera, de forma conjunta, métricas de fidelidade visual e de desempenho, buscando identificar os ganhos e perdas associados à adoção do 3D-GS em comparação à reconstrução neural original.
+
+\section{Estrutura do Trabalho}
+
+O presente trabalho está organizado da seguinte forma. O Capítulo 2 apresenta a fundamentação teórica, abordando os conceitos de síntese de novas vistas, reconstrução multivista, \textit{Neural Radiance Fields}, \textit{3D Gaussian Splatting}, restrições da Realidade Virtual em dispositivos autônomos e métricas de avaliação. O Capítulo 3 descreve a metodologia adotada, incluindo o pipeline de aquisição, treinamento, conversão, integração e avaliação experimental. O Capítulo 4 apresenta o desenvolvimento prático da solução e os aspectos de implementação. O Capítulo 5 discute os resultados obtidos, considerando qualidade visual, desempenho e limitações observadas. Por fim, o Capítulo 6 apresenta as conclusões do trabalho e possíveis direções para pesquisas futuras.

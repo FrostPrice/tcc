@@ -1,0 +1,530 @@
+\chapter[Fundamentação Teórica]{Fundamentação Teórica}
+
+Este capítulo apresenta os fundamentos conceituais e técnicos que sustentam a proposta deste trabalho. Inicialmente, discute-se o problema da síntese de novas vistas e da reconstrução multivista de cenas estáticas a partir de imagens RGB, com ênfase nas diferenças entre representações implícitas e explícitas. Em seguida, são detalhados os dois eixos centrais do pipeline adotado: os \textit{Neural Radiance Fields} (NeRF), utilizados como referência de reconstrução com elevada fidelidade visual, e o \textit{3D Gaussian Splatting} (3D-GS), investigado como alternativa mais adequada à renderização interativa. Na sequência, são discutidas as restrições impostas pela Realidade Virtual em dispositivos autônomos e as métricas empregadas para avaliar qualidade visual e desempenho. Por fim, o capítulo aborda os elementos ferramentais que condicionam a viabilidade prática da proposta, especialmente a plataforma Meta Quest 3S e as \textit{engines} consideradas para integração. Com essa organização, busca-se construir uma progressão lógica que parte dos conceitos fundamentais, avança para os algoritmos centrais e culmina nas decisões tecnológicas que sustentam a implementação e a avaliação experimental do trabalho.
+
+\section{Síntese de Novas Vistas e Representação de Cenas}
+
+A síntese de novas vistas (\textit{Novel View Synthesis} -- NVS) constitui um dos problemas centrais da Visão Computacional e da Computação Gráfica. Seu objetivo é reconstruir, a partir de um conjunto finito de imagens de uma cena, a capacidade de gerar novas observações visuais sob poses de câmera que não estavam presentes no conjunto original. Em termos práticos, trata-se de aproximar uma função de formação de imagem capaz de preservar geometria, aparência e consistência multivista, de modo que a cena possa ser observada a partir de diferentes pontos de vista com elevada fidelidade visual \cite{mildenhall2020,mildenhall2021}.
+
+Tradicionalmente, esse problema foi tratado por técnicas baseadas em geometria explícita, especialmente com o uso combinado de \textit{Structure-from-Motion} (SfM), \textit{Multi-View Stereo} (MVS), malhas poligonais e texturas. Embora essas abordagens sejam consolidadas e úteis em diversos contextos, elas tendem a apresentar limitações quando a cena contém superfícies pouco texturizadas, estruturas muito finas, reflexos, transparências ou dependência visual da iluminação. Nessas situações, a reconstrução geométrica explícita frequentemente se torna instável, e a aparência final tende a depender fortemente do processo de texturização e das hipóteses adotadas durante a modelagem \cite{schoenberger2016sfm,mildenhall2020}.
+
+Assim, a renderização neural passou a ocupar posição de destaque ao propor representações de cena mais flexíveis, capazes de modelar simultaneamente geometria aparente e radiância. Em vez de depender exclusivamente de superfícies discretas, essas técnicas descrevem a cena por funções contínuas aprendidas a partir dos próprios dados observados, o que favorece a síntese de vistas inéditas com maior realismo e continuidade espacial \cite{mildenhall2020,mildenhall2021}. Entre essas abordagens, os \textit{Neural Radiance Fields} (NeRF) estabeleceram um marco importante, enquanto o \textit{3D Gaussian Splatting} (3D-GS) consolidou uma alternativa explícita voltada à aceleração da renderização em tempo real \cite{mildenhall2020,kerbl2023,fei2025survey3dgs}.
+
+No contexto deste trabalho, esse problema assume relevância particular porque não se busca apenas reconstruir uma cena com qualidade visual, mas também viabilizar sua execução em um ambiente de Realidade Virtual (VR) autônoma. Dessa forma, a fundamentação teórica precisa considerar simultaneamente duas dimensões: a fidelidade de reconstrução e as restrições de desempenho impostas por um dispositivo móvel de VR, especialmente em cenários que exigem renderização interativa, baixa latência e liberdade de movimento do observador \cite{xu2023,tu2025,metaquest3s2024}.
+
+\section{Reconstrução Multivista a partir de Imagens RGB}
+
+A reconstrução de cenas a partir de imagens RGB parte do princípio de que diferentes observações bidimensionais de uma mesma cena contêm redundância geométrica e fotométrica suficiente para inferir sua estrutura tridimensional. Para isso, é necessário que as imagens apresentem cobertura espacial adequada, sobreposição entre vistas e diversidade de poses de câmera. Em linhas gerais, quanto melhor distribuídas forem as observações ao redor da cena, maior tende a ser a capacidade do sistema de reconstruir regiões ocultas, preservar paralaxe e reduzir ambiguidades geométricas \cite{schoenberger2016sfm,mildenhall2020}.
+
+Nos fluxos modernos de reconstrução neural, a etapa de preparação dos dados continua sendo essencial. Mesmo quando a cena final é representada por um campo neural ou por gaussianas explícitas, a consistência entre as imagens depende do conhecimento das poses e dos parâmetros intrínsecos de câmera, normalmente estimados por pipelines de calibração e reconstrução multivista. No caso do NeRF original, por exemplo, a qualidade da síntese depende diretamente da associação entre cada pixel observado e o raio correspondente no espaço tridimensional \cite{schoenberger2016sfm,mildenhall2020}.
+
+A Figura \ref{fig:reconstrucao_multivista_pipeline} sintetiza esse fluxo de reconstrução multivista, evidenciando a relação entre correspondência entre imagens, registro incremental das câmeras e recuperação da estrutura da cena, etapas associadas ao processo de SfM incremental descrito por \citeonline{schoenberger2016sfm}.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{figuras/incremental_sfm_pipeline.png}}
+    \caption{Etapas conceituais da reconstrução multivista, desde a correspondência entre imagens até a recuperação da estrutura da cena e das poses de câmera.}
+    \label{fig:reconstrucao_multivista_pipeline}
+    \fonte{Adaptado de \cite{schoenberger2016sfm}.}
+\end{figure}
+
+Do ponto de vista conceitual, essa etapa estabelece a ligação entre o domínio das imagens e o domínio da cena. Em outras palavras, a reconstrução não ocorre apenas porque há fotografias disponíveis, mas porque essas fotografias podem ser interpretadas como amostras coerentes de uma mesma estrutura espacial. Essa observação é particularmente importante para o escopo deste trabalho, uma vez que se adota o uso de cenas estáticas capturadas por imagens RGB, excluindo dinâmicas 4D, \textit{relighting} complexo e outros fatores que ampliariam significativamente a ambiguidade do problema \cite{schoenberger2016sfm,mildenhall2020,xu2023}.
+
+Em cenas estáticas, a hipótese de consistência temporal permite que a informação observada em diferentes imagens seja agregada para o aprendizado de uma representação única da cena. Isso torna viável o treinamento de uma linha de base em NeRF e, posteriormente, a sua conversão para uma representação explícita mais adequada à renderização em tempo real. Assim, a preparação dos dados não é apenas uma etapa operacional, mas um fundamento teórico da validade do próprio processo de reconstrução. Uma vez estabelecida essa base de reconstrução a partir de imagens RGB, torna-se necessário examinar como a cena pode ser efetivamente representada computacionalmente, distinguindo os dois paradigmas centrais adotados na literatura: as abordagens implícitas e explícitas \cite{mildenhall2020,kerbl2023,fei2025survey3dgs}.
+
+\subsection{Representações implícitas}
+
+Representações implícitas descrevem uma cena por meio de funções contínuas definidas sobre o espaço, em vez de armazená-la diretamente como uma coleção discreta de vértices, superfícies ou primitivas geométricas. Nesse paradigma, a cena é codificada nos parâmetros de uma função aprendida, frequentemente uma rede neural, capaz de receber coordenadas espaciais como entrada e retornar propriedades locais, como densidade, ocupação, cor ou radiância \cite{mildenhall2020,mildenhall2021}.
+
+Uma das principais vantagens desse tipo de representação é sua continuidade. Como a cena é modelada como função, torna-se possível consultar informações em posições arbitrárias do espaço, o que favorece interpolação suave, modelagem fina de detalhes e boa consistência multivista. Além disso, representações implícitas tendem a ser bastante expressivas, permitindo capturar estruturas complexas sem depender explicitamente de malhas bem definidas ou topologias rígidas. Essa característica foi um dos fatores que tornaram o NeRF particularmente influente na síntese de novas vistas \cite{mildenhall2020,barron2021mipnerf,mildenhall2021}.
+
+Entretanto, o uso de representações implícitas também introduz limitações práticas. Como a cena não está materializada diretamente em uma estrutura geométrica discreta, a renderização depende de consultas repetidas à função aprendida, o que frequentemente implica alto custo computacional. No caso do NeRF, por exemplo, a cor de cada pixel depende da integração volumétrica ao longo de um raio, exigindo múltiplas amostragens e inferências sucessivas \cite{mildenhall2020}. Mesmo com técnicas de aceleração, como codificações multirresolução e estruturas mais eficientes de consulta, esse paradigma ainda apresenta dificuldades quando o objetivo é renderização interativa em hardware restrito \cite{muller2022,xu2023}. Essas características tornam as representações implícitas especialmente atraentes quando a prioridade recai sobre continuidade espacial e fidelidade de reconstrução. Entretanto, como este trabalho também precisa considerar viabilidade de renderização interativa, torna-se necessário examinar o paradigma complementar das representações explícitas \cite{kerbl2023,fei2025survey3dgs}.
+
+\subsection{Representações explícitas}
+
+Representações explícitas, por sua vez, armazenam a cena em estruturas discretas diretamente manipuláveis pelo pipeline gráfico. Entre os exemplos clássicos estão malhas triangulares, nuvens de pontos, voxels e primitivas volumétricas projetáveis. Nesses casos, a geometria e a aparência da cena estão associadas a entidades concretas, o que facilita sua integração com motores gráficos, rasterização e rotinas de visualização em tempo real \cite{zwicker2001,kerbl2023,fei2025survey3dgs}.
+
+A principal vantagem das representações explícitas está na eficiência de renderização. Como os elementos da cena já se encontram organizados em estruturas discretas, a geração da imagem tende a se beneficiar diretamente de técnicas gráficas tradicionais e da aceleração por hardware. O \textit{3D Gaussian Splatting} insere-se nesse contexto ao representar a cena por gaussianas anisotrópicas, projetadas e compostas diretamente no plano da imagem \cite{kerbl2023}. Embora preserve características avançadas de modelagem visual, esse método aproxima-se mais do paradigma explícito do que do volumétrico implícito, favorecendo aplicações interativas \cite{kerbl2023,fei2025survey3dgs}.
+
+Por outro lado, representações explícitas também apresentam limitações. Em comparação às implícitas, elas tendem a exigir maior cuidado com organização estrutural, gerenciamento de memória e adequação da quantidade de primitivas à complexidade da cena. Em cenários extensos ou muito detalhados, o número de elementos explícitos pode crescer substancialmente, elevando o consumo de armazenamento, largura de banda e memória de vídeo \cite{fei2025survey3dgs,wu2025,fang2024,huang2025}. Assim, embora a renderização seja geralmente mais rápida, o custo pode ser deslocado para a manutenção da própria representação.
+
+Se, por um lado, as representações explícitas favorecem a eficiência de renderização, por outro introduzem novos desafios de memória e organização estrutural. Por isso, a próxima etapa consiste em comparar diretamente os dois paradigmas, evidenciando o \textit{trade-off} que orienta o pipeline proposto neste trabalho \cite{mildenhall2020,kerbl2023,fei2025survey3dgs}.
+
+\subsection{Comparação entre os paradigmas}
+
+A comparação entre representações implícitas e explícitas pode ser entendida como um \textit{trade-off} entre continuidade funcional e eficiência estrutural. Representações implícitas tendem a oferecer maior flexibilidade para modelagem contínua da cena e excelente capacidade de síntese visual, especialmente em tarefas de reconstrução e \textit{novel view synthesis}. Em contrapartida, seu custo de inferência costuma ser elevado, o que limita sua adoção em cenários que exigem resposta em tempo real \cite{mildenhall2020,muller2022,mildenhall2021}.
+
+Representações explícitas, por outro lado, tendem a favorecer a velocidade de renderização e a integração com pipelines gráficos convencionais, sendo particularmente adequadas a aplicações interativas. No entanto, essa vantagem vem acompanhada de desafios relacionados à escalabilidade da estrutura, à necessidade de poda, compressão e seleção de nível de detalhe, sobretudo quando a representação precisa ser executada em plataformas com orçamento computacional reduzido \cite{kerbl2023,fei2025survey3dgs,wu2025,fan2024lightgaussian}.
+
+Em termos conceituais, a diferença entre esses paradigmas também pode ser observada na forma como cada um trata a geometria da cena. Em representações implícitas, a geometria costuma emergir indiretamente da função aprendida, não estando necessariamente disponível de forma imediata para edição ou inspeção. Já nas representações explícitas, os elementos da cena são diretamente acessíveis como primitivas discretas, o que facilita manipulação, visualização incremental e integração com sistemas gráficos já consolidados. Essa comparação mostra que a diferença entre os paradigmas não é apenas terminológica, mas afeta diretamente o tipo de compromisso assumido entre qualidade visual e custo computacional \cite{mildenhall2020,kerbl2023,fei2025survey3dgs}.
+
+\subsection{Relação com o escopo deste trabalho}
+
+No contexto deste trabalho, a distinção entre representações implícitas e explícitas é fundamental porque ela estrutura a própria lógica do pipeline proposto. A utilização do NeRF como etapa inicial se justifica por sua capacidade de modelar cenas estáticas com elevada fidelidade visual, aproveitando a força das representações implícitas para síntese de novas vistas. Em seguida, a conversão para 3D Gaussian Splatting busca explorar as vantagens das representações explícitas, especialmente no que diz respeito à renderização interativa e à compatibilidade com ambientes de Realidade Virtual \cite{mildenhall2020,kerbl2023,xu2023,tu2025}.
+
+Dessa forma, o problema investigado não consiste apenas em comparar dois métodos isolados, mas em compreender como dois paradigmas de representação distintos podem ser articulados em um mesmo fluxo de reconstrução e visualização. Essa passagem do implícito para o explícito reflete, em última instância, a tentativa de equilibrar fidelidade visual e desempenho computacional, aspecto central para a execução de cenas reconstruídas em hardware VR autônomo \cite{muller2022,kerbl2023,xu2023,metaquest3s2024}.
+
+\section{Neural Radiance Fields}
+
+No contexto das representações implícitas discutidas na seção anterior, os \textit{Neural Radiance Fields} (NeRF) constituem um dos marcos mais relevantes da síntese de novas vistas. Sua importância decorre da capacidade de representar cenas complexas por meio de uma função contínua aprendida, associando elevada fidelidade visual a uma modelagem geométrica implícita. Por essa razão, o NeRF é adotado neste trabalho como referência conceitual e técnica para a etapa de reconstrução da cena, servindo como linha de base para a análise posterior de alternativas mais adequadas à renderização interativa \cite{mildenhall2020,mildenhall2021}. Para compreender por que o NeRF ocupa esse papel de referência no pipeline, é preciso primeiro examinar como a cena é formulada nesse modelo.
+
+\subsection{Representação implícita da cena}
+
+Os \textit{Neural Radiance Fields} modelam uma cena como uma função contínua de radiância e densidade. Em sua formulação clássica, um MLP recebe como entrada uma posição espacial $\mathbf{x} = (x,y,z)$ e uma direção de visualização $\mathbf{d}$, retornando uma densidade volumétrica $\sigma$ e uma cor $\mathbf{c}$ dependente da vista \cite{mildenhall2020,mildenhall2021}. Formalmente, essa relação pode ser expressa por:
+
+\begin{equation}
+F_{\Theta}(\mathbf{x}, \mathbf{d}) \rightarrow (\sigma, \mathbf{c})
+\label{eq:nerf_funcao}
+\end{equation}
+\addEquacao{Mapeamento da função \textit{radiance field}}{\ref{eq:nerf_funcao}}
+
+em que $\Theta$ representa os parâmetros aprendidos da rede. A densidade $\sigma$ atua como uma medida da probabilidade de ocupação local ao longo do espaço, enquanto a cor representa a radiância emitida na direção de observação. Essa formulação é chamada de implícita porque a geometria da cena não é armazenada explicitamente como uma malha, nuvem de pontos ou conjunto de primitivas, mas sim codificada nos pesos da rede \cite{mildenhall2020,mildenhall2021}.
+
+Essa escolha traz uma consequência importante: a representação é contínua. Em vez de amostrar apenas posições discretas predefinidas, a cena pode ser consultada em coordenadas arbitrárias, o que favorece a síntese de novas vistas com suavidade espacial e boa coerência geométrica. Ao mesmo tempo, a natureza implícita dificulta o acesso direto à estrutura da cena e impõe custo elevado de inferência, já que a geração da imagem depende de múltiplas consultas à rede para cada raio de câmera \cite{mildenhall2020,muller2022}. Definida a forma como o NeRF representa a cena, torna-se necessário examinar o mecanismo de renderização volumétrica que sustenta a síntese de novas vistas no modelo.
+
+\subsection{Renderização volumétrica}
+
+A imagem final em NeRF é obtida por renderização volumétrica. Para cada pixel, considera-se um raio que parte da câmera e atravessa a cena, sendo parametrizado por uma origem $\mathbf{o}$, uma direção $\mathbf{d}$ e uma distância escalar $t$ ao longo do raio \cite{mildenhall2020,mildenhall2021}. Essa parametrização é dada por:
+
+\begin{equation}
+\mathbf{r}(t) = \mathbf{o} + t\mathbf{d},
+\label{eq:raio_parametrizado}
+\end{equation}
+\addEquacao{Parametrização do raio}{\ref{eq:raio_parametrizado}}
+
+A cor esperada de um raio é calculada pela integração da radiância e da densidade volumétrica ao longo do intervalo entre os limites próximo e distante da cena. Nessa formulação, a contribuição de cada ponto depende tanto da cor emitida naquela posição quanto da probabilidade de o raio alcançá-la sem ter sido absorvido anteriormente \cite{mildenhall2020}. Formalmente, essa cor é dada por:
+
+\begin{equation}
+C(\mathbf{r}) = \int_{t_n}^{t_f} T(t)\sigma(\mathbf{r}(t))\mathbf{c}(\mathbf{r}(t),\mathbf{d})\,dt,
+\label{eq:cor_raio_integral}
+\end{equation}
+\addEquacao{Cor esperada de um raio por renderização volumétrica}{\ref{eq:cor_raio_integral}}
+
+Na Equação \ref{eq:cor_raio_integral}, o termo $T(t)$ corresponde à transmitância acumulada ao longo do raio, isto é, à probabilidade de que o raio percorra o caminho entre o limite inicial $t_n$ e a posição $t$ sem ser interrompido por densidade volumétrica relevante \cite{mildenhall2020,mildenhall2021}. Esse termo é definido por:
+
+\begin{equation}
+T(t) = \exp\left(-\int_{t_n}^{t}\sigma(\mathbf{r}(s))\,ds\right).
+\label{eq:transmitancia}
+\end{equation}
+\addEquacao{Transmitância acumulada ao longo do raio}{\ref{eq:transmitancia}}
+
+Na prática, a integral contínua da renderização volumétrica é aproximada numericamente por meio de amostras discretas ao longo do raio. Esse processo transforma a integral em uma soma ponderada das cores estimadas em diferentes pontos, considerando a opacidade e a transmitância acumulada em cada amostra \cite{mildenhall2020,mildenhall2021}. Uma forma comum dessa discretização é:
+
+\begin{equation}
+\hat{C}(\mathbf{r}) = \sum_{i=1}^{N} T_i \alpha_i \mathbf{c}_i,
+\label{eq:cor_discreta}
+\end{equation}
+\addEquacao{Aproximação discreta da cor do raio}{\ref{eq:cor_discreta}}
+
+A opacidade associada a cada amostra é calculada a partir da densidade volumétrica estimada pela rede e da distância entre amostras consecutivas. Esse procedimento aproxima o processo de composição alfa utilizado na renderização volumétrica clássica, permitindo que a formulação seja diferenciável e, portanto, adequada ao treinamento por otimização baseada em erro fotométrico \cite{mildenhall2020}. A opacidade de cada amostra é dada por:
+
+\begin{equation}
+\alpha_i = 1 - \exp(-\sigma_i \delta_i),
+\label{eq:opacidade_amostra}
+\end{equation}
+\addEquacao{Opacidade associada a cada amostra}{\ref{eq:opacidade_amostra}}
+
+em que $\delta_i$ representa a distância entre amostras consecutivas. Essa formulação explica o principal custo computacional do NeRF: para cada pixel é necessário percorrer vários pontos no espaço, consultar a rede em cada um deles e acumular os resultados. Em cenários de alta resolução ou renderização estereoscópica, esse custo cresce rapidamente, pois a quantidade de raios e amostras aumenta de forma significativa \cite{mildenhall2020,xu2023}. A formulação volumétrica explica tanto a qualidade alcançada pelo NeRF quanto o elevado custo associado à sua inferência. Diante disso, a próxima etapa consiste em apresentar os mecanismos introduzidos para tornar essa modelagem mais expressiva e computacionalmente mais eficiente.
+
+\subsection{Codificação posicional e amostragem hierárquica}
+
+O NeRF clássico também introduziu dois mecanismos fundamentais para melhorar a qualidade da reconstrução: a codificação posicional e a amostragem hierárquica. A codificação posicional projeta coordenadas de baixa dimensão em um espaço de frequência mais alta, permitindo ao MLP representar detalhes finos de textura e geometria. Sem esse artifício, a rede tende a privilegiar soluções excessivamente suaves, fenômeno frequentemente associado ao viés espectral das redes neurais \cite{mildenhall2020,mildenhall2021}.
+
+A amostragem hierárquica, por sua vez, busca distribuir melhor o esforço computacional ao longo do raio. Em vez de usar apenas uma amostragem uniforme, o método primeiro estima de forma grosseira quais regiões do raio contribuem mais para a imagem e, em seguida, concentra amostras adicionais nessas regiões. Embora esse procedimento reduza parte da ineficiência, o custo de inferência continua significativo, especialmente quando comparado a métodos baseados em rasterização explícita \cite{mildenhall2020,kerbl2023}. Esses mecanismos foram fundamentais para consolidar o NeRF como uma abordagem viável do ponto de vista técnico. Ainda assim, a evolução posterior da área mostra que tais estratégias não eliminam completamente suas limitações práticas.
+
+\subsection{Avanços práticos e limitações}
+
+Após a formulação original, surgiram variantes voltadas à aceleração do treinamento e da inferência. Entre elas, destaca-se o Instant-NGP, que substitui a dependência exclusiva de um MLP profundo por uma codificação hash multirresolução, reduzindo de forma expressiva o tempo de treinamento sem abandonar a formulação de campo neural \cite{muller2022}. Esse tipo de avanço foi decisivo para tornar o NeRF mais prático em contextos experimentais, especialmente em fluxos que demandam reconstruções sucessivas de cenas.
+
+Ainda assim, a literatura posterior tem mostrado que, mesmo com acelerações relevantes, o paradigma volumétrico continua mais custoso do que representações explícitas quando o objetivo é renderização interativa em alta frequência. Em síntese, o NeRF permanece extremamente valioso como linha de base de fidelidade visual e como representação implícita rica, mas encontra limitações claras quando se exige geração de imagem em tempo real sob forte restrição de memória, consumo e latência \cite{mildenhall2021,muller2022,kerbl2023}.
+
+Essas limitações não reduzem a importância do NeRF; ao contrário, ajudam a justificar seu papel como etapa inicial de reconstrução com alta qualidade visual. Ao mesmo tempo, evidenciam que a principal dificuldade não está apenas em reconstruir bem a cena, mas em convertê-la para uma forma de representação mais compatível com renderização interativa sob restrições práticas de execução. É justamente nesse ponto que se torna relevante a discussão do \textit{3D Gaussian Splatting}, apresentado na próxima seção como alternativa explícita orientada à aceleração da síntese de vistas \cite{mildenhall2020,kerbl2023,fei2025survey3dgs}.
+
+\section{3D Gaussian Splatting}
+
+Em contraste com o paradigma implícito do NeRF, o \textit{3D Gaussian Splatting} (3D-GS) insere-se no conjunto das representações explícitas voltadas à síntese de novas vistas com maior eficiência computacional. Sua relevância decorre da proposta de representar a cena por primitivas diretamente manipuláveis no espaço tridimensional, preservando elevada qualidade visual ao mesmo tempo em que favorece a renderização interativa. Por essa razão, o 3D-GS ocupa papel central neste trabalho como alternativa mais compatível com os requisitos de desempenho impostos pela visualização em Realidade Virtual \cite{mildenhall2020,muller2022,kerbl2023,fei2025survey3dgs,chen2024survey3dgs}. Para compreender por que o 3D-GS se apresenta como alternativa mais aderente à renderização interativa, é preciso primeiro examinar a forma como ele estrutura explicitamente a cena.
+
+A emergência do 3D-GS também pode ser entendida como parte de uma trajetória mais ampla da literatura de síntese de novas vistas. O NeRF demonstrou a capacidade de reconstruir cenas com alta fidelidade por meio de renderização volumétrica diferenciável, mas seu custo de inferência motivou métodos de aceleração e representações híbridas, como Instant-NGP, PlenOctrees e SNeRG \cite{mildenhall2020,muller2022,yu2021plenoctrees,hedman2021snerg}. Nesse contexto, o 3D-GS se diferencia por deslocar a unidade elementar da cena para primitivas gaussianas explícitas, mantendo otimização diferenciável e permitindo renderização por rasterização, o que reduz a dependência de amostragem volumétrica densa \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs}.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{figuras/kerbl2023_fig1.png}}
+    \caption{Comparação ilustrativa entre métodos de síntese de novas vistas, evidenciando o compromisso entre qualidade visual, tempo de treinamento e taxa de renderização.}
+    \label{fig:3dgs_qualidade_velocidade}
+    \fonte{Adaptado de \cite{kerbl2023}.}
+\end{figure}
+
+\subsection{Representação explícita por gaussianas anisotrópicas}
+
+O \textit{3D Gaussian Splatting} propõe uma representação explícita da cena por meio de um conjunto de gaussianas anisotrópicas no espaço tridimensional. Em vez de codificar a cena apenas nos pesos de uma rede neural, como ocorre em representações implícitas, o método a descreve por primitivas geométricas parametrizadas por posição, escala, rotação, opacidade e aparência dependente da vista \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs}. Essa formulação permite que a cena seja otimizada a partir de imagens calibradas, mas renderizada por um processo mais próximo dos pipelines gráficos tradicionais.
+
+Cada gaussiana pode ser entendida como uma distribuição espacial contínua centrada em $\boldsymbol{\mu}$, cuja forma é controlada por uma matriz de covariância $\Sigma$. Essa estrutura permite representar regiões locais da cena como elipsoides orientados, capazes de se adaptar a superfícies inclinadas, estruturas alongadas e detalhes geométricos finos \cite{kerbl2023,zwicker2001,chen2024survey3dgs}. Formalmente, uma gaussiana tridimensional pode ser escrita como:
+
+\begin{equation}
+G(\mathbf{x}) =
+\exp\left(
+-\frac{1}{2}
+(\mathbf{x} - \boldsymbol{\mu})^{T}
+\Sigma^{-1}
+(\mathbf{x} - \boldsymbol{\mu})
+\right).
+\label{eq:gaussiana_3d}
+\end{equation}
+\addEquacao{Distribuição espacial de uma gaussiana anisotrópica}{\ref{eq:gaussiana_3d}}
+
+Para garantir estabilidade numérica e positividade da covariância durante a otimização, a matriz $\Sigma$ é fatorada em termos de rotação e escala. Essa parametrização evita a otimização direta de uma matriz de covariância arbitrária e preserva a interpretação geométrica da primitiva ao longo do treinamento \cite{kerbl2023,chen2024survey3dgs}. A fatoração pode ser expressa por:
+
+\begin{equation}
+\Sigma = R S S^{T} R^{T},
+\label{eq:fatoracao_covariancia}
+\end{equation}
+\addEquacao{Fatoração da matriz de covariância em rotação e escala}{\ref{eq:fatoracao_covariancia}}
+
+em que $R$ representa a rotação e $S$ codifica a escala da primitiva. Além da geometria local, cada gaussiana também armazena opacidade e parâmetros de aparência. A aparência dependente da vista é usualmente modelada por coeficientes de harmônicos esféricos, permitindo aproximar variações angulares de cor sem reintroduzir uma rede neural volumétrica custosa na etapa de renderização \cite{kerbl2023,yu2021plenoctrees,fei2025survey3dgs}.
+
+Do ponto de vista conceitual, essa representação aproxima o 3D-GS de uma nuvem de pontos enriquecida, na qual cada ponto deixa de ser uma amostra discreta sem extensão e passa a ser uma primitiva volumétrica suave, orientada e otimizável. Essa diferença é fundamental porque permite preencher lacunas visuais, reduzir descontinuidades e representar melhor regiões locais da cena, retomando princípios de \textit{splatting} elíptico já explorados em renderização baseada em pontos \cite{zwicker2001,kerbl2023,chen2024survey3dgs}. Uma vez definida a estrutura explícita da cena no 3D-GS, torna-se necessário compreender como essas primitivas participam efetivamente da formação da imagem.
+
+\subsection{Splatting, projeção e composição de cor}
+
+A etapa de formação de imagem no 3D-GS ocorre por projeção das gaussianas 3D no plano da imagem e composição por transparência. Esse princípio dialoga com trabalhos clássicos de \textit{splatting} e filtragem elíptica, que já exploravam a ideia de projetar primitivas com suporte espacial contínuo para formar imagens sem lacunas visuais \cite{zwicker2001}. A diferença central é que, no 3D-GS, esse processo é incorporado a um pipeline diferenciável otimizado diretamente para síntese de novas vistas a partir de imagens calibradas \cite{kerbl2023,fei2025survey3dgs}.
+
+A projeção de cada gaussiana transforma sua distribuição tridimensional em uma contribuição elíptica no plano da imagem. Em termos gerais, a covariância tridimensional é transformada para o espaço da câmera e aproximada no plano de projeção, de modo que cada primitiva contribua apenas para os pixels cobertos por sua projeção \cite{kerbl2023,chen2024survey3dgs}. Esse mecanismo permite substituir o processo de marcha de raios do NeRF por uma estratégia de \textit{forward mapping}, na qual as primitivas da cena são projetadas diretamente para a imagem.
+
+Após a projeção para o espaço 2D, as gaussianas visíveis são ordenadas por profundidade e compostas no pixel por um processo análogo ao \textit{alpha blending}. Em formulação simplificada, a cor final pode ser descrita por:
+
+\begin{equation}
+C = \sum_{i \in \mathcal{N}} c_i \alpha_i \prod_{j=1}^{i-1}(1-\alpha_j),
+\label{eq:composicao_cor_3dgs}
+\end{equation}
+\addEquacao{Composição de cor por transparência no 3D-GS}{\ref{eq:composicao_cor_3dgs}}
+
+em que $c_i$ é a contribuição cromática da $i$-ésima gaussiana e $\alpha_i$ sua opacidade efetiva sobre o pixel. Essa formulação é próxima à composição volumétrica utilizada em NeRF, mas com uma diferença estrutural importante: o 3D-GS modela diretamente opacidade e aparência nas primitivas projetadas, enquanto o NeRF converte densidade em opacidade por meio de amostras ao longo dos raios \cite{mildenhall2020,kerbl2023,fei2025survey3dgs}.
+
+Diferentemente do NeRF, o 3D-GS não exige amostrar densamente o espaço ao longo de cada raio para estimar a cor de cada pixel. A renderização passa a se apoiar em rasterização diferenciável, organização por \textit{tiles}, ordenação por profundidade e composição paralela, o que torna o método mais compatível com o paralelismo das GPUs modernas \cite{kerbl2023,chen2024survey3dgs}. Esse pipeline de projeção e composição explica a principal vantagem do 3D-GS em termos de velocidade de renderização. Contudo, para que essa vantagem se sustente em cenas complexas, é necessário compreender como o método controla a quantidade e a organização das gaussianas ao longo do treinamento.
+
+\subsection{Otimização, densificação e poda}
+
+Um dos aspectos mais relevantes do 3D-GS é o uso de estratégias de densificação e poda durante o treinamento. Diferentemente de uma malha fixa ou de uma nuvem de pontos estática, o conjunto de gaussianas evolui conforme a otimização progride. Gaussianas podem ser divididas, ajustadas ou removidas com base em sua contribuição para a qualidade da síntese, permitindo que a representação se adapte à complexidade local da cena \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs}.
+
+No trabalho original, a otimização combina uma perda fotométrica em norma $L_1$ com um termo baseado em D-SSIM, buscando equilibrar fidelidade por pixel e preservação estrutural da imagem. Essa escolha aproxima a otimização do 3D-GS das métricas perceptuais e estruturais utilizadas na avaliação de síntese de novas vistas, uma vez que a qualidade visual não depende apenas de erro absoluto, mas também de coerência local e preservação de estrutura \cite{kerbl2023,wang2004}. De forma simplificada, a função de perda pode ser expressa como:
+
+\begin{equation}
+\mathcal{L}
+=
+(1-\lambda)\mathcal{L}_1
++
+\lambda \mathcal{L}_{D\text{-}SSIM},
+\label{eq:loss_3dgs}
+\end{equation}
+\addEquacao{Função de perda fotométrica combinada do 3D-GS}{\ref{eq:loss_3dgs}}
+
+em que $\lambda$ controla o balanço entre o erro fotométrico direto e o termo estrutural. Essa formulação mantém a otimização ancorada à consistência entre imagens sintetizadas e imagens observadas, mas opera sobre uma representação explícita cuja estrutura pode se expandir ou ser reduzida durante o treinamento \cite{kerbl2023,chen2024survey3dgs}.
+
+O controle adaptativo de densidade é essencial porque cenas reais raramente possuem complexidade uniforme. Regiões com detalhes finos, bordas, transparências parciais ou variações de aparência podem demandar maior número de primitivas, enquanto áreas homogêneas podem ser representadas com menos gaussianas \cite{kerbl2023,fei2025survey3dgs}. Assim, a densificação contribui para aumentar a capacidade local da representação, enquanto a poda busca remover gaussianas pouco relevantes, excessivamente transparentes ou redundantes.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=\textwidth]{figuras/kerbl2023_fig2.png}}
+    \caption{Visão geral do pipeline do 3D-GS, desde a inicialização com pontos de SfM até a projeção, o controle adaptativo de densidade e a rasterização diferenciável.}
+    \label{fig:3dgs_pipeline_kerbl}
+    \fonte{Adaptado de \cite{kerbl2023}.}
+\end{figure}
+
+Esse mecanismo, entretanto, também introduz desafios. Como o número de primitivas pode crescer substancialmente durante a otimização, cenas extensas ou altamente detalhadas podem exigir milhões de gaussianas, elevando o consumo de armazenamento, largura de banda e memória de vídeo \cite{fei2025survey3dgs,chen2024survey3dgs,liu2024citygaussian}. Em outras palavras, o ganho de velocidade do 3D-GS não elimina a necessidade de otimização; ele desloca parte do gargalo do custo de amostragem volumétrica para o custo de armazenamento, organização e renderização de uma representação explícita.
+
+\subsection{Eficiência, memória e variantes recentes}
+
+A literatura recente mostra que o 3D-GS se tornou uma base para uma família ampla de métodos voltados a eficiência, compressão, escalabilidade, renderização em tempo real e adaptação a plataformas restritas. Esse movimento é consequência direta das vantagens e limitações do método original: embora a rasterização de gaussianas ofereça desempenho elevado, a representação explícita pode se tornar pesada em memória e sensível à quantidade de primitivas necessárias para preservar detalhes \cite{fei2025survey3dgs,chen2024survey3dgs,wu2025,fang2024}.
+
+Entre as estratégias propostas, destacam-se métodos de compressão e poda, que procuram reduzir o número de gaussianas ou compactar seus atributos sem degradar significativamente a qualidade visual. O LightGaussian, por exemplo, explora poda, redução de harmônicos esféricos, quantização e armazenamento eficiente para diminuir o custo de memória da representação \cite{fan2024lightgaussian,fei2025survey3dgs}. Trabalhos voltados à redução de \textit{footprint} de memória e compactação reforçam que o armazenamento das primitivas se tornou um dos principais gargalos para levar 3D-GS a dispositivos com recursos limitados \cite{fang2024,huang2025,wu2025}.
+
+Outra direção importante envolve estruturas hierárquicas, ancoragem e níveis de detalhe. O Scaffold-GS organiza gaussianas a partir de pontos-âncora e explora estrutura local para reduzir redundâncias e melhorar a adaptação da representação a diferentes vistas \cite{lu2024scaffoldgs}. Em cenas extensas, abordagens como CityGaussian indicam que estratégias de divisão, organização espacial e controle de nível de detalhe são necessárias para manter escalabilidade em ambientes grandes \cite{liu2024citygaussian,fei2025survey3dgs}. Essas variantes reforçam que o 3D-GS original deve ser entendido como ponto de partida, e não como solução final para todos os cenários.
+
+Além da memória, a qualidade visual também impõe desafios próprios. O processo de projeção e composição pode introduzir aliasing, artefatos de ordenação, \textit{floaters} e instabilidades visuais, especialmente quando a câmera se move continuamente ou quando a cena contém detalhes muito finos \cite{fei2025survey3dgs,chen2024survey3dgs}. Em aplicações imersivas, esses problemas são particularmente críticos, pois pequenas inconsistências podem se tornar perceptíveis durante movimentos de cabeça e renderização estereoscópica \cite{xu2023,tu2025}.
+
+A comparação do Quadro \ref{qua:comparacao_metodos_3dgs} indica que o 3D-GS não deve ser interpretado apenas como substituto direto do NeRF, mas como uma representação mais adequada à etapa de visualização interativa. Enquanto o NeRF permanece relevante pela fidelidade e pela continuidade funcional, o 3D-GS desloca a síntese de vistas para uma estrutura explicitamente rasterizável, mais próxima das necessidades de aplicações em tempo real \cite{mildenhall2020,kerbl2023,chen2024survey3dgs}. Essa distinção é central para o presente trabalho, pois a proposta não consiste apenas em reconstruir uma cena, mas em torná-la executável em ambiente imersivo.
+
+\begin{quadro}[H]
+\centering
+\footnotesize
+5\caption{Comparação entre métodos relevantes para síntese de novas vistas e execução interativa.}
+\label{qua:comparacao_metodos_3dgs}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\textwidth}{|p{2.2cm}|p{2.2cm}|p{3.2cm}|p{3.4cm}|X|}
+\hline
+\textbf{Método} & \textbf{Paradigma} & \textbf{Vantagem principal} & \textbf{Limitação principal} & \textbf{Relação com este trabalho} \\
+\hline
+NeRF & Implícito & Alta fidelidade visual e representação contínua da cena & Alto custo de inferência por renderização volumétrica & Serve como linha de base conceitual e técnica para reconstrução de cenas estáticas \\
+\hline
+Instant-NGP & Híbrido / implícito acelerado & Redução expressiva do tempo de treinamento por codificação \textit{hash} multirresolução & Ainda depende de renderização volumétrica e consultas ao campo neural & Apoia a discussão sobre aceleração prática de NeRF e viabilidade experimental \\
+\hline
+SNeRG / PlenOctrees & Explícito após \textit{baking} & Aproxima campos neurais de representações renderizáveis em tempo real & Exige conversão ou pré-processamento da representação & Mostra a tendência de explicitar representações para visualização interativa \\
+\hline
+3D-GS & Explícito & Alta qualidade visual com renderização em tempo real por rasterização diferenciável & Alto consumo de memória e sensibilidade à organização das gaussianas & Representação principal considerada para execução interativa em VR \\
+\hline
+Scaffold-GS / LightGaussian & Explícito otimizado & Redução de redundância, compressão e melhor uso de memória & Maior complexidade de treinamento e possível perda visual se comprimido em excesso & Indica caminhos para adequar 3D-GS a hardware autônomo e restrito \\
+\hline
+\end{tabularx}
+\fonte{Elaboração própria com base em \cite{mildenhall2020,muller2022,yu2021plenoctrees,hedman2021snerg,kerbl2023,lu2024scaffoldgs,fan2024lightgaussian,fei2025survey3dgs}.}
+\end{quadro}
+
+\subsection{Relação com Realidade Virtual e com o escopo deste trabalho}
+
+No contexto de Realidade Virtual, a vantagem de renderização do 3D-GS torna-se especialmente relevante. Aplicações imersivas exigem renderização estereoscópica, atualização frequente da imagem, baixa latência e estabilidade visual durante movimentos de cabeça. A literatura de VR-NeRF demonstra que mesmo abordagens baseadas em NeRF, quando voltadas a espaços caminháveis, precisam combinar captura multivista densa, representação eficiente, nível de detalhe e renderização otimizada para alcançar taxas interativas em resolução adequada \cite{xu2023}. Esse cenário reforça a importância de representações mais próximas do pipeline gráfico, como o 3D-GS \cite{kerbl2023,tu2025}.
+
+Ainda assim, a adoção de 3D-GS em VR autônoma não é direta. Dispositivos móveis de realidade virtual impõem restrições de memória, consumo energético, largura de banda e capacidade de processamento gráfico, diferentemente de estações de trabalho com GPUs dedicadas. Por isso, técnicas como compressão, poda, seleção de nível de detalhe, renderização foveada e controle de artefatos visuais passam a ser componentes importantes do problema, e não apenas otimizações secundárias \cite{metaquest3s2024,qualcommxr2gen2,tu2025,fan2024lightgaussian,huang2025}.
+
+No caso deste trabalho, o 3D-GS é compreendido como uma etapa de mudança de paradigma representacional. A reconstrução inicial pode se apoiar em NeRF ou em métodos derivados para explorar a fidelidade das representações implícitas, enquanto a visualização interativa demanda uma estrutura explícita mais compatível com rasterização e execução em tempo real \cite{mildenhall2020,muller2022,kerbl2023}. Essa passagem do implícito para o explícito não deve ser entendida necessariamente como uma conversão única e universal, mas como uma decisão de projeto do pipeline, podendo envolver reotimização a partir das mesmas imagens, inicialização por SfM, \textit{baking}, destilação ou outras formas de transição entre representações \cite{yu2021plenoctrees,hedman2021snerg,kerbl2023,fei2025survey3dgs}.
+
+Dessa forma, o 3D-GS fornece a base teórica para compreender como uma cena reconstruída pode deixar de ser apenas uma representação de alta fidelidade e passar a constituir um ativo visual executável em um ambiente interativo. Ao mesmo tempo, suas limitações de memória, estabilidade perceptual e escalabilidade indicam que a simples adoção do método não é suficiente para garantir viabilidade em VR autônoma. É necessário avaliar o equilíbrio entre fidelidade visual, taxa de quadros, consumo de memória e estabilidade durante a navegação, aspectos que serão retomados nas seções seguintes ao discutir plataforma-alvo, motor gráfico e metodologia de avaliação \cite{kerbl2023,xu2023,tu2025,metaquest3s2024,qualcommxr2gen2}.
+
+\section{NeRF e 3D-GS como Representações Complementares}
+
+Embora frequentemente apresentados como abordagens concorrentes, NeRF e 3D-GS podem ser compreendidos como representações complementares dentro de um mesmo pipeline de reconstrução e visualização. O NeRF se destaca por sua natureza implícita, contínua e fortemente associada à fidelidade de reconstrução, sendo adequado como linha de base de qualidade visual e como referência conceitual para síntese de novas vistas \cite{mildenhall2020,mildenhall2021,muller2022}. Já o 3D-GS se destaca por sua representação explícita, baseada em primitivas gaussianas rasterizáveis, e por seu desempenho de renderização, tornando-se mais apropriado para cenários interativos que exigem geração de imagens em tempo real \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs}.
+
+Essa complementaridade sustenta a lógica deste trabalho. Adota-se o treinamento de um modelo NeRF como referência de reconstrução fotorrealista e, posteriormente, investiga-se sua conversão ou transição para uma representação explícita otimizada para execução em VR. Tal escolha decorre do fato de que o NeRF oferece uma base teórica sólida para modelar a cena de forma contínua, enquanto o 3D-GS oferece melhores condições práticas para atingir taxas de atualização compatíveis com a visualização imersiva \cite{mildenhall2020,muller2022,kerbl2023,xu2023,tu2025}. A Figura \ref{fig:nerf_vs_3dgs} sintetiza visualmente essa diferença entre os dois paradigmas.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.72\textwidth]{figuras/nerf_vs_3dgs.png}}
+    \caption{Comparação conceitual entre NeRF e 3D Gaussian Splatting. Enquanto o NeRF modela a cena por amostragem ao longo do raio e inferência volumétrica, o 3D-GS representa a cena por gaussianas explícitas projetadas e compostas no plano da imagem.}
+    \label{fig:nerf_vs_3dgs}
+    \fonte{Adaptado de \cite{chen2024survey3dgs}.}
+\end{figure}
+
+Do ponto de vista conceitual, essa relação evidencia um \textit{trade-off} central da área. Representações implícitas tendem a ser mais compactas, contínuas e naturais para certas consultas espaciais, mas costumam apresentar maior custo de inferência por dependerem de renderização volumétrica e múltiplas consultas ao campo neural \cite{mildenhall2020,mildenhall2021,muller2022}. Representações explícitas, por outro lado, tendem a favorecer a velocidade de síntese e a integração com pipelines gráficos, embora frequentemente cobrem um preço maior em memória, largura de banda e complexidade de gerenciamento da estrutura da cena \cite{kerbl2023,fei2025survey3dgs,wu2025,fang2024,huang2025,fan2024lightgaussian}.
+
+Assim, a escolha entre NeRF e 3D-GS não deve ser vista apenas como uma substituição tecnológica, mas como uma decisão arquitetural vinculada ao objetivo final de uso. Quando a prioridade é a reconstrução fotorrealista e a análise da fidelidade visual, o NeRF permanece relevante como representação implícita de referência. Quando a prioridade passa a ser execução interativa, baixa latência e compatibilidade com visualização imersiva, o 3D-GS torna-se mais aderente por deslocar a renderização para uma estrutura explícita e rasterizável \cite{mildenhall2020,kerbl2023,fei2025survey3dgs,chen2024survey3dgs}.
+
+No contexto deste trabalho, essa decisão arquitetural também é condicionada pela plataforma-alvo. A execução em Realidade Virtual autônoma impõe restrições adicionais de taxa de quadros, renderização estereoscópica, estabilidade visual, consumo de memória e capacidade gráfica, especialmente quando comparada a ambientes baseados em GPUs de alto desempenho \cite{xu2023,tu2025,metaquest3s2024,qualcommxr2gen2}. Dessa forma, a complementaridade entre NeRF e 3D-GS orienta o pipeline proposto: utilizar uma representação implícita como referência de reconstrução e uma representação explícita como caminho para visualização interativa.
+
+Portanto, o objetivo não é afirmar que uma representação substitui definitivamente a outra, mas compreender como suas características podem ser articuladas para equilibrar fidelidade visual e desempenho computacional. Essa articulação permite tratar a reconstrução e a visualização como etapas distintas de um mesmo fluxo: primeiro, busca-se uma representação de alta qualidade da cena; em seguida, procura-se uma forma de torná-la executável em ambiente imersivo com restrições práticas de hardware \cite{mildenhall2020,muller2022,kerbl2023,xu2023,tu2025}. Como esse objetivo é a execução em Realidade Virtual autônoma, o passo seguinte consiste em discutir as restrições específicas desse contexto de uso e o impacto que elas exercem sobre a viabilidade do pipeline proposto.
+
+\section{Restrições da Realidade Virtual em Dispositivos Autônomos}
+
+A aplicação de técnicas de síntese de novas vistas em Realidade Virtual (VR) impõe requisitos mais severos do que aqueles encontrados em visualização convencional em monitor. Em VR, a imagem precisa ser gerada de forma estereoscópica, isto é, em duas vistas coerentes correspondentes aos olhos do usuário, com alta frequência de atualização e baixa latência para preservar conforto visual, sensação de presença e continuidade perceptual durante os movimentos de cabeça \cite{xu2023,tu2025}. Pequenas instabilidades de renderização, quedas de quadros, atrasos na atualização da pose ou inconsistências entre as vistas podem comprometer a fluidez da experiência e aumentar o desconforto do usuário \cite{xu2023,metaquest3s2024}.
+
+Essas restrições são ainda mais relevantes em dispositivos autônomos, nos quais processamento gráfico, memória, consumo energético e dissipação térmica estão submetidos a um orçamento muito mais limitado do que em estações de trabalho com GPUs dedicadas. Em consequência, métodos que já são computacionalmente caros em ambiente desktop tornam-se ainda mais desafiadores no contexto \textit{on-device}, especialmente quando exigem renderização estereoscópica em tempo real e resposta imediata aos movimentos do usuário \cite{metaquest3s2024,qualcommxr2gen2,xu2023}. O caso do VR-NeRF é ilustrativo nesse sentido: o trabalho demonstra o potencial da síntese neural de alta fidelidade para espaços caminháveis em VR, mas também evidencia o elevado custo computacional desse tipo de abordagem, inclusive quando apoiada por infraestrutura de múltiplas GPUs \cite{xu2023}.
+
+No caso de representações baseadas em NeRF, o desafio decorre principalmente da renderização volumétrica, que exige múltiplas amostragens ao longo de cada raio e consultas sucessivas ao campo neural para estimar cor e densidade. Esse processo, embora associado a alta fidelidade visual, tende a ser custoso quando aplicado a resoluções elevadas, múltiplas vistas e taxas de atualização compatíveis com VR \cite{mildenhall2020,muller2022,xu2023}. Por isso, mesmo variantes aceleradas, como Instant-NGP, ainda precisam ser analisadas com cautela quando o objetivo é execução interativa em hardware autônomo \cite{muller2022,xu2023}.
+
+O 3D Gaussian Splatting surge como alternativa mais compatível com esse cenário por substituir a amostragem volumétrica densa por uma representação explícita composta por gaussianas projetáveis e rasterizáveis. Essa característica favorece a geração de imagens em tempo real e aproxima o método dos pipelines gráficos tradicionalmente explorados por GPUs \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs}. Entretanto, essa vantagem de renderização não elimina todos os desafios: cenas complexas podem exigir grande quantidade de gaussianas, elevando o consumo de memória, a largura de banda e a complexidade de gerenciamento da representação \cite{fei2025survey3dgs,wu2025,fang2024,huang2025,fan2024lightgaussian}.
+
+Para o escopo deste trabalho, isso significa que a simples obtenção de uma reconstrução visualmente convincente não é suficiente. A representação final precisa ser compatível com execução interativa em VR, o que implica considerar estratégias de otimização como redução do número de gaussianas, poda, compressão, seleção de nível de detalhe, \textit{culling} e integração adequada ao motor gráfico \cite{kerbl2023,lu2024scaffoldgs,fan2024lightgaussian,fei2025survey3dgs}. Tais estratégias são particularmente importantes porque, em um dispositivo autônomo, o modelo precisa competir por recursos com o sistema operacional, rastreamento de movimento, renderização estereoscópica e demais componentes da aplicação imersiva \cite{metaquest3s2024,qualcommxr2gen2,tu2025}.
+
+Além do desempenho bruto, a estabilidade visual também precisa ser considerada. Em VR, artefatos que poderiam ser pouco perceptíveis em uma visualização convencional podem se tornar mais evidentes devido à proximidade da tela, ao campo de visão ampliado e à movimentação contínua da cabeça. No caso do 3D-GS, problemas como \textit{floaters}, aliasing, instabilidades de profundidade, inconsistências entre vistas e excesso de primitivas podem afetar a percepção espacial e a continuidade visual da experiência \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs,tu2025}. Portanto, a avaliação não deve se restringir à qualidade visual estática, mas também considerar o comportamento da representação durante a navegação imersiva.
+
+Dessa forma, a viabilidade do pipeline depende de um equilíbrio entre fidelidade visual e eficiência computacional. De um lado, métricas como PSNR, SSIM e LPIPS permitem avaliar a proximidade entre imagens sintetizadas e imagens de referência, fornecendo uma base objetiva para comparar a qualidade da reconstrução \cite{wang2004,zhang2018,mildenhall2021}. De outro lado, métricas de desempenho, como taxa de quadros, tempo de renderização por quadro, uso de memória e estabilidade durante a navegação, são necessárias para verificar se a representação pode ser efetivamente utilizada em um ambiente de VR autônoma \cite{xu2023,tu2025,metaquest3s2024}.
+
+Assim, a análise proposta neste trabalho não se limita a verificar se NeRF ou 3D-GS conseguem reconstruir uma cena com boa aparência visual. O ponto central é investigar se a representação resultante pode ser integrada a um fluxo de visualização interativa em dispositivo autônomo, respeitando restrições de qualidade, desempenho e conforto perceptual. Por isso, torna-se necessário definir métricas capazes de observar, de forma mais objetiva, como esse equilíbrio entre qualidade visual e eficiência computacional será avaliado ao longo do trabalho \cite{mildenhall2020,kerbl2023,xu2023,tu2025}.
+
+\section{Métricas de Avaliação de Qualidade Visual e Desempenho}
+
+A análise de um pipeline que combina reconstrução neural, síntese de novas vistas e renderização em Realidade Virtual exige a observação conjunta de qualidade visual e desempenho. Métricas exclusivamente visuais não são suficientes para determinar a viabilidade de uma aplicação imersiva, assim como métricas apenas computacionais não capturam a fidelidade perceptual da reconstrução. Por esse motivo, adotam-se neste trabalho PSNR, SSIM, LPIPS e FPS como métricas principais de avaliação, em consonância com a literatura de NeRF, 3D Gaussian Splatting e renderização neural em VR \cite{mildenhall2020,mildenhall2021,kerbl2023,xu2023,fei2025survey3dgs,chen2024survey3dgs}.
+
+As métricas PSNR, SSIM e LPIPS são amplamente utilizadas em síntese de novas vistas porque permitem comparar imagens sintetizadas com imagens de referência a partir de diferentes perspectivas: erro pixel a pixel, preservação estrutural e similaridade perceptual. Já as métricas de desempenho, como FPS, tempo de quadro e uso de memória, são necessárias para avaliar se a representação reconstruída pode ser executada em contexto interativo, especialmente em dispositivos autônomos de VR, nos quais há restrições de processamento, memória e latência \cite{mildenhall2020,wang2004,zhang2018,xu2023,tu2025,metaquest3s2024}.
+
+\subsection{PSNR}
+
+O \textit{Peak Signal-to-Noise Ratio} (PSNR) é uma métrica derivada do erro quadrático médio entre a imagem sintetizada e a imagem de referência. Em tarefas de síntese de novas vistas, essa métrica é utilizada para quantificar a proximidade numérica entre os valores dos pixels das imagens comparadas, sendo recorrente em avaliações de NeRF, variantes de renderização neural e métodos baseados em 3D-GS \cite{mildenhall2020,mildenhall2021,kerbl2023,fei2025survey3dgs}. Sua formulação clássica é:
+
+\begin{equation}
+PSNR = 10 \log_{10}\left(\frac{MAX_I^2}{MSE}\right),
+\label{eq:psnr}
+\end{equation}
+\addEquacao{Cálculo do PSNR}{\ref{eq:psnr}}
+
+em que $MAX_I$ representa o valor máximo possível de intensidade do pixel e $MSE$ é o erro quadrático médio entre a imagem sintetizada e a imagem de referência. O $MSE$ pode ser definido como:
+
+\begin{equation}
+MSE = \frac{1}{mn}\sum_{i=1}^{m}\sum_{j=1}^{n}
+\left[I(i,j) - \hat{I}(i,j)\right]^2,
+\label{eq:mse}
+\end{equation}
+\addEquacao{Erro quadrático médio entre imagem de referência e imagem sintetizada}{\ref{eq:mse}}
+
+em que $I$ representa a imagem de referência, $\hat{I}$ representa a imagem sintetizada, e $m$ e $n$ correspondem às dimensões da imagem. Em geral, valores mais altos de PSNR indicam maior proximidade entre reconstrução e referência. No entanto, sua interpretação deve ser feita com cautela, pois pequenas variações numéricas nem sempre correspondem diretamente à percepção visual humana, especialmente em cenas com texturas complexas, reflexos ou pequenas diferenças estruturais \cite{mildenhall2020,mildenhall2021,zhang2018}.
+
+\subsection{SSIM}
+
+O \textit{Structural Similarity Index Measure} (SSIM) foi proposto para aproximar melhor a percepção humana ao comparar duas imagens em termos de luminância, contraste e estrutura. Diferentemente de métricas baseadas apenas em erro pixel a pixel, o SSIM considera estatísticas locais da imagem, sendo útil para avaliar se a reconstrução preserva formas, bordas e organização estrutural da cena \cite{wang2004,mildenhall2021}. Sua forma clássica é:
+
+\begin{equation}
+SSIM(x,y)=
+\frac{(2\mu_x\mu_y + C_1)(2\sigma_{xy}+C_2)}
+{(\mu_x^2+\mu_y^2+C_1)(\sigma_x^2+\sigma_y^2+C_2)},
+\label{eq:ssim}
+\end{equation}
+\addEquacao{Cálculo do SSIM}{\ref{eq:ssim}}
+
+em que $\mu_x$ e $\mu_y$ são as médias locais das imagens comparadas, $\sigma_x^2$ e $\sigma_y^2$ são suas variâncias, $\sigma_{xy}$ é a covariância entre elas e $C_1$, $C_2$ são constantes de estabilização. Em síntese de novas vistas, o SSIM complementa o PSNR por penalizar distorções estruturais que podem não gerar grande erro absoluto, mas que afetam a coerência visual da cena reconstruída \cite{wang2004,mildenhall2020,mildenhall2021}.
+
+No contexto deste trabalho, o SSIM é relevante porque a avaliação da cena reconstruída não depende apenas da proximidade numérica dos pixels, mas também da preservação de estruturas visuais importantes para a percepção espacial. Em aplicações de VR, inconsistências estruturais podem se tornar mais perceptíveis durante a movimentação do observador, pois a cena é visualizada de forma estereoscópica e interativa \cite{wang2004,xu2023,tu2025}.
+
+\subsection{LPIPS}
+
+O \textit{Learned Perceptual Image Patch Similarity} (LPIPS) mede a distância perceptiva entre duas imagens utilizando ativações internas de redes neurais profundas treinadas para tarefas de visão computacional. Em vez de se basear apenas na diferença direta entre pixels, a métrica compara representações de mais alto nível, associadas a textura, contornos e padrões perceptivos \cite{zhang2018}. Na prática, valores menores de LPIPS indicam maior similaridade perceptual entre a imagem sintetizada e a imagem de referência.
+
+Em trabalhos de síntese de novas vistas, o LPIPS é particularmente relevante porque imagens visualmente plausíveis podem apresentar pequenas diferenças geométricas, texturais ou fotométricas que não são bem capturadas por métricas estritamente baseadas em erro pixel a pixel. Por esse motivo, a literatura de NeRF e 3D-GS frequentemente utiliza LPIPS em conjunto com PSNR e SSIM, permitindo uma avaliação mais equilibrada entre fidelidade numérica, preservação estrutural e qualidade perceptual \cite{mildenhall2020,mildenhall2021,kerbl2023,zhang2018,fei2025survey3dgs}.
+
+Em contextos de VR, essa sensibilidade perceptual torna-se ainda mais importante. O usuário observa a cena de forma imersiva, com maior campo de visão e liberdade de movimento, o que pode evidenciar artefatos de textura, inconsistências entre vistas e instabilidades visuais que seriam menos perceptíveis em uma visualização convencional em monitor \cite{xu2023,tu2025}. Assim, o LPIPS contribui para avaliar não apenas a semelhança numérica entre imagens, mas também a plausibilidade perceptual da reconstrução.
+
+\subsection{FPS, tempo de quadro e uso de memória}
+
+Enquanto PSNR, SSIM e LPIPS avaliam qualidade visual, a taxa de quadros por segundo (FPS) e o tempo de renderização por quadro avaliam a capacidade do sistema de manter fluidez interativa. Em VR, esses indicadores são especialmente críticos porque a renderização não precisa ser apenas visualmente correta, mas também suficientemente rápida para acompanhar os movimentos do usuário, atualizar as duas vistas estereoscópicas e reduzir atrasos perceptíveis entre movimento e resposta visual \cite{xu2023,tu2025,metaquest3s2024}.
+
+O tempo médio por quadro pode ser relacionado ao FPS pela seguinte expressão:
+
+\begin{equation}
+t_{quadro} = \frac{1000}{FPS},
+\label{eq:tempo_quadro}
+\end{equation}
+\addEquacao{Tempo médio de renderização por quadro em milissegundos}{\ref{eq:tempo_quadro}}
+
+em que $t_{quadro}$ é medido em milissegundos. Essa relação permite interpretar diretamente o custo temporal de renderização: quanto maior o FPS, menor o tempo disponível para gerar cada quadro. Em aplicações de VR, esse limite é mais restritivo porque cada quadro precisa refletir a pose atualizada do usuário e ser produzido de forma suficientemente estável para evitar desconforto visual \cite{xu2023,tu2025}.
+
+Além da taxa de quadros, o uso de memória de vídeo também se torna uma variável relevante, sobretudo em representações explícitas como 3D-GS. O número de gaussianas, o armazenamento de seus atributos, o grau dos harmônicos esféricos, a organização espacial das primitivas e a forma de acesso a esses dados impactam diretamente a viabilidade da solução em plataformas móveis \cite{kerbl2023,fei2025survey3dgs,wu2025,fang2024,huang2025,fan2024lightgaussian}. Por isso, embora FPS seja a métrica de desempenho mais intuitiva, sua análise tende a ser mais completa quando observada em conjunto com tempo de quadro, consumo de memória e estabilidade durante a navegação.
+
+No caso de dispositivos autônomos, como a plataforma-alvo considerada neste trabalho, o desempenho também deve ser interpretado à luz das restrições de energia, dissipação térmica e capacidade gráfica disponível. Diferentemente de uma estação de trabalho com GPU dedicada, um headset autônomo precisa executar simultaneamente rastreamento, renderização estereoscópica, aplicação interativa e gerenciamento do sistema, o que reduz o orçamento computacional disponível para a representação reconstruída \cite{metaquest3s2024,qualcommxr2gen2,xu2023}. Assim, a avaliação de desempenho precisa considerar não apenas o resultado médio em FPS, mas a estabilidade da execução sob condições próximas ao uso real.
+
+Dessa forma, as métricas adotadas neste trabalho permitem avaliar o pipeline em duas dimensões complementares. PSNR, SSIM e LPIPS observam a qualidade da reconstrução e da síntese de novas vistas, enquanto FPS, tempo de quadro e uso de memória observam a viabilidade prática da visualização interativa em VR. Definidos esses critérios de avaliação, torna-se possível situá-los em relação ao ambiente concreto de execução, usando o Meta Quest 3S como plataforma-alvo para discutir os requisitos e limitações do hardware autônomo \cite{mildenhall2020,wang2004,zhang2018,kerbl2023,xu2023,tu2025,metaquest3s2024}.
+
+\section{Meta Quest 3S como Plataforma-Alvo}
+\label{sec:meta_quest_3s}
+
+Como o hardware-alvo deste trabalho é o Meta Quest 3S, torna-se necessário discutir suas características técnicas e suas implicações para o pipeline de reconstrução e renderização adotado. Em aplicações de Realidade Virtual autônoma, o headset não atua apenas como dispositivo de exibição, mas como a própria plataforma de processamento gráfico, execução estereoscópica, rastreamento espacial e interação do usuário. Dessa forma, as capacidades e limitações do dispositivo influenciam diretamente a viabilidade prática da integração entre reconstrução neural, conversão para 3D Gaussian Splatting e visualização imersiva \cite{metaquest3s2024,qualcommxr2gen2,xu2023,tu2025}.
+
+A escolha de uma plataforma autônoma também altera a forma como o desempenho deve ser interpretado. Em uma estação de trabalho, a renderização pode se apoiar em GPUs dedicadas, maior orçamento térmico e maior disponibilidade de memória. No Meta Quest 3S, por outro lado, processamento gráfico, rastreamento, composição estereoscópica, lógica da aplicação e execução do \textit{runtime} XR compartilham os recursos do próprio dispositivo. Essa condição torna a avaliação mais próxima de um cenário real de uso, mas também impõe restrições mais rigorosas ao pipeline proposto \cite{metaquest3s2024,qualcommxr2gen2,xu2023}.
+
+\subsection{Características técnicas do Meta Quest 3S}
+
+Segundo a documentação oficial da Meta, o Meta Quest 3S é um dispositivo \textit{wireless all-in-one} da família Meta Quest, equipado com painel LCD, resolução de 1832$\times$1920 pixels por olho, 20 PPD, taxa de atualização de até 120 Hz, 8 GB de memória embarcada, chipset Snapdragon XR2 Gen 2B, rastreamento de cabeça e mãos, \textit{passthrough} colorido estereoscópico e campo de visão aproximado de 96$^\circ$ na horizontal e 90$^\circ$ na vertical. A plataforma também oferece suporte ao Meta Quest Link, permitindo uso conectado a um computador quando necessário \cite{metaquest3s2024}. Essas características situam o dispositivo como uma plataforma móvel moderna para aplicações imersivas, mas com limites concretos de processamento, memória e dissipação térmica \cite{qualcommxr2gen2,metaquest3s2024}.
+
+\begin{quadro}[H]
+\centering
+\footnotesize
+\caption{Características técnicas relevantes do Meta Quest 3S para o pipeline proposto.}
+\label{qua:meta_quest_3s_specs}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{|p{4.2cm}|X|}
+\hline
+\textbf{Característica} & \textbf{Implicação para o trabalho} \\
+\hline
+Resolução de 1832$\times$1920 pixels por olho & Aumenta a demanda de preenchimento de pixels e reforça a necessidade de renderização eficiente em duas vistas estereoscópicas. \\
+\hline
+Taxa de atualização de até 120 Hz & Define uma referência de fluidez para aplicações imersivas, exigindo baixo tempo de renderização por quadro. \\
+\hline
+8 GB de memória embarcada & Limita o tamanho prático das representações explícitas, especialmente em modelos 3D-GS com grande número de gaussianas. \\
+\hline
+Snapdragon XR2 Gen 2B & Indica uma plataforma móvel de XR, com capacidade gráfica integrada e orçamento computacional inferior ao de GPUs desktop dedicadas. \\
+\hline
+Rastreamento de cabeça e mãos & Exige que a aplicação responda continuamente à pose do usuário, tornando quedas de desempenho mais perceptíveis. \\
+\hline
+\textit{Passthrough} colorido estereoscópico & Amplia possibilidades de aplicações imersivas e mistas, mas também compete por recursos do sistema. \\
+\hline
+Suporte ao Meta Quest Link & Permite comparação entre execução autônoma e execução conectada a um computador, funcionando como alternativa metodológica de contingência. \\
+\hline
+\end{tabularx}
+\fonte{Elaboração própria com base em \cite{metaquest3s2024,qualcommxr2gen2}.}
+\end{quadro}
+
+Essas especificações mostram que o Quest 3S se insere na categoria de headsets autônomos contemporâneos capazes de executar aplicações imersivas com recursos avançados de interação e visualização. Ao mesmo tempo, trata-se de uma plataforma móvel com orçamento computacional finito, no qual renderização, rastreamento, composição estereoscópica, \textit{runtime} XR e lógica da aplicação competem pelos mesmos recursos de processamento e memória. Em consequência, a utilização desse dispositivo como plataforma-alvo reforça a necessidade de avaliar não apenas a fidelidade visual da representação da cena, mas também seu custo prático de execução \cite{metaquest3s2024,qualcommxr2gen2,xu2023,tu2025}.
+
+Do ponto de vista comparativo, a documentação oficial também indica que o Quest 3S compartilha com o Quest 3 a mesma classe de chipset e a mesma quantidade de memória, embora apresente resolução e campo de visão mais modestos. Isso o torna particularmente interessante para este trabalho: por um lado, representa uma plataforma moderna e relevante para aplicações de VR; por outro, impõe restrições suficientemente concretas para que o problema de equilíbrio entre qualidade visual e desempenho permaneça central \cite{metaquest3s2024,qualcommxr2gen2}. Assim, a escolha do dispositivo contribui para delimitar experimentalmente o problema, evitando que a análise fique restrita a condições ideais de execução em hardware desktop.
+
+\subsection{Implicações do hardware para NeRF e 3D Gaussian Splatting}
+
+A adoção do Meta Quest 3S como plataforma-alvo tem implicações diretas para a escolha da representação visual e para a forma de avaliar a solução proposta. Embora o NeRF ofereça elevada fidelidade para síntese de novas vistas, sua formulação volumétrica permanece onerosa para contextos \textit{on-device}, sobretudo quando se exige renderização estereoscópica e atualização em alta frequência. Em um headset autônomo, o custo de múltiplas consultas por raio e o acúmulo volumétrico tornam-se especialmente problemáticos, pois o orçamento de GPU e memória precisa ser compartilhado com o \textit{runtime} XR, o rastreamento, a composição de interface e o restante da aplicação \cite{mildenhall2020,muller2022,xu2023,metaquest3s2024}.
+
+Nesse cenário, o Quest 3S reforça a motivação para investigar representações explícitas. O 3D Gaussian Splatting, por dispensar a amostragem densa ao longo do raio e se apoiar em uma forma de rasterização diferenciável, tende a se adequar melhor a uma plataforma cujo objetivo é exibir a cena de forma interativa e estável \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs}. Ainda assim, isso não elimina os desafios do dispositivo. O número de gaussianas, a largura de banda necessária para seus atributos e o uso de memória continuam sendo fatores críticos, especialmente em cenas mais complexas \cite{wu2025,fang2024,huang2025,fan2024lightgaussian}. Assim, o Quest 3S não apenas justifica a adoção de 3D-GS como também estabelece, de forma concreta, os limites dentro dos quais essa conversão precisa ser considerada bem-sucedida.
+
+Além disso, o suporte do dispositivo a taxas de atualização de até 120 Hz não deve ser interpretado como garantia automática de desempenho, mas como referência de exigência para o projeto. Em aplicações imersivas, a estabilidade da taxa de quadros e a previsibilidade do tempo de renderização por quadro são tão importantes quanto a qualidade visual da imagem final. Trabalhos como VR-NeRF evidenciam que, mesmo em headsets Meta usados como referência experimental, a combinação entre resolução por olho, renderização estereoscópica e exigência de fluidez impõe forte pressão sobre o pipeline de renderização \cite{xu2023}. Essa pressão se torna ainda mais crítica quando o objetivo é abandonar uma infraestrutura de múltiplas GPUs e aproximar a execução de um dispositivo autônomo \cite{metaquest3s2024,qualcommxr2gen2,tu2025}.
+
+No caso do 3D-GS, a compatibilidade com renderização interativa não deve ser confundida com ausência de custo. A literatura recente mostra que representações gaussianas podem demandar estratégias adicionais de compressão, poda, hierarquização, seleção de nível de detalhe e organização espacial para se tornarem viáveis em cenários restritos \cite{lu2024scaffoldgs,fan2024lightgaussian,fei2025survey3dgs,wu2025}. Portanto, a adequação ao Quest 3S depende de observar não apenas se a cena é renderizada, mas se ela mantém qualidade visual, estabilidade e consumo de memória compatíveis com uma aplicação imersiva real.
+
+\subsection{Quest 3S como referência experimental do trabalho}
+
+A escolha do Meta Quest 3S possui relevância metodológica por se tratar de um dispositivo comercial, autônomo e representativo da categoria de headsets móveis contemporâneos. Diferentemente de avaliações restritas ao ambiente desktop, o uso do Quest 3S obriga o pipeline a enfrentar restrições reais de hardware, como limite de memória, custo de renderização estereoscópica, consumo energético, dissipação térmica e sensibilidade a quedas de desempenho \cite{metaquest3s2024,qualcommxr2gen2,xu2023}. Com isso, a avaliação torna-se mais alinhada ao objetivo final do trabalho: investigar a viabilidade prática de visualização imersiva de cenas reconstruídas.
+
+Nesse sentido, o dispositivo funciona como uma referência concreta para a análise do \textit{trade-off} central deste trabalho: de um lado, a fidelidade visual herdada do NeRF; de outro, a necessidade de conversão ou transição para uma representação mais compatível com renderização em tempo real. O Quest 3S, portanto, não é apenas o meio de execução da aplicação, mas parte integrante do problema científico investigado, pois é nele que se materializam as tensões entre qualidade, memória, estabilidade e interatividade \cite{mildenhall2020,muller2022,kerbl2023,metaquest3s2024}.
+
+A escolha da plataforma também permite diferenciar dois níveis de avaliação. O primeiro corresponde à análise visual da reconstrução, baseada em métricas como PSNR, SSIM e LPIPS, que observam a qualidade da síntese de novas vistas em relação a imagens de referência \cite{wang2004,zhang2018,mildenhall2021}. O segundo corresponde à análise de execução, baseada em FPS, tempo de quadro, uso de memória e estabilidade durante a navegação, que observa se a representação é adequada a um cenário de VR autônoma \cite{xu2023,tu2025,metaquest3s2024}. Essa separação é importante porque uma representação pode apresentar boa qualidade visual em avaliação offline, mas ainda assim ser inadequada para uso interativo no dispositivo.
+
+Por fim, o suporte oficial ao Meta Quest Link também preserva uma possibilidade metodológica de contingência. Caso a execução totalmente nativa se mostre limitada em determinados cenários, a execução conectada ao computador continua sendo útil como referência comparativa entre o desempenho \textit{on-device} e o desempenho assistido por hardware externo \cite{metaquest3s2024}. Ainda assim, a meta principal permanece a avaliação da viabilidade do pipeline em contexto autônomo, justamente porque é nesse cenário que os desafios de otimização se tornam mais evidentes.
+
+Uma vez delimitadas as características e restrições da plataforma-alvo, a próxima etapa consiste em discutir como diferentes \textit{engines} podem mediar a integração entre representação da cena, \textit{runtime} XR e execução prática em VR. Essa discussão é necessária porque a viabilidade do pipeline não depende apenas da representação escolhida, mas também das ferramentas capazes de carregar, renderizar, otimizar e integrar essa representação ao ambiente imersivo executado no headset \cite{jin2024,kerbl2023,tu2025,metaquest3s2024}.
+
+\section{Engines para Integração em Realidade Virtual}
+
+A integração de uma cena reconstruída em um ambiente de Realidade Virtual depende não apenas da representação adotada, mas também da infraestrutura de software responsável por carregar, renderizar, otimizar e executar essa representação no dispositivo-alvo. Nesse contexto, as \textit{engines} gráficas atuam como camadas intermediárias entre os ativos tridimensionais, o \textit{runtime} XR, o sistema de entrada, a câmera estereoscópica e os mecanismos de empacotamento para plataformas móveis, como o Meta Quest 3S \cite{metaquest3s2024,qualcommxr2gen2,xu2023,tu2025}.
+
+No caso de representações neurais ou derivadas, como NeRF e 3D Gaussian Splatting, essa camada de integração torna-se ainda mais relevante. O NeRF depende de renderização volumétrica e múltiplas consultas por raio, enquanto o 3D-GS utiliza primitivas explícitas projetadas e compostas por rasterização diferenciável. Embora o 3D-GS seja mais compatível com renderização interativa, sua execução prática ainda depende de suporte adequado a shaders, estruturas de dados, gerenciamento de memória e integração com o pipeline gráfico da aplicação \cite{mildenhall2020,muller2022,kerbl2023,fei2025survey3dgs,chen2024survey3dgs}.
+
+Do ponto de vista da Fundamentação Teórica, a análise das engines não deve ser compreendida como uma decisão de projeto, mas como uma caracterização das possibilidades técnicas disponíveis para integração em VR. A escolha específica da engine, bem como a justificativa metodológica dessa escolha, pertence ao capítulo de Projeto, no qual são definidas as decisões de implementação, os riscos assumidos e as estratégias de contingência. Nesta seção, portanto, descrevem-se apenas os critérios gerais e as principais alternativas de integração.
+
+\subsection{Critérios de caracterização das engines}
+
+Uma engine voltada à integração em VR pode ser caracterizada a partir de alguns critérios técnicos recorrentes. O primeiro é a maturidade do suporte a XR, incluindo câmera estereoscópica, rastreamento de cabeça e mãos, entrada por controladores, suporte a OpenXR e empacotamento para dispositivos autônomos. O segundo é a capacidade de otimização gráfica, envolvendo recursos como controle de qualidade visual, \textit{culling}, gerenciamento de memória, renderização em múltiplas vistas e adaptação a GPUs móveis \cite{xu2023,tu2025,metaquest3s2024}.
+
+O terceiro critério diz respeito à flexibilidade de integração com representações não convencionais, como 3D Gaussian Splatting. Diferentemente de malhas triangulares tradicionais, modelos 3D-GS exigem rotinas específicas para armazenamento, ordenação, projeção e composição de gaussianas. Por isso, a engine precisa permitir a implementação ou adaptação de renderizadores, shaders, plugins e formatos de importação compatíveis com esse tipo de representação \cite{kerbl2023,jin2024,fei2025survey3dgs,chen2024survey3dgs}.
+
+O quarto critério é a previsibilidade do ciclo de desenvolvimento. Em aplicações para headsets autônomos, a viabilidade experimental depende de um fluxo confiável de testes, geração de \textit{builds}, depuração no dispositivo e coleta de métricas. Como o desempenho final observado em VR resulta da interação entre representação, engine, runtime XR e hardware, a escolha da ferramenta de integração afeta diretamente a interpretação dos resultados experimentais \cite{xu2023,tu2025,metaquest3s2024}.
+
+\subsection{Unreal Engine}
+
+A Unreal Engine é uma engine amplamente utilizada em aplicações gráficas de alta fidelidade, simulação e experiências imersivas. Sua arquitetura oferece suporte a renderização em tempo real, recursos avançados de gerenciamento de cena, integração com XR e mecanismos de empacotamento para diferentes plataformas. Em contextos de VR, essas características são relevantes porque a aplicação precisa coordenar renderização estereoscópica, entrada do usuário, atualização de pose e desempenho estável em tempo real \cite{xu2023,tu2025,metaquest3s2024}.
+
+No contexto específico de 3D Gaussian Splatting, a literatura recente já apresenta esforços de integração dessa representação à Unreal Engine. O UE-GS, por exemplo, investiga a integração de 3D-GS ao ambiente da Unreal, evidenciando a possibilidade de aproximar modelos gaussianos explícitos de um pipeline de renderização usado em aplicações interativas \cite{jin2024}. Essa relação torna a Unreal uma alternativa relevante para estudos que buscam conectar representações derivadas de reconstrução neural a ambientes imersivos.
+
+Por outro lado, a Unreal Engine também apresenta maior complexidade de configuração e integração quando comparada a fluxos mais simples de prototipagem. A combinação entre versões do motor, plugins experimentais, formatos específicos de importação, shaders personalizados e geração de \textit{builds} para dispositivos Quest pode introduzir riscos técnicos. Assim, sua descrição na Fundamentação Teórica deve considerar tanto sua capacidade gráfica quanto a complexidade associada à integração de representações especializadas \cite{jin2024,kerbl2023,fei2025survey3dgs,metaquest3s2024}.
+
+\subsection{Unity}
+
+A Unity é uma engine frequentemente associada a fluxos de prototipagem rápida, aplicações interativas e desenvolvimento multiplataforma. Em projetos de VR, sua relevância decorre da disponibilidade de ferramentas voltadas à criação de cenas interativas, manipulação de objetos, integração com dispositivos XR e ciclos iterativos de teste. Em cenários acadêmicos e experimentais, essas características podem facilitar a construção de protótipos funcionais e a validação inicial de interações em headset \cite{xu2023,tu2025,metaquest3s2024}.
+
+Para aplicações baseadas em 3D Gaussian Splatting, a Unity pode ser analisada como uma alternativa de integração quando o objetivo é observar o comportamento de uma representação explícita em uma aplicação XR. Entretanto, assim como em outras engines generalistas, a adoção de 3D-GS exige algum nível de adaptação do pipeline convencional, pois a representação por gaussianas não corresponde diretamente aos formatos tradicionais de malhas, materiais e texturas \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs}.
+
+Dessa forma, a caracterização da Unity deve considerar dois aspectos simultâneos: por um lado, sua utilidade em fluxos iterativos e aplicações XR; por outro, a necessidade de adaptação para lidar com representações gaussianas especializadas. Na Fundamentação Teórica, essa análise não define a adoção da Unity, mas apenas descreve suas propriedades como uma das possíveis engines para integração de cenas reconstruídas em VR \cite{xu2023,tu2025,metaquest3s2024}.
+
+\subsection{Godot}
+
+A Godot representa uma alternativa de engine aberta e flexível, com possibilidade de customização do fluxo de desenvolvimento e menor dependência de ecossistemas proprietários. Em um contexto acadêmico, engines abertas podem ser relevantes por favorecerem experimentação, inspeção do funcionamento interno e adaptação de partes específicas do pipeline de renderização \cite{tu2025,kerbl2023,fei2025survey3dgs}.
+
+Entretanto, quando o objetivo envolve integração de 3D Gaussian Splatting, execução em headset autônomo e análise de desempenho em VR, a maturidade do ecossistema e a disponibilidade de fluxos já validados tornam-se aspectos importantes. Como o 3D-GS exige rotinas específicas de projeção, composição, gerenciamento de memória e atualização em tempo real, engines com menor quantidade de referências consolidadas para esse caso de uso podem demandar maior esforço de implementação experimental \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs,metaquest3s2024}.
+
+Assim, a Godot pode ser descrita como uma possibilidade de experimentação e customização, especialmente em estudos interessados em maior controle sobre o pipeline. Contudo, sua caracterização teórica deve reconhecer que a integração de representações especializadas em VR autônoma depende não apenas da abertura da engine, mas também da disponibilidade de ferramentas, plugins, documentação, suporte XR e mecanismos de otimização adequados ao dispositivo-alvo \cite{xu2023,tu2025,metaquest3s2024}.
+
+\subsection{Visualizadores dedicados e execução assistida por desktop}
+
+Além das engines generalistas, outra possibilidade de integração consiste no uso de visualizadores dedicados ou aplicações executadas em ambiente desktop com transmissão para o headset. Essa abordagem é comum em cenários nos quais o objetivo principal é avaliar a visualização imersiva da cena, mas a execução totalmente nativa no dispositivo ainda apresenta restrições de desempenho ou de integração \cite{xu2023,metaquest3s2024}.
+
+Do ponto de vista técnico, a execução assistida por desktop pode aliviar parte da pressão imposta pelo hardware móvel, deslocando o processamento pesado para uma GPU externa. O VR-NeRF demonstra que a renderização neural de alta fidelidade em espaços caminháveis pode demandar infraestrutura computacional substancial, incluindo renderização em resolução elevada, múltiplas vistas e otimizações específicas para VR \cite{xu2023}. Dessa forma, visualizadores dedicados e execução via desktop podem funcionar como referência comparativa para compreender os limites entre visualização imersiva assistida e execução autônoma.
+
+No entanto, essa abordagem não representa o mesmo problema de execução \textit{on-device}. Quando o processamento ocorre em um computador externo, parte das restrições de memória, energia, dissipação térmica e GPU móvel deixa de ser observada diretamente. Por isso, em uma análise experimental, resultados obtidos via desktop ou Quest Link devem ser interpretados como uma condição distinta da execução nativa no headset \cite{metaquest3s2024,qualcommxr2gen2,xu2023}.
+
+\subsection{Síntese descritiva}
+
+O Quadro \ref{qua:comparativo_engines_vr} sintetiza as características gerais das alternativas discutidas. A tabela não estabelece uma escolha de implementação, mas organiza os principais aspectos técnicos que podem orientar a decisão posteriormente no capítulo de Projeto.
+
+\begin{quadro}[H]
+\centering
+\caption{Síntese descritiva de engines e abordagens para integração em VR}
+\label{qua:comparativo_engines_vr}
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Engine / abordagem} & \textbf{Características gerais} & \textbf{Pontos de atenção} \\ \hline
+Unreal Engine & Engine voltada a aplicações gráficas de alta fidelidade, com suporte a XR, renderização em tempo real e registros recentes de integração com 3D-GS. & Maior complexidade de integração, dependência de plugins, versões do motor, shaders e fluxo de \textit{build} para Quest. \\ \hline
+Unity & Engine associada a prototipagem rápida, aplicações interativas e desenvolvimento multiplataforma em XR. & Necessidade de adaptar o pipeline de 3D-GS a formatos, renderizadores e rotinas compatíveis com a engine. \\ \hline
+Godot & Engine aberta, flexível e customizável, com interesse acadêmico para experimentação e controle do pipeline. & Menor disponibilidade de fluxos consolidados para 3D-GS em VR autônoma e possível aumento do esforço de implementação. \\ \hline
+Visualizador desktop + Quest Link & Execução assistida por desktop com exibição imersiva no headset, útil para comparação com cenários de maior capacidade computacional. & Não representa integralmente a execução \textit{on-device}, pois desloca processamento, memória e carga gráfica para o computador. \\ \hline
+\end{tabularx}
+\fonte{Elaboração própria com base em \cite{xu2023,kerbl2023,jin2024,tu2025,metaquest3s2024,fei2025survey3dgs}.}
+\end{quadro}
+
+A partir dessa síntese, observa-se que cada alternativa oferece possibilidades e limitações distintas para a integração de cenas reconstruídas em VR. Engines generalistas fornecem infraestrutura para interação, câmera estereoscópica, empacotamento e integração com XR, mas podem demandar adaptações específicas para suportar representações como 3D Gaussian Splatting. Visualizadores dedicados, por sua vez, podem simplificar a execução de modelos especializados, mas tendem a reduzir a aderência ao cenário de aplicação autônoma \cite{xu2023,kerbl2023,tu2025,metaquest3s2024}.
+
+\input{capitulos/03_trabalhos_relacionados}
