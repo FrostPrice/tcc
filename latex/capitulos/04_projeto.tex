@@ -16,7 +16,7 @@ Os principais artefatos esperados são o conjunto de imagens organizado por cena
 
 \subsection{Etapas do pipeline proposto}
 
-A solução proposta é organizada em seis etapas sequenciais. Cada etapa produz artefatos que servem de entrada para a etapa seguinte, formando um fluxo progressivo desde a aquisição das imagens até a análise experimental no ambiente de Realidade Virtual. A Figura \ref{fig:pipeline_geral_projeto} apresenta essa organização, destacando a ordem das etapas e a transformação gradual dos dados capturados em uma experiência imersiva avaliável.
+A solução proposta é organizada em seis etapas sequenciais. Cada etapa produz artefatos que servem de entrada para a etapa seguinte, formando um fluxo progressivo desde a captura das imagens até a análise experimental no ambiente de Realidade Virtual. A Figura \ref{fig:pipeline_geral_projeto} apresenta essa organização, destacando a ordem das etapas e a transformação gradual dos dados capturados em uma experiência imersiva avaliável.
 
 \begin{figure}[H]
 \centering
@@ -77,7 +77,7 @@ A solução proposta é organizada em seis etapas sequenciais. Cada etapa produz
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
-A Etapa 1 delimita a cena e produz as imagens RGB usadas como entrada. A Etapa 2 organiza esses dados, estima ou incorpora informações de pose e prepara a estrutura necessária para treinamento. A Etapa 3 gera a reconstrução inicial em NeRF, funcionando como referência de fidelidade visual. A Etapa 4 converte ou reconstrói a cena em 3D-GS, ajustando a quantidade de gaussianas e a complexidade do modelo. A Etapa 5 leva a representação resultante para a Unreal Engine, e a Etapa 6 valida a execução em VR por meio de métricas de qualidade, desempenho e estabilidade.
+A Etapa 1 delimita a cena e produz as imagens RGB usadas como entrada. A Etapa 2 organiza esses dados, estima ou incorpora informações de pose e prepara a estrutura necessária para treinamento. A Etapa 3 corresponde ao treinamento do modelo NeRF, funcionando como referência de fidelidade visual. A Etapa 4 converte ou reconstrói a cena em 3D-GS, ajustando a quantidade de gaussianas e a complexidade do modelo. A Etapa 5 leva a representação resultante para a Unreal Engine, e a Etapa 6 valida a execução em Realidade Virtual por meio de métricas de qualidade, desempenho e estabilidade.
 
 \subsection{Requisitos do projeto}
 
@@ -95,13 +95,13 @@ Os requisitos do projeto foram definidos a partir dos objetivos do trabalho e da
 
 Funcional & Captura de imagens RGB & A solução deve utilizar imagens RGB de cenas reais como entrada para o processo de reconstrução. \\ \hline
 
-Funcional & Reconstrução inicial com NeRF & O pipeline deve permitir o treinamento de um modelo NeRF para gerar uma linha de base de qualidade visual. \\ \hline
+Funcional & Treinamento do modelo NeRF & O pipeline deve permitir o treinamento de um modelo NeRF para gerar uma linha de base de qualidade visual. \\ \hline
 
-Funcional & Conversão para 3D-GS & A representação reconstruída deve ser convertida ou reprocessada para uma estrutura baseada em 3D Gaussian Splatting. \\ \hline
+Funcional & Conversão e otimização para 3D-GS & A representação reconstruída deve ser convertida ou reprocessada para uma estrutura baseada em 3D Gaussian Splatting. \\ \hline
 
-Funcional & Integração em motor gráfico & O modelo 3D-GS deve ser importado ou adaptado para execução em um motor gráfico com suporte a VR, priorizando a Unreal Engine. \\ \hline
+Funcional & Integração na Unreal Engine & O modelo 3D-GS deve ser importado ou adaptado para execução em um motor gráfico com suporte a VR, priorizando a Unreal Engine. \\ \hline
 
-Funcional & Execução em VR & A cena reconstruída deve ser visualizada em um ambiente de Realidade Virtual compatível com o Meta Quest 3. \\ \hline
+Funcional & Execução e avaliação em Realidade Virtual & A cena reconstruída deve ser visualizada e avaliada em um ambiente de Realidade Virtual compatível com o Meta Quest 3. \\ \hline
 
 Não funcional & Desempenho & A execução deve buscar taxa de quadros estável, considerando os limites de conforto e interatividade em VR. \\ \hline
 
@@ -181,39 +181,47 @@ A arquitetura da solução foi definida de modo a separar as responsabilidades d
 
 A camada de dados concentra os insumos necessários para reconstrução, incluindo imagens, poses e metadados. A camada de reconstrução transforma esses dados em uma representação neural inicial. A camada de representação reorganiza a cena em gaussianas 3D, buscando um equilíbrio entre fidelidade visual e custo computacional. A camada de integração adapta o modelo ao ambiente de execução em VR, enquanto a camada de avaliação registra evidências quantitativas e qualitativas sobre o comportamento da solução.
 
-\subsubsection{Aquisição e preparação dos dados}
+\subsubsection{Captura de imagens RGB}
 
-A primeira etapa do projeto consiste na aquisição das imagens RGB que serão utilizadas para reconstrução da cena. A captura deverá priorizar ambientes ou objetos estáticos, com iluminação controlada sempre que possível, evitando alterações significativas entre as imagens. A cena deverá ser registrada a partir de múltiplos pontos de vista, com sobreposição visual suficiente para favorecer a estimativa das poses de câmera.
+A primeira etapa do projeto consiste na captura das imagens RGB que serão utilizadas para reconstrução da cena. A captura deverá priorizar ambientes ou objetos estáticos, com iluminação controlada sempre que possível, evitando alterações significativas entre as imagens. A cena deverá ser registrada a partir de múltiplos pontos de vista, com sobreposição visual suficiente para favorecer a estimativa das poses de câmera.
 
-Após a captura, as imagens serão organizadas em uma estrutura de diretórios por cena. Essa organização deverá conter, no mínimo, as imagens originais, as imagens eventualmente redimensionadas, os arquivos de calibração ou poses estimadas e os registros de configuração utilizados nas etapas posteriores. Quando necessário, poderão ser aplicados ajustes de exposição, remoção de imagens desfocadas e padronização de resolução.
+\subsubsection{Pré-processamento e organização dos dados}
+
+A segunda etapa corresponde ao pré-processamento e à organização dos dados. Após a captura, as imagens serão organizadas em uma estrutura de diretórios por cena. Essa organização deverá conter, no mínimo, as imagens originais, as imagens eventualmente redimensionadas, os arquivos de calibração ou poses estimadas e os registros de configuração utilizados nas etapas posteriores. Quando necessário, poderão ser aplicados ajustes de exposição, remoção de imagens desfocadas e padronização de resolução.
 
 Essa etapa é importante porque a qualidade da reconstrução depende diretamente da qualidade e da cobertura das imagens de entrada. Imagens com baixa sobreposição, variações bruscas de iluminação, reflexos intensos ou objetos em movimento podem comprometer tanto a reconstrução NeRF quanto a conversão posterior para 3D Gaussian Splatting.
 
-\subsubsection{Reconstrução inicial com NeRF}
+\subsubsection{Treinamento do modelo NeRF}
 
-A segunda etapa consiste no treinamento de um modelo NeRF para cada cena selecionada. O objetivo dessa reconstrução inicial é estabelecer uma linha de base de qualidade visual, permitindo avaliar a capacidade do pipeline de representar a geometria e a aparência da cena antes da conversão para uma representação explícita.
+A terceira etapa consiste no treinamento de um modelo NeRF para cada cena selecionada. O objetivo desse treinamento é estabelecer uma linha de base de qualidade visual, permitindo avaliar a capacidade do pipeline de representar a geometria e a aparência da cena antes da conversão para uma representação explícita.
 
 O treinamento poderá ser realizado com ferramentas como Nerfstudio ou Instant-NGP, de acordo com a disponibilidade do ambiente computacional e a compatibilidade com os dados capturados. Durante essa etapa, serão registrados os principais parâmetros utilizados, incluindo quantidade de imagens, resolução de treinamento, tempo de treinamento, configuração de hardware, número de iterações e qualidade visual obtida.
 
 O resultado esperado dessa etapa é um modelo capaz de sintetizar novas vistas da cena com boa fidelidade visual. Mesmo que a renderização volumétrica do NeRF não seja o alvo final da execução em VR, ela serve como referência para comparação com o modelo convertido para 3D-GS.
 
-\subsubsection{Conversão e otimização para 3D Gaussian Splatting}
+\subsubsection{Conversão e otimização para 3D-GS}
 
-A terceira etapa corresponde à conversão ou reconstrução da cena em uma representação baseada em 3D Gaussian Splatting. Nessa etapa, busca-se obter um conjunto de gaussianas 3D que represente a geometria e a aparência da cena de forma explícita, permitindo renderização mais eficiente do que a consulta volumétrica tradicional do NeRF.
+A quarta etapa corresponde à conversão ou reconstrução da cena em uma representação baseada em 3D Gaussian Splatting. Nessa etapa, busca-se obter um conjunto de gaussianas 3D que represente a geometria e a aparência da cena de forma explícita, permitindo renderização mais eficiente do que a consulta volumétrica tradicional do NeRF.
 
 Cada cena convertida deverá ser analisada quanto ao número de gaussianas, tamanho do arquivo gerado, qualidade visual percebida e viabilidade de renderização em tempo real. Quando necessário, serão aplicadas estratégias de otimização, como redução do número de gaussianas, poda de elementos pouco relevantes, ajuste de níveis de detalhe e simplificação da cena. O objetivo não é apenas obter a melhor imagem possível, mas encontrar uma configuração que preserve qualidade visual aceitável dentro das restrições de desempenho do dispositivo-alvo.
 
 Essa etapa representa o principal ponto de decisão técnica do projeto. Caso o modelo 3D-GS resultante seja visualmente adequado, mas pesado demais para execução no Meta Quest 3, será necessário ajustar a complexidade da cena ou utilizar estratégias alternativas de execução, como testes em desktop com transmissão para o headset.
 
-\subsection{Integração em Unreal Engine e execução em VR}
+\subsection{Integração na Unreal Engine}
 
 Com base na análise conceitual apresentada na Fundamentação Teórica, este trabalho adota a Unreal Engine como motor gráfico principal para a etapa de integração em Realidade Virtual. A escolha se justifica pela existência de iniciativas recentes de integração entre 3D Gaussian Splatting e Unreal Engine, pelo suporte consolidado a aplicações XR e pela maior aderência ao objetivo de construir uma experiência imersiva com controle do pipeline gráfico \cite{jin2024,kerbl2023,tu2025,metaquest3s2024}.
 
 A adoção da Unreal Engine, entretanto, é tratada como uma decisão tecnicamente ambiciosa. O projeto reconhece riscos relacionados à compatibilidade de versões, adaptação de plugins, importação de gaussianas e geração de \textit{build} para o Meta Quest 3S. Por esse motivo, a metodologia prevê estratégias de contingência, como simplificação da cena, redução do número de gaussianas, execução assistida por desktop via Quest Link ou avaliação parcial em visualizador dedicado, caso a execução nativa apresente limitações relevantes \cite{xu2023,fei2025survey3dgs,fan2024lightgaussian,metaquest3s2024}.
 
-A quarta etapa consiste na integração da representação 3D-GS em um ambiente de Realidade Virtual. A integração poderá ocorrer por meio de plugin específico de 3D Gaussian Splatting, formato intermediário compatível ou componente customizado de visualização. A aplicação VR deverá conter uma cena mínima funcional, contemplando câmera estereoscópica, configuração OpenXR, locomoção simples ou posicionamento fixo controlado e carregamento do modelo reconstruído.
+A quinta etapa consiste na integração da representação 3D-GS em um ambiente de Realidade Virtual. A integração poderá ocorrer por meio de plugin específico de 3D Gaussian Splatting, formato intermediário compatível ou componente customizado de visualização. A aplicação VR deverá conter uma cena mínima funcional, contemplando câmera estereoscópica, configuração OpenXR, locomoção simples ou posicionamento fixo controlado e carregamento do modelo reconstruído.
 
-O objetivo não é desenvolver uma aplicação comercial completa, mas criar um protótipo experimental capaz de validar a visualização da cena reconstruída em contexto imersivo. A integração no Meta Quest 3 será considerada bem-sucedida caso o modelo possa ser visualizado no headset com estabilidade suficiente para permitir a coleta de métricas. Caso a execução nativa apresente limitações técnicas severas, será adotada como contingência a execução em desktop com transmissão para o headset, preservando a análise imersiva da cena.
+O objetivo não é desenvolver uma aplicação comercial completa, mas criar um protótipo experimental capaz de validar a visualização da cena reconstruída em contexto imersivo. A integração será considerada bem-sucedida caso o modelo possa ser carregado na aplicação com estabilidade suficiente para permitir a etapa seguinte de execução e avaliação.
+
+\subsection{Execução e avaliação em Realidade Virtual}
+
+A sexta etapa corresponde à execução do protótipo no Meta Quest 3 e à avaliação do comportamento da solução em contexto imersivo. Nessa etapa, a cena reconstruída deve ser visualizada no headset e submetida à coleta de métricas de desempenho, estabilidade e qualidade visual, permitindo analisar se a representação 3D-GS integrada à Unreal Engine atende às restrições práticas de Realidade Virtual.
+
+Caso a execução nativa apresente limitações técnicas severas, será adotada como contingência a execução em desktop com transmissão para o headset, preservando a análise imersiva da cena. Essa alternativa não substitui a avaliação do dispositivo-alvo, mas permite manter a comparação visual e registrar os limites encontrados durante a tentativa de execução autônoma.
 
 \subsection{Fluxo de implementação}
 
@@ -251,17 +259,19 @@ O fluxo de implementação do projeto será conduzido de forma incremental. Inic
 ]
 
 \node[bloco] (cena) {Selecionar cena de teste};
-\node[bloco, below=of cena] (capturar) {Capturar e organizar imagens RGB};
-\node[bloco, below=of capturar] (treinar) {Treinar modelo NeRF};
-\node[bloco, below=of treinar] (converter) {Converter ou reconstruir em 3D-GS};
-\node[bloco, below=of converter] (integrar) {Integrar modelo na Unreal Engine};
+\node[bloco, below=of cena] (captura) {Captura de imagens RGB};
+\node[bloco, below=of captura] (prep) {Pré-processamento e organização dos dados};
+\node[bloco, below=of prep] (treinar) {Treinamento do modelo NeRF};
+\node[bloco, below=of treinar] (converter) {Conversão e otimização para 3D-GS};
+\node[bloco, below=of converter] (integrar) {Integração na Unreal Engine};
 \node[decisao, below=0.65cm of integrar] (funciona) {Execução\\estável?};
 
 \node[bloco, left=1.7cm of funciona] (otimizar) {Aplicar otimizações\\ou simplificar cena};
-\node[bloco, below=0.75cm of funciona] (avaliar) {Coletar métricas\\e comparar resultados};
+\node[bloco, below=0.75cm of funciona] (avaliar) {Execução e avaliação\\em Realidade Virtual};
 
-\draw[seta] (cena) -- (capturar);
-\draw[seta] (capturar) -- (treinar);
+\draw[seta] (cena) -- (captura);
+\draw[seta] (captura) -- (prep);
+\draw[seta] (prep) -- (treinar);
 \draw[seta] (treinar) -- (converter);
 \draw[seta] (converter) -- (integrar);
 \draw[seta] (integrar) -- (funciona);
