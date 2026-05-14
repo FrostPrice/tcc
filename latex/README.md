@@ -34,6 +34,8 @@ Como recomendação, instale o texlive-meta para obter uma instalação completa
 
 ```bash
 sudo pacman -S texlive-meta
+
+sudo pacman -S texlive-langportuguese
 ```
 
 ### Windows
