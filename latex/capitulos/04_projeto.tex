@@ -1,10 +1,14 @@
 \chapter[Desenvolvimento]{Desenvolvimento}
 
+Este capítulo consolida o projeto da solução proposta, descrevendo o \textit{pipeline} de reconstrução e visualização imersiva, os requisitos definidos, a arquitetura planejada, as etapas de implementação, o protocolo de avaliação experimental e o planejamento de continuidade para o TCC III. A organização do capítulo busca transformar os fundamentos discutidos anteriormente em um plano técnico executável, mantendo o foco na análise de viabilidade da integração entre NeRF, \textit{3D Gaussian Splatting} e Realidade Virtual autônoma.
+
 \section{Projeto}
+
+Esta seção apresenta a definição do projeto, incluindo a visão geral da solução, as etapas do \textit{pipeline}, as decisões técnicas assumidas, os riscos previstos e os critérios utilizados para avaliar qualidade visual e desempenho. O objetivo é delimitar como os dados capturados serão transformados em uma representação 3D-GS integrada a um ambiente de Realidade Virtual, preservando a coerência entre escopo, arquitetura e avaliação experimental.
 
 \subsection{Visão geral da solução proposta}
 
-O projeto parte da premissa de que o NeRF pode ser utilizado como uma representação inicial de alta fidelidade para reconstrução de cenas estáticas, enquanto o 3D Gaussian Splatting pode atuar como uma representação explícita mais adequada à renderização interativa. Dessa forma, a proposta não busca apenas gerar uma reconstrução visualmente plausível, mas investigar a viabilidade prática de transformar essa reconstrução em uma representação compatível com os requisitos de desempenho impostos pela Realidade Virtual no Meta Quest 3.
+O projeto parte da premissa de que o NeRF pode ser utilizado como uma representação inicial de alta fidelidade para reconstrução de cenas estáticas, enquanto o 3D Gaussian Splatting pode atuar como uma representação explícita mais adequada à renderização interativa. Dessa forma, a proposta não busca apenas gerar uma reconstrução visualmente plausível, mas investigar a viabilidade prática de transformar essa reconstrução em uma representação compatível com os requisitos de desempenho impostos pela Realidade Virtual no Meta Quest 3S.
 
 A entrada da solução é composta por imagens RGB capturadas de uma cena real estática, com sobreposição suficiente entre diferentes pontos de vista. Esse conjunto de imagens permite estimar poses de câmera, organizar os dados de treinamento e produzir uma reconstrução inicial capaz de representar a geometria e a aparência da cena. A qualidade dessa etapa influencia diretamente as etapas seguintes, pois imagens com baixa cobertura, variação brusca de iluminação ou presença de movimento podem introduzir inconsistências tanto no modelo NeRF quanto na representação 3D-GS.
 
