@@ -191,6 +191,16 @@ A primeira etapa do projeto consiste na captura das imagens RGB que serão utili
 
 A cena deverá ser registrada a partir de múltiplos pontos de vista, com variação gradual da posição da câmera e sobreposição visual suficiente entre imagens consecutivas. Prevê-se que a câmera percorra a cena de forma controlada, cobrindo diferentes ângulos e distâncias, para que superfícies, contornos e regiões de interesse apareçam em mais de uma imagem. Essa cobertura favorece a reconstrução multivista e reduz a ocorrência de regiões mal observadas, que poderiam comprometer a estimativa de geometria e aparência.
 
+A Figura \ref{fig:captura_rgb_poster} ilustra esse princípio a partir de diferentes quadros de uma mesma cena, evidenciando a variação gradual de ponto de vista necessária para que o pipeline disponha de sobreposição visual entre imagens consecutivas.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.88\textwidth]{figuras/projeto/captura_rgb_poster.png}}
+    \caption{Exemplo de imagens RGB capturadas de uma mesma cena com variação de ponto de vista.}
+    \label{fig:captura_rgb_poster}
+    \legend{Fonte: Adaptado do dataset \textit{poster} do Nerfstudio \cite{nerfstudioPosterDataset}.}
+\end{figure}
+
 Durante a captura, deverão ser observados fatores como desfoque, exposição, reflexos, sombras intensas e superfícies com pouca textura. Sempre que possível, serão priorizadas condições de iluminação estáveis, com baixa variação entre as fotografias. Também deverão ser registrados metadados básicos da captura, como quantidade de imagens, resolução, dispositivo utilizado, características da cena e observações sobre iluminação ou dificuldades encontradas. O resultado esperado dessa etapa é um conjunto bruto de imagens suficientemente consistente para alimentar o pré-processamento e a reconstrução multivista.
 
 \subsubsection{Pré-processamento e organização dos dados}
@@ -201,11 +211,31 @@ Inicialmente, será realizada uma triagem das imagens capturadas. Fotografias tr
 
 Em seguida, serão estimadas ou incorporadas as poses de câmera necessárias ao treinamento, utilizando ferramentas de \textit{Structure-from-Motion} (SfM), como o COLMAP, quando aplicável ao conjunto de imagens. Os arquivos resultantes dessa estimativa deverão ser preservados junto aos logs e configurações de execução, pois erros nessa fase tendem a se propagar para o NeRF e para a representação 3D-GS. Dessa forma, o pré-processamento não atua apenas como uma preparação operacional dos dados, mas como uma etapa de controle de qualidade que influencia diretamente a fidelidade da reconstrução e a viabilidade das fases posteriores.
 
+A Figura \ref{fig:preprocessamento_colmap} exemplifica a etapa de pré-processamento baseada em SfM, na qual as imagens são associadas a poses de câmera e a uma reconstrução esparsa inicial da cena. Esse resultado intermediário serve como base para organizar os dados antes do treinamento das representações neurais ou gaussianas.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.96\textwidth]{figuras/projeto/preprocessamento_colmap.png}}
+    \caption{Exemplo de reconstrução esparsa e estimativa de poses de câmera em um fluxo de SfM incremental.}
+    \label{fig:preprocessamento_colmap}
+    \legend{Fonte: Adaptado da documentação oficial do COLMAP \cite{colmapDocs}.}
+\end{figure}
+
 \subsubsection{Treinamento do modelo NeRF}
 
 A terceira etapa consiste no treinamento de um modelo NeRF para cada cena selecionada. O objetivo desse treinamento é estabelecer uma linha de base de qualidade visual, permitindo avaliar a capacidade do pipeline de representar a geometria e a aparência da cena antes da conversão para uma representação explícita.
 
 O treinamento poderá ser realizado com ferramentas como Nerfstudio ou Instant-NGP, de acordo com a disponibilidade do ambiente computacional e a compatibilidade com os dados capturados. Durante essa etapa, serão registrados os principais parâmetros utilizados, incluindo quantidade de imagens, resolução de treinamento, tempo de treinamento, configuração de hardware, número de iterações e qualidade visual obtida.
+
+A Figura \ref{fig:viewer_nerfstudio} apresenta um exemplo de ambiente de visualização utilizado em fluxos com Nerfstudio. Esse tipo de interface auxilia a inspeção qualitativa do modelo durante o desenvolvimento, permitindo observar a cena reconstruída, a trajetória de câmeras e possíveis inconsistências antes da etapa de conversão ou otimização.
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.96\textwidth]{figuras/projeto/viewer_nerfstudio.png}}
+    \caption{Exemplo de visualização de cena reconstruída em ambiente do Nerfstudio.}
+    \label{fig:viewer_nerfstudio}
+    \legend{Fonte: Adaptado do repositório oficial do Nerfstudio \cite{nerfstudioGithub}.}
+\end{figure}
 
 O resultado esperado dessa etapa é um modelo capaz de sintetizar novas vistas da cena com boa fidelidade visual. Mesmo que a renderização volumétrica do NeRF não seja o alvo final da execução em VR, ela serve como referência para comparação com o modelo convertido para 3D-GS.
 
