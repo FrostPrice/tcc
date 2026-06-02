@@ -354,15 +354,13 @@ SSIM(x,y)=
 
 em que $\mu_x$ e $\mu_y$ são as médias locais das imagens comparadas, $\sigma_x^2$ e $\sigma_y^2$ são suas variâncias, $\sigma_{xy}$ é a covariância entre elas e $C_1$, $C_2$ são constantes de estabilização. Em síntese de novas vistas, o SSIM complementa o PSNR por penalizar distorções estruturais que podem não gerar grande erro absoluto, mas que afetam a coerência visual da cena reconstruída \cite{wang2004,mildenhall2020,kerbl2023}.
 
-No contexto deste trabalho, o SSIM é relevante porque a avaliação da cena reconstruída não depende apenas da proximidade numérica dos pixels, mas também da preservação de estruturas visuais importantes para a percepção espacial. Em aplicações de VR, inconsistências estruturais podem se tornar mais perceptíveis durante a movimentação do observador, pois a cena é visualizada de forma estereoscópica e interativa \cite{wang2004,xu2023,tu2025}.
+No contexto deste trabalho, o SSIM é relevante porque a avaliação da cena reconstruída não depende apenas da proximidade numérica dos pixels, mas também da preservação de estruturas visuais importantes para a percepção espacial \cite{wang2004,xu2023,tu2025}.
 
 \subsection{LPIPS}
 
 O \textit{Learned Perceptual Image Patch Similarity} (LPIPS) mede a distância perceptiva entre duas imagens utilizando ativações internas de redes neurais profundas treinadas para tarefas de visão computacional. Em vez de se basear apenas na diferença direta entre pixels, a métrica compara representações de mais alto nível, associadas a textura, contornos e padrões perceptivos \cite{zhang2018}. Na prática, valores menores de LPIPS indicam maior similaridade perceptual entre a imagem sintetizada e a imagem de referência.
 
-Em trabalhos de síntese de novas vistas, o LPIPS é particularmente relevante porque imagens visualmente plausíveis podem apresentar pequenas diferenças geométricas, texturais ou fotométricas que não são bem capturadas por métricas estritamente baseadas em erro pixel a pixel. Por esse motivo, a literatura de NeRF e 3D-GS frequentemente utiliza LPIPS em conjunto com PSNR e SSIM, permitindo uma avaliação mais equilibrada entre fidelidade numérica, preservação estrutural e qualidade perceptual \cite{mildenhall2020,kerbl2023,zhang2018,fei2025survey3dgs}.
-
-Em contextos de VR, essa sensibilidade perceptual torna-se ainda mais importante. O usuário observa a cena de forma imersiva, com maior campo de visão e liberdade de movimento, o que pode evidenciar artefatos de textura, inconsistências entre vistas e instabilidades visuais que seriam menos perceptíveis em uma visualização convencional em monitor \cite{xu2023,tu2025}. Assim, o LPIPS contribui para avaliar não apenas a semelhança numérica entre imagens, mas também a plausibilidade perceptual da reconstrução.
+Em trabalhos de síntese de novas vistas, o LPIPS é particularmente relevante porque imagens visualmente plausíveis podem apresentar pequenas diferenças geométricas, texturais ou fotométricas que não são bem capturadas por métricas estritamente baseadas em erro pixel a pixel. Por esse motivo, a literatura de NeRF e 3D-GS frequentemente utiliza LPIPS em conjunto com PSNR e SSIM, permitindo uma avaliação mais equilibrada entre fidelidade numérica, preservação estrutural e qualidade perceptual \cite{mildenhall2020,kerbl2023,zhang2018,fei2025survey3dgs}. Assim, o LPIPS contribui para avaliar não apenas a semelhança numérica entre imagens, mas também a plausibilidade perceptual da reconstrução.
 
 \subsection{FPS, tempo de quadro e uso de memória}
 
