@@ -152,7 +152,7 @@ A Figura \ref{fig:3dgs_pipeline} é particularmente útil porque explicita a pri
 
 A Figura \ref{fig:3dgs_comparison} reforça empiricamente esse reposicionamento do problema. A comparação evidencia que o método proposto pelos autores busca ocupar um ponto intermediário particularmente valioso para aplicações interativas: mantém uma qualidade visual elevada, ao mesmo tempo em que alcança taxas de renderização muito superiores às de abordagens implícitas de maior custo. Nesse sentido, a imagem não funciona apenas como ilustração de resultado, mas como síntese visual da principal tese do artigo: a representação explícita pode reformular de maneira favorável o equilíbrio entre fidelidade e desempenho.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \fbox{\includegraphics[width=0.97\textwidth]{figuras/kerbl2023_fig1.png}}
     \caption{Comparação visual e de desempenho entre métodos de síntese de novas vistas, evidenciando o compromisso entre tempo de treinamento, taxa de quadros e fidelidade visual. Fonte: \cite{kerbl2023}.}
@@ -264,7 +264,7 @@ O Quadro \ref{qua:comparativo_estudos} sintetiza, de forma objetiva, as principa
 \end{tabularx}
 \end{quadro}
 
-A análise sintetizada no Quadro \ref{qua:comparativo_estudos} evidencia, em primeiro lugar, uma transição metodológica importante no campo das representações neurais de cena. O trabalho de Mildenhall et al. \cite{mildenhall2020} estabelece a base conceitual das representações implícitas, demonstrando elevada capacidade de síntese de novas vistas, porém à custa de alto esforço computacional. Em seguida, Müller et al. \cite{muller2022} mostram que esse custo pode ser reduzido de forma significativa por meio de estratégias mais eficientes de codificação, tornando os campos neurais mais viáveis em contextos experimentais. Ainda assim, tais avanços não eliminam integralmente as restrições impostas por aplicações imersivas em tempo real.
+A análise sintetizada no Quadro \ref{qua:comparativo_estudos} evidencia, em primeiro lugar, uma transição metodológica importante no campo das representações neurais de cena. O trabalho de Mildenhall et al. \cite{mildenhall2020} estabelece a base conceitual das representações implícitas, demonstrando elevada capacidade de síntese de novas vistas, porém à custa de alto esforço computacional. Em seguida, Müller et al. \cite{muller2022} mostram que esse custo pode ser reduzido de forma significativa por meio de estratégias mais eficientes de codificação, tornando os campos neurais mais viáveis em contextos experimentais.
 
 No recorte específico da realidade virtual, Xu et al. \cite{xu2023} representam um marco relevante ao demonstrarem que campos neurais podem ser empregados na captura, modelagem e visualização de espaços caminháveis com elevado grau de fidelidade. Entretanto, o estudo também evidencia que essa viabilidade depende de infraestrutura robusta, especialmente em termos de aquisição de dados e processamento multi-GPU. Em outras palavras, o VR-NeRF confirma o potencial científico da abordagem implícita em VR, mas também explicita os obstáculos práticos associados à sua adoção em cenários mais acessíveis.
 
