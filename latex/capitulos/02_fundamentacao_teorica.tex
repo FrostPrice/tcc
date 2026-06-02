@@ -470,7 +470,7 @@ A Unreal Engine é uma engine amplamente utilizada em aplicações gráficas de 
 
 No contexto específico de 3D Gaussian Splatting, a literatura recente já apresenta esforços de integração dessa representação à Unreal Engine. O UE-GS, por exemplo, investiga a integração de 3D-GS ao ambiente da Unreal, evidenciando a possibilidade de aproximar modelos gaussianos explícitos de um pipeline de renderização usado em aplicações interativas \cite{jin2024}. Essa relação torna a Unreal uma alternativa relevante para estudos que buscam conectar representações derivadas de reconstrução neural a ambientes imersivos.
 
-Por outro lado, a Unreal Engine também apresenta maior complexidade de configuração e integração quando comparada a fluxos mais simples de prototipagem. A combinação entre versões do motor, plugins experimentais, formatos específicos de importação, shaders personalizados e geração de \textit{builds} para dispositivos Quest pode introduzir riscos técnicos. Assim, sua descrição na Fundamentação Teórica deve considerar tanto sua capacidade gráfica quanto a complexidade associada à integração de representações especializadas \cite{jin2024,kerbl2023,fei2025survey3dgs,metaquest3s2024}.
+Por outro lado, a Unreal Engine também apresenta maior complexidade de configuração e integração quando comparada a fluxos mais simples de prototipagem. A combinação entre versões do motor, plugins experimentais, formatos específicos de importação, shaders personalizados e geração de \textit{builds} para dispositivos Quest pode introduzir riscos técnicos \cite{jin2024,kerbl2023,fei2025survey3dgs,metaquest3s2024}.
 
 \subsection{Unity}
 
@@ -478,7 +478,7 @@ A Unity é uma engine frequentemente associada a fluxos de prototipagem rápida,
 
 Para aplicações baseadas em 3D Gaussian Splatting, a Unity pode ser analisada como uma alternativa de integração quando o objetivo é observar o comportamento de uma representação explícita em uma aplicação XR. Entretanto, assim como em outras engines generalistas, a adoção de 3D-GS exige algum nível de adaptação do pipeline convencional, pois a representação por gaussianas não corresponde diretamente aos formatos tradicionais de malhas, materiais e texturas \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs}.
 
-Dessa forma, a caracterização da Unity deve considerar dois aspectos simultâneos: por um lado, sua utilidade em fluxos iterativos e aplicações XR; por outro, a necessidade de adaptação para lidar com representações gaussianas especializadas. Na Fundamentação Teórica, essa análise não define a adoção da Unity, mas apenas descreve suas propriedades como uma das possíveis engines para integração de cenas reconstruídas em VR \cite{xu2023,tu2025,metaquest3s2024}.
+Dessa forma, a caracterização da Unity deve considerar dois aspectos simultâneos: por um lado, sua utilidade em fluxos iterativos e aplicações XR; por outro, a necessidade de adaptação para lidar com representações gaussianas especializadas \cite{xu2023,tu2025,metaquest3s2024}.
 
 \subsection{Godot}
 
