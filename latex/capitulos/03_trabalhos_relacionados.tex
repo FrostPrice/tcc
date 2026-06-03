@@ -97,7 +97,7 @@ Müller et al. \cite{muller2022} propõem uma contribuição decisiva para a via
 
 A Figura \ref{fig:instantngp_encoding} é particularmente relevante porque não se limita a ilustrar o método, mas demonstra empiricamente por que a codificação proposta se tornou tão influente. A comparação mostra que abordagens sem codificação ou com codificações convencionais tendem a produzir resultados mais borrados ou a exigir estruturas muito mais pesadas. Em contrapartida, a tabela hash multirresolução apresentada pelos autores preserva detalhes finos com um custo computacional mais favorável. Assim, a imagem sustenta visualmente o argumento central do artigo: ganhos expressivos de eficiência podem ser obtidos por meio da representação dos dados, e não apenas pelo aumento da capacidade da rede.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \fbox{\includegraphics[width=0.95\textwidth]{figuras/muller_fig2.png}}
     \caption{Comparação entre diferentes estratégias de codificação no Instant-NGP. A figura evidencia o compromisso entre número de parâmetros, tempo de treinamento e qualidade visual, destacando o desempenho da codificação por tabela hash multirresolução. Fonte: \cite{muller2022}.}
@@ -116,7 +116,7 @@ Xu et al. \cite{xu2023} apresenta um dos trabalhos mais próximos do problema in
 
 A Figura \ref{fig:vrnerf_overview} evidencia o caráter sistêmico da proposta. Diferentemente de trabalhos centrados apenas na síntese de novas vistas em visualização convencional, o VR-NeRF articula captura especializada, modelagem adaptada e renderização binocular, deixando claro que o problema em VR não se resume à qualidade da reconstrução. A imagem também é relevante por mostrar que os autores tratam explicitamente componentes auxiliares, como profundidade, normais, níveis de detalhe e grade de ocupação, indicando uma preocupação com eficiência e estabilidade visual além da simples reprodução fotográfica.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \fbox{\includegraphics[width=0.98\textwidth]{figuras/xu_2023_fig1.png}}
     \caption{Visão geral do sistema VR-NeRF, contemplando captura, modelagem da cena e renderização em \textit{eyebuffers} binoculares para realidade virtual. Fonte: \cite{xu2023}.}
@@ -128,7 +128,7 @@ Um dos diferenciais centrais do VR-NeRF é a preocupação com limitações espe
 A Figura \ref{fig:vrnerf_scaling} complementa a discussão ao tornar visível um dos pontos mais importantes do artigo: a dependência de infraestrutura robusta para alcançar desempenho compatível com VR. As curvas mostram que a taxa de quadros cresce com o número de GPUs, enquanto as linhas de referência tornam explícitos os patamares de desempenho almejados. Em termos analíticos, essa imagem é
 fundamental porque reforça uma conclusão importante para a presente pesquisa: o VR-NeRF demonstra a viabilidade técnica da abordagem implícita, mas essa viabilidade ainda se apoia em um orçamento computacional elevado.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \fbox{\includegraphics[width=0.72\textwidth]{figuras/xu_2023_fig3.png}}
     \caption{Escalabilidade do VR-NeRF em função do número de GPUs, com indicação dos patamares de desempenho associados à renderização imersiva em diferentes resoluções binoculares. Fonte: \cite{xu2023}.}
@@ -143,7 +143,7 @@ Kerbl et al. \cite{kerbl2023} introduzem o 3D Gaussian Splatting como uma altern
 
 A Figura \ref{fig:3dgs_pipeline} é particularmente útil porque explicita a principal mudança de paradigma introduzida pelo método. Em vez de amostrar densamente ao longo de cada raio, como em abordagens implícitas, o 3DGS projeta gaussianas explicitamente representadas e as compõe de forma eficiente na imagem final. Além disso, o bloco de controle adaptativo de densidade mostra que a representação não é fixa: ela pode ser refinada ao longo da otimização, com clonagem, divisão ou remoção de gaussianas, conforme a complexidade local da cena. Esse ponto ajuda a compreender por que o método consegue combinar boa qualidade visual com alta taxa de renderização.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \fbox{\includegraphics[width=0.92\textwidth]{figuras/kerbl2023_fig2.png}}
     \caption{Esquema do \textit{pipeline} do 3D Gaussian Splatting, incluindo inicialização a partir de pontos de SfM, projeção, rasterização diferenciável e controle adaptativo de densidade. Fonte: \cite{kerbl2023}.}
@@ -169,7 +169,7 @@ A Figura \ref{fig:uegs_qualitative} é pertinente porque evidencia o tipo de gan
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.70\textwidth]{figuras/jin2025_fig1.png}}
+    \fbox{\includegraphics[width=0.50\textwidth]{figuras/jin2025_fig1.png}}
     \caption{Comparação qualitativa entre 3D-GS, a proposta de UE-GS e a imagem de referência, com ampliações destacando detalhes finos. Fonte: \cite{jin2024}.}
     \label{fig:uegs_qualitative}
 \end{figure}
@@ -184,7 +184,7 @@ Tu et al. \cite{tu2025} apresentam um estudo tratando diretamente da adaptação
 
 A Figura \ref{fig:vrsplat_pipeline} é particularmente relevante porque sintetiza a principal contribuição metodológica do VRSplat. Em vez de propor uma alteração pontual sobre o 3D Gaussian Splatting, o trabalho organiza um \textit{pipeline} integrado para realidade virtual, partindo de um modelo base eficiente, seguido de uma etapa de \textit{fine-tuning} com rasterização diferenciável livre de artefatos, até chegar a uma etapa de renderização com rasterização foveada. A figura evidencia, portanto, que a proposta dos autores não se limita à melhoria de qualidade visual isolada, mas busca conciliar robustez perceptual e desempenho compatível com aplicações imersivas.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
     \fbox{\includegraphics[width=0.80\textwidth]{figuras/tu2025_fig1.png}}
     \caption{Visão geral do pipeline do VRSplat para renderização de alta fidelidade
