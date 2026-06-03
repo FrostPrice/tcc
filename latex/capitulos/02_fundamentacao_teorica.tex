@@ -1,6 +1,6 @@
 \chapter[Fundamentação Teórica]{Fundamentação Teórica}
 
-Este capítulo apresenta os fundamentos conceituais e técnicos que sustentam a proposta deste trabalho. Inicialmente, são discutidas a síntese de novas vistas, a reconstrução multivista a partir de imagens RGB e a distinção entre representações implícitas e explícitas. Em seguida, são apresentados os dois métodos centrais do pipeline, \textit{Neural Radiance Fields} (NeRF) e \textit{3D Gaussian Splatting} (3D-GS), bem como as restrições de Realidade Virtual autônoma, as métricas de avaliação, a plataforma Meta Quest 3S e as \textit{engines} consideradas para integração.
+Inicialmente, são discutidas a síntese de novas vistas, a reconstrução multivista a partir de imagens RGB e a distinção entre representações implícitas e explícitas. Em seguida, são apresentados os dois métodos centrais do pipeline, \textit{Neural Radiance Fields} (NeRF) e \textit{3D Gaussian Splatting} (3D-GS), bem como as restrições de Realidade Virtual autônoma, as métricas de avaliação, a plataforma Meta Quest 3S e as \textit{engines} consideradas para integração.
 
 \section{Síntese de Novas Vistas e Representação de Cenas}
 
@@ -144,7 +144,9 @@ Essa limitação justifica a análise de alternativas explícitas, como o \texti
 
 Em contraste com o NeRF, o \textit{3D Gaussian Splatting} (3D-GS) representa a cena por primitivas explícitas diretamente manipuláveis no espaço tridimensional. Sua relevância está em combinar qualidade visual com renderização eficiente, característica central para aplicações interativas e para o escopo deste trabalho \cite{mildenhall2020,muller2022,kerbl2023,fei2025survey3dgs,chen2024survey3dgs}.
 
-Sua emergência acompanha uma trajetória de aceleração da síntese de vistas, da qual também fazem parte Instant-NGP, PlenOctrees e SNeRG \cite{mildenhall2020,muller2022,yu2021plenoctrees,hedman2021snerg}. O diferencial do 3D-GS está em deslocar a unidade elementar da cena para gaussianas explícitas, mantendo otimização diferenciável e renderização por rasterização \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs}.
+Sua emergência acompanha uma trajetória de aceleração da síntese de vistas, da qual também fazem parte Instant-NGP, PlenOctrees e SNeRG \cite{mildenhall2020,muller2022,yu2021plenoctrees,hedman2021snerg}. O diferencial do 3D-GS está em deslocar a unidade elementar da cena para gaussianas explícitas, mantendo otimização diferenciável e renderização por rasterização \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs}. 
+
+A Figura \ref{fig:3dgs_qualidade_velocidade} sintetiza essa comparação ao relacionar qualidade visual, tempo de treinamento e taxa de renderização, destacando o 3D-GS como uma alternativa situada no compromisso entre alta fidelidade e execução interativa \cite{kerbl2023}.
 
 \begin{figure}[H]
     \centering
@@ -188,7 +190,9 @@ Conceitualmente, o 3D-GS pode ser visto como uma nuvem de pontos enriquecida, na
 
 A formação de imagem no 3D-GS ocorre por projeção das gaussianas 3D no plano da imagem e composição por transparência. Esse princípio dialoga com trabalhos clássicos de \textit{splatting} e filtragem elíptica \cite{zwicker2001}, mas é incorporado a um pipeline diferenciável otimizado para síntese de novas vistas a partir de imagens calibradas \cite{kerbl2023,fei2025survey3dgs}.
 
-A projeção transforma cada gaussiana em uma contribuição elíptica no plano da imagem. Em termos gerais, a covariância tridimensional é levada ao espaço da câmera e aproximada no plano de projeção, de modo que cada primitiva contribua apenas para os pixels cobertos \cite{kerbl2023,chen2024survey3dgs}. Com isso, a marcha de raios do NeRF é substituída por uma estratégia de \textit{forward mapping}.
+A projeção transforma cada gaussiana em uma contribuição elíptica no plano da imagem. Em termos gerais, a covariância tridimensional é levada ao espaço da câmera e aproximada no plano de projeção, de modo que cada primitiva contribua apenas para os pixels cobertos \cite{kerbl2023,chen2024survey3dgs}. 
+
+Enquanto o NeRF calcula cada pixel por amostragem ao longo de raios lançados pela câmera, o 3D-GS projeta diretamente suas gaussianas 3D no plano da imagem, rasterizando suas contribuições elípticas sobre os pixels cobertos, uma estratégia chamada de \textit{forward mapping} \cite{mildenhall2020,kerbl2023,chen2024survey3dgs}.
 
 Após a projeção para o espaço 2D, as gaussianas visíveis são ordenadas por profundidade e compostas no pixel por um processo análogo ao \textit{alpha blending}. Em formulação simplificada, a cor final pode ser descrita por:
 
@@ -221,6 +225,8 @@ No trabalho original, a otimização combina uma perda fotométrica em norma $L_
 em que $\lambda$ controla o balanço entre o erro fotométrico direto e o termo estrutural. A otimização permanece ancorada à consistência entre imagens sintetizadas e observadas, operando sobre uma estrutura explícita ajustável \cite{kerbl2023,chen2024survey3dgs}.
 
 O controle adaptativo de densidade permite alocar mais primitivas em regiões com detalhes, bordas ou variações de aparência, enquanto áreas homogêneas podem ser representadas com menos gaussianas \cite{kerbl2023,fei2025survey3dgs}. A poda remove elementos pouco relevantes, excessivamente transparentes ou redundantes.
+
+A Figura \ref{fig:3dgs_pipeline_kerbl} ilustra esse fluxo ao mostrar como o 3D-GS parte de uma nuvem de pontos estimada por SfM, converte esses pontos em gaussianas otimizáveis e alterna etapas de projeção, rasterização diferenciável e controle adaptativo de densidade para ajustar a representação à cena observada \cite{kerbl2023}.
 
 \begin{figure}[H]
     \centering
@@ -283,7 +289,9 @@ Dessa forma, o 3D-GS fornece a base teórica para transformar uma cena reconstru
 
 Embora frequentemente apresentados como abordagens concorrentes, NeRF e 3D-GS podem ser compreendidos como representações complementares. O NeRF se destaca por sua natureza implícita e contínua, enquanto o 3D-GS se destaca por primitivas gaussianas rasterizáveis e desempenho de renderização \cite{sitzmann2019srn,mildenhall2020,muller2022,kerbl2023,fei2025survey3dgs}.
 
-Essa complementaridade sustenta a lógica do trabalho: uma representação implícita serve como referência de reconstrução, enquanto uma explícita favorece a execução interativa em VR. A Figura \ref{fig:nerf_vs_3dgs} sintetiza a passagem de um modelo baseado em amostragem volumétrica para uma estrutura projetável e rasterizável \cite{muller2022,yu2021plenoctrees,hedman2021snerg,kerbl2023,xu2023,tu2025}.
+Essa complementaridade sustenta a lógica do trabalho: uma representação implícita serve como referência de reconstrução, enquanto uma explícita favorece a execução interativa em VR.
+
+A Figura \ref{fig:nerf_vs_3dgs} sintetiza a passagem de um modelo baseado em amostragem volumétrica para uma estrutura projetável e rasterizável \cite{muller2022,yu2021plenoctrees,hedman2021snerg,kerbl2023,xu2023,tu2025}.
 
 \begin{figure}[H]
     \centering
