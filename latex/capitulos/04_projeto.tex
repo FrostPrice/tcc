@@ -16,7 +16,7 @@ A etapa baseada em NeRF tem a função de produzir uma referência de qualidade 
 
 Após a conversão, o modelo 3D-GS será integrado a uma aplicação em Unreal Engine com suporte a Realidade Virtual. Essa aplicação deverá permitir a visualização da cena reconstruída no headset, considerando renderização estereoscópica, estabilidade da taxa de quadros, tempo de quadro e uso de memória. O protótipo será considerado bem-sucedido quando permitir carregar a cena, visualizá-la em ambiente imersivo e coletar métricas suficientes para comparar qualidade visual, desempenho e limitações técnicas do pipeline.
 
-Os principais artefatos esperados são o conjunto de imagens organizado por cena, os modelos NeRF treinados, os modelos 3D-GS otimizados, o protótipo VR, os registros de configuração e os resultados experimentais. Em conjunto, esses elementos permitem analisar não apenas a qualidade da reconstrução, mas também a viabilidade de levar a cena reconstruída para um ambiente imersivo executado sob restrições práticas de hardware.
+Os principais artefatos esperados são o conjunto de imagens organizado por cena, os modelos NeRF treinados, os modelos 3D-GS otimizados, o protótipo VR, os registros de configuração e os resultados experimentais.
 
 \subsection{Etapas do pipeline proposto}
 
@@ -82,43 +82,6 @@ A solução proposta é organizada em seis etapas sequenciais. Cada etapa produz
 \end{figure}
 
 A Etapa 1 delimita a cena e produz as imagens RGB usadas como entrada. A Etapa 2 organiza esses dados, estima ou incorpora informações de pose e prepara a estrutura necessária para treinamento. A Etapa 3 corresponde ao treinamento do modelo NeRF, funcionando como referência de fidelidade visual. A Etapa 4 converte ou reconstrói a cena em 3D-GS, ajustando a quantidade de gaussianas e a complexidade do modelo. A Etapa 5 leva a representação resultante para a Unreal Engine, e a Etapa 6 valida a execução em Realidade Virtual por meio de métricas de qualidade, desempenho e estabilidade.
-
-\subsection{Requisitos do projeto}
-
-Os requisitos do projeto foram definidos a partir dos objetivos do trabalho e das restrições impostas pela execução em Realidade Virtual autônoma. Eles são organizados em requisitos funcionais, relacionados ao comportamento esperado da solução, e requisitos não funcionais, associados a desempenho, qualidade visual, viabilidade técnica e limitações de escopo. O Quadro \ref{qua:requisitos_projeto} sistematiza esses requisitos, permitindo visualizar quais funcionalidades mínimas o pipeline deve oferecer e quais condições técnicas precisam ser observadas para que a solução seja considerada viável.
-
-\begin{quadro}[H]
-\centering
-\footnotesize
-\caption{Requisitos do projeto proposto.}
-\label{qua:requisitos_projeto}
-\renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{|p{2.2cm}|p{4.1cm}|X|}
-\hline
-\textbf{Tipo} & \textbf{Requisito} & \textbf{Descrição} \\ \hline
-
-Funcional & Captura de imagens RGB & A solução deve utilizar imagens RGB de cenas reais como entrada para o processo de reconstrução. \\ \hline
-
-Funcional & Treinamento do modelo NeRF & O pipeline deve permitir o treinamento de um modelo NeRF para gerar uma linha de base de qualidade visual. \\ \hline
-
-Funcional & Conversão e otimização para 3D-GS & A representação reconstruída deve ser convertida ou reprocessada para uma estrutura baseada em 3D Gaussian Splatting. \\ \hline
-
-Funcional & Integração na Unreal Engine & O modelo 3D-GS deve ser importado ou adaptado para execução em um motor gráfico com suporte a VR, priorizando a Unreal Engine. \\ \hline
-
-Funcional & Execução e avaliação em Realidade Virtual & A cena reconstruída deve ser visualizada e avaliada em um ambiente de Realidade Virtual compatível com o Meta Quest 3. \\ \hline
-
-Não funcional & Desempenho & A execução deve buscar taxa de quadros estável, considerando os limites de conforto e interatividade em VR. \\ \hline
-
-Não funcional & Qualidade visual & A solução deve preservar, tanto quanto possível, a fidelidade visual da cena reconstruída, avaliada por métricas objetivas e inspeção visual. \\ \hline
-
-Não funcional & Viabilidade técnica & O projeto deve considerar limitações de hardware, tempo de treinamento, compatibilidade de ferramentas e risco de integração. \\ \hline
-
-Não funcional & Escopo controlado & O projeto será limitado a cenas estáticas, sem reconstrução dinâmica 4D, relighting avançado, áudio espacial ou interação física complexa. \\ \hline
-
-\end{tabularx}
-
-\legend{Fonte: Elaborado pelo autor.}
-\end{quadro}
 
 \subsection{Arquitetura da solução}
 
@@ -251,11 +214,11 @@ Essa etapa representa o principal ponto de decisão técnica do projeto. Caso o 
 
 Com base na análise conceitual apresentada na Fundamentação Teórica, este trabalho adota a Unreal Engine como motor gráfico principal para a etapa de integração em Realidade Virtual. A escolha se justifica pela existência de iniciativas recentes de integração entre 3D Gaussian Splatting e Unreal Engine, pelo suporte consolidado a aplicações XR e pela maior aderência ao objetivo de construir uma experiência imersiva com controle do pipeline gráfico \cite{jin2024,kerbl2023,tu2025,metaquest3s2024}.
 
-A adoção da Unreal Engine, entretanto, é tratada como uma decisão tecnicamente ambiciosa. O projeto reconhece riscos relacionados à compatibilidade de versões, adaptação de plugins, importação de gaussianas e geração de \textit{build} para o Meta Quest 3S. Por esse motivo, a metodologia prevê estratégias de contingência, como simplificação da cena, redução do número de gaussianas, execução assistida por desktop via Quest Link ou avaliação parcial em visualizador dedicado, caso a execução nativa apresente limitações relevantes \cite{xu2023,fei2025survey3dgs,fan2024lightgaussian,metaquest3s2024}.
+A adoção da Unreal Engine, entretanto, é tratada como uma decisão tecnicamente ambiciosa. O projeto reconhece riscos relacionados à compatibilidade de versões, adaptação de plugins, importação de gaussianas e geração de \textit{build} para o Meta Quest 3S. Por esse motivo, a metodologia prevê estratégias de contingência, como execução assistida por desktop via Quest Link ou avaliação parcial em visualizador dedicado, caso a execução nativa apresente limitações relevantes \cite{xu2023,fei2025survey3dgs,fan2024lightgaussian,metaquest3s2024}.
 
 A quinta etapa consiste na integração da representação 3D-GS em um ambiente de Realidade Virtual. A integração poderá ocorrer por meio de plugin específico de 3D Gaussian Splatting, formato intermediário compatível ou componente customizado de visualização. A aplicação VR deverá conter uma cena mínima funcional, contemplando câmera estereoscópica, configuração OpenXR, locomoção simples ou posicionamento fixo controlado e carregamento do modelo reconstruído.
 
-O objetivo não é desenvolver uma aplicação comercial completa, mas criar um protótipo experimental capaz de validar a visualização da cena reconstruída em contexto imersivo. A integração será considerada bem-sucedida caso o modelo possa ser carregado na aplicação com estabilidade suficiente para permitir a etapa seguinte de execução e avaliação.
+O objetivo é desenvolver um protótipo experimental capaz de validar a visualização da cena reconstruída em contexto imersivo. A integração será considerada bem-sucedida caso o modelo possa ser carregado na aplicação com estabilidade suficiente para permitir a etapa seguinte de execução e avaliação.
 
 \subsection{Execução e avaliação em Realidade Virtual}
 
@@ -454,7 +417,7 @@ Registro de limitações & Documentação dos problemas encontrados, decisões t
 
 \subsection{Análise de riscos}
 
-A execução do projeto envolve riscos técnicos relacionados principalmente à disponibilidade de hardware, ao desempenho da renderização em VR e à integração de ferramentas experimentais. Como o trabalho depende de componentes recentes, especialmente no contexto de 3D Gaussian Splatting e sua integração em motores gráficos, é necessário prever estratégias de contingência para preservar a viabilidade da pesquisa. O Quadro \ref{qua:riscos_projeto} apresenta os principais riscos identificados, classificando-os quanto à probabilidade, ao impacto e às estratégias previstas para mitigação.
+A execução do projeto envolve riscos técnicos relacionados principalmente ao custo e à disponibilidade de recursos computacionais em nuvem, ao desempenho da renderização em VR e à integração de ferramentas experimentais. Como o trabalho depende de componentes recentes, especialmente no contexto de 3D Gaussian Splatting e sua integração em motores gráficos, é necessário prever estratégias de contingência para preservar a viabilidade da pesquisa. O Quadro \ref{qua:riscos_projeto} apresenta os principais riscos identificados, classificando-os quanto à probabilidade, ao impacto e às estratégias previstas para mitigação.
 
 \begin{quadro}[H]
 \centering
@@ -466,7 +429,7 @@ A execução do projeto envolve riscos técnicos relacionados principalmente à 
 \hline
 \textbf{Risco} & \textbf{Probabilidade} & \textbf{Impacto} & \textbf{Estratégia de contingência} \\ \hline
 
-Hardware insuficiente para treinamento & Média & Alto & Reduzir a resolução das imagens, utilizar cenas menos complexas, empregar datasets públicos ou recorrer a ambiente com GPU em nuvem. \\ \hline
+Custo de GPU em nuvem & Média & Alto & Controlar o tempo de uso da GPU em nuvem, limitar execuções exploratórias e reduzir a complexidade das cenas quando necessário. \\ \hline
 
 Baixo desempenho no Meta Quest 3 & Média & Alto & Reduzir o número de gaussianas, aplicar poda e simplificação, limitar a complexidade da cena ou utilizar execução em desktop com transmissão para o headset. \\ \hline
 
