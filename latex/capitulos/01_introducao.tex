@@ -10,31 +10,29 @@ Diante desse contexto, este trabalho propõe investigar a viabilidade de um \tex
 
 O problema de pesquisa é relevante porque, embora técnicas neurais de reconstrução tenham avançado em qualidade visual, sua adoção em dispositivos VR \textit{standalone} ainda enfrenta barreiras práticas relacionadas a desempenho, uso de memória, estabilidade e integração com motores gráficos. Assim, este trabalho situa-se na interseção entre reconstrução neural de cenas, otimização para renderização interativa e execução em hardware imersivo com recursos limitados, buscando estruturar uma análise aplicada sobre o compromisso entre fidelidade visual e desempenho computacional em VR móvel.
 
-Para manter o escopo controlado, este trabalho restringe-se à reconstrução de cenas estáticas a partir de imagens RGB, não contemplando cenários dinâmicos, reconstrução temporal 4D, \textit{relighting} avançado, áudio espacial ou interação física complexa com os elementos da cena. O estudo concentra-se na análise da viabilidade técnica do \textit{pipeline} proposto, e não na construção de uma aplicação comercial completa.
-
-A seguir, apresentam-se os objetivos do trabalho, a metodologia proposta e a organização dos capítulos.
+Para manter o escopo controlado, este trabalho restringe-se à reconstrução de cenas estáticas a partir de imagens RGB, não contemplando cenários dinâmicos, reconstrução temporal 4D, \textit{relighting} avançado, áudio espacial ou interação física complexa com os elementos da cena. O estudo concentra-se na análise da viabilidade técnica do \textit{pipeline} proposto, e não na construção de uma aplicação completa.
 
 \section{Objetivos}
 
-Esta seção apresenta o objetivo geral e os objetivos específicos que orientam o desenvolvimento deste trabalho.
+Esta seção apresenta o objetivo geral e os objetivos específicos que orientam a pesquisa.
 
 \subsection{Objetivo Geral}
 
-Propor um \textit{pipeline} de reconstrução de cenários 3D fotorrealistas para Realidade Virtual no Meta Quest 3S, com base no uso de NeRF como linha de base visual e na conversão ou otimização para uma representação por \textit{3D Gaussian Splatting}, visando à análise de viabilidade da renderização em tempo real com estabilidade de processamento e qualidade visual adequada.
+Avaliar a viabilidade técnica de articular NeRF e \textit{3D Gaussian Splatting} como representações complementares em um \textit{pipeline} de reconstrução e visualização de cenários 3D fotorrealistas para Realidade Virtual autônoma no Meta Quest 3S.
 
 \subsection{Objetivos Específicos}
 
 \begin{itemize}
-    \item Disponibilizar um conjunto de cenas estáticas capturadas por imagens RGB com qualidade adequada à reconstrução multivista;
-    \item Obter uma referência visual baseada em NeRF para comparação com representações posteriores;
-    \item Produzir uma representação 3D-GS otimizada para equilibrar fidelidade visual, tamanho do modelo e custo de renderização;
-    \item Viabilizar a visualização do modelo reconstruído em ambiente de Realidade Virtual compatível com a Unreal Engine e o Meta Quest 3S;
-    \item Mensurar a qualidade visual e o desempenho da solução por meio de métricas objetivas e observações de estabilidade.
+    \item Analisar a adequação de cenas estáticas capturadas por imagens RGB para reconstrução multivista e posterior visualização em Realidade Virtual;
+    \item Estabelecer uma referência de fidelidade visual baseada em NeRF para orientar a comparação e a transição para representações baseadas em 3D-GS;
+    \item Avaliar o equilíbrio entre fidelidade visual, tamanho do modelo e custo de renderização em representações baseadas em 3D-GS;
+    \item Verificar a viabilidade de integração e visualização de modelos 3D-GS em um ambiente de Realidade Virtual compatível com a Unreal Engine e o Meta Quest 3S;
+    \item Identificar limitações técnicas, ganhos e perdas associados ao uso de 3D-GS em VR autônoma, a partir de métricas de qualidade visual, desempenho e estabilidade.
 \end{itemize}
 
 \section{Metodologia}
 
-Esta pesquisa caracteriza-se como aplicada e exploratória, com abordagem experimental e suporte bibliográfico. O caráter aplicado decorre do objetivo de estruturar um \textit{pipeline} voltado à reconstrução e visualização imersiva de cenas 3D. O caráter exploratório está associado à investigação da viabilidade técnica de articular NeRF, \textit{3D Gaussian Splatting} e execução em VR autônoma. A abordagem experimental se evidencia na previsão de treinamento, conversão, integração e avaliação da solução, enquanto o suporte bibliográfico fundamenta os conceitos de reconstrução neural, representações explícitas, Realidade Virtual e métricas de qualidade e desempenho.
+Esta pesquisa caracteriza-se como aplicada e exploratória, com abordagem experimental e suporte bibliográfico. O caráter aplicado decorre da avaliação de uma solução voltada à reconstrução e visualização imersiva de cenas 3D. O caráter exploratório está associado à investigação da viabilidade técnica de articular NeRF, \textit{3D Gaussian Splatting} e execução em VR autônoma. A abordagem experimental se evidencia na previsão de treinamento, conversão, integração e avaliação da solução, enquanto o suporte bibliográfico fundamenta os conceitos de reconstrução neural, representações explícitas, Realidade Virtual e métricas de qualidade e desempenho.
 
 O desenvolvimento proposto organiza-se em etapas sequenciais. Inicialmente, prevê-se a captura de imagens RGB de cenas reais estáticas, com cobertura visual e sobreposição suficientes para reconstrução multivista. Em seguida, os dados são pré-processados e organizados, incluindo a estimativa ou incorporação de poses de câmera quando necessário. A partir desse conjunto, será treinado um modelo NeRF, utilizado como referência de fidelidade visual para a síntese de novas vistas.
 

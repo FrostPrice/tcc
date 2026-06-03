@@ -1,26 +1,26 @@
 \chapter[Desenvolvimento]{Desenvolvimento}
 
-Este capítulo consolida o projeto da solução proposta, descrevendo o \textit{pipeline} de reconstrução e visualização imersiva, os requisitos definidos, a arquitetura planejada, as etapas de implementação, o protocolo de avaliação experimental e o planejamento de continuidade para o TCC III. A organização do capítulo busca transformar os fundamentos discutidos anteriormente em um plano técnico executável, mantendo o foco na análise de viabilidade da integração entre NeRF, \textit{3D Gaussian Splatting} e Realidade Virtual autônoma.
+Este capítulo consolida o projeto da solução proposta, descrevendo o \textit{pipeline} de reconstrução e visualização imersiva, a arquitetura planejada, as etapas de implementação, o protocolo de avaliação experimental e o planejamento de continuidade para o TCC III. A organização do capítulo transforma os fundamentos discutidos anteriormente em um plano técnico executável para analisar a integração entre NeRF, \textit{3D Gaussian Splatting} e Realidade Virtual autônoma.
 
 \section{Projeto}
 
-Esta seção apresenta a definição do projeto, incluindo a visão geral da solução, as etapas do \textit{pipeline}, as decisões técnicas assumidas, os riscos previstos e os critérios utilizados para avaliar qualidade visual e desempenho. O objetivo é delimitar como os dados capturados serão transformados em uma representação 3D-GS integrada a um ambiente de Realidade Virtual, preservando a coerência entre escopo, arquitetura e avaliação experimental.
+Esta seção apresenta a visão geral da solução, as etapas do \textit{pipeline}, as decisões técnicas, os riscos previstos e os critérios de avaliação. O objetivo é delimitar como os dados capturados serão transformados em uma representação 3D-GS integrada a um ambiente de Realidade Virtual.
 
 \subsection{Visão geral da solução proposta}
 
-O projeto parte da premissa de que o NeRF pode ser utilizado como uma representação inicial de alta fidelidade para reconstrução de cenas estáticas, enquanto o 3D Gaussian Splatting pode atuar como uma representação explícita mais adequada à renderização interativa. Dessa forma, a proposta não busca apenas gerar uma reconstrução visualmente plausível, mas investigar a viabilidade prática de transformar essa reconstrução em uma representação compatível com os requisitos de desempenho impostos pela Realidade Virtual no Meta Quest 3S.
+O projeto utiliza o NeRF como referência inicial para reconstrução de cenas estáticas e o 3D Gaussian Splatting como representação explícita para visualização interativa. A proposta, portanto, investiga a viabilidade de transformar imagens RGB de uma cena real em uma representação compatível com os requisitos de Realidade Virtual no Meta Quest 3S.
 
-A entrada da solução é composta por imagens RGB capturadas de uma cena real estática, com sobreposição suficiente entre diferentes pontos de vista. Esse conjunto de imagens permite estimar poses de câmera, organizar os dados de treinamento e produzir uma reconstrução inicial capaz de representar a geometria e a aparência da cena. A qualidade dessa etapa influencia diretamente as etapas seguintes, pois imagens com baixa cobertura, variação brusca de iluminação ou presença de movimento podem introduzir inconsistências tanto no modelo NeRF quanto na representação 3D-GS.
+A entrada da solução é composta por imagens RGB de uma cena real estática, com sobreposição suficiente entre pontos de vista. Esse conjunto permite estimar poses de câmera, organizar os dados de treinamento e produzir uma reconstrução inicial. Imagens com baixa cobertura, variação brusca de iluminação ou movimento podem introduzir inconsistências no NeRF e no 3D-GS.
 
-A etapa baseada em NeRF tem a função de produzir uma referência de qualidade visual para a síntese de novas vistas. Mesmo que a renderização volumétrica não seja o formato final de execução em VR, ela permite avaliar se a cena foi reconstruída com fidelidade suficiente antes da conversão. Em seguida, a representação obtida é convertida ou reconstruída em uma estrutura baseada em 3D Gaussian Splatting. Essa transformação desloca o problema de uma consulta volumétrica custosa para uma representação explícita formada por gaussianas 3D, mais aderente a estratégias de rasterização e renderização em tempo real.
+A etapa baseada em NeRF produz uma referência de qualidade visual para a síntese de novas vistas. Em seguida, a cena é convertida ou reconstruída em uma estrutura 3D-GS, mais aderente a estratégias de rasterização e renderização em tempo real.
 
-Após a conversão, o modelo 3D-GS será integrado a uma aplicação em Unreal Engine com suporte a Realidade Virtual. Essa aplicação deverá permitir a visualização da cena reconstruída no headset, considerando renderização estereoscópica, estabilidade da taxa de quadros, tempo de quadro e uso de memória. O protótipo será considerado bem-sucedido quando permitir carregar a cena, visualizá-la em ambiente imersivo e coletar métricas suficientes para comparar qualidade visual, desempenho e limitações técnicas do pipeline.
+Após a conversão, o modelo 3D-GS será integrado a uma aplicação em Unreal Engine com suporte a Realidade Virtual. O protótipo será considerado bem-sucedido quando permitir carregar a cena, visualizá-la em ambiente imersivo e coletar métricas de qualidade visual, desempenho e limitações técnicas.
 
 Os principais artefatos esperados são o conjunto de imagens organizado por cena, os modelos NeRF treinados, os modelos 3D-GS otimizados, o protótipo VR, os registros de configuração e os resultados experimentais.
 
 \subsection{Etapas do pipeline proposto}
 
-A solução proposta é organizada em seis etapas sequenciais. Cada etapa produz artefatos que servem de entrada para a etapa seguinte, formando um fluxo progressivo desde a captura das imagens até a análise experimental no ambiente de Realidade Virtual. A Figura \ref{fig:pipeline_geral_projeto} apresenta essa organização, destacando a ordem das etapas e a transformação gradual dos dados capturados em uma experiência imersiva avaliável.
+A solução proposta é organizada em seis etapas sequenciais, desde a captura das imagens até a análise experimental em Realidade Virtual. A Figura \ref{fig:pipeline_geral_projeto} apresenta a ordem das etapas e a transformação gradual dos dados capturados em uma experiência imersiva avaliável.
 
 \begin{figure}[H]
 \centering
@@ -81,11 +81,11 @@ A solução proposta é organizada em seis etapas sequenciais. Cada etapa produz
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
-A Etapa 1 delimita a cena e produz as imagens RGB usadas como entrada. A Etapa 2 organiza esses dados, estima ou incorpora informações de pose e prepara a estrutura necessária para treinamento. A Etapa 3 corresponde ao treinamento do modelo NeRF, funcionando como referência de fidelidade visual. A Etapa 4 converte ou reconstrói a cena em 3D-GS, ajustando a quantidade de gaussianas e a complexidade do modelo. A Etapa 5 leva a representação resultante para a Unreal Engine, e a Etapa 6 valida a execução em Realidade Virtual por meio de métricas de qualidade, desempenho e estabilidade.
+A Etapa 1 delimita a cena e produz as imagens RGB. A Etapa 2 organiza os dados e estima ou incorpora poses de câmera. A Etapa 3 treina o modelo NeRF. A Etapa 4 converte ou reconstrói a cena em 3D-GS. A Etapa 5 integra a representação à Unreal Engine, e a Etapa 6 avalia a execução em Realidade Virtual.
 
 \subsection{Arquitetura da solução}
 
-A arquitetura da solução foi definida de modo a separar as responsabilidades de cada etapa do projeto. Essa separação facilita a análise dos resultados, pois permite identificar em qual estágio ocorrem perdas de qualidade, gargalos de desempenho ou limitações de integração. A Figura \ref{fig:arquitetura_pipeline_projeto} organiza o pipeline em camadas, evidenciando como os dados capturados são progressivamente transformados em uma representação reconstruída, integrada a um ambiente VR e avaliada por métricas visuais e computacionais.
+A arquitetura da solução separa as responsabilidades do projeto para facilitar a identificação de perdas de qualidade, gargalos de desempenho e limitações de integração. A Figura \ref{fig:arquitetura_pipeline_projeto} organiza o pipeline em camadas, dos dados capturados à avaliação visual e computacional.
 
 \begin{figure}[H]
 \centering
@@ -146,7 +146,7 @@ A arquitetura da solução foi definida de modo a separar as responsabilidades d
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
-A camada de dados concentra os insumos necessários para reconstrução, incluindo imagens, poses e metadados. A camada de reconstrução transforma esses dados em uma representação neural inicial. A camada de representação reorganiza a cena em gaussianas 3D, buscando um equilíbrio entre fidelidade visual e custo computacional. A camada de integração adapta o modelo ao ambiente de execução em VR, enquanto a camada de avaliação registra evidências quantitativas e qualitativas sobre o comportamento da solução.
+A camada de dados concentra imagens, poses e metadados. A camada de reconstrução gera a representação neural inicial; a de representação prepara o modelo 3D-GS; a de integração adapta o modelo ao ambiente VR; e a de avaliação registra evidências quantitativas e qualitativas.
 
 \subsubsection{Captura de imagens RGB}
 
@@ -186,7 +186,7 @@ A Figura \ref{fig:preprocessamento_colmap} exemplifica a etapa de pré-processam
 
 \subsubsection{Treinamento do modelo NeRF}
 
-A terceira etapa consiste no treinamento de um modelo NeRF para cada cena selecionada. O objetivo desse treinamento é estabelecer uma linha de base de qualidade visual, permitindo avaliar a capacidade do pipeline de representar a geometria e a aparência da cena antes da conversão para uma representação explícita.
+A terceira etapa consiste no treinamento de um modelo NeRF para cada cena selecionada, estabelecendo uma linha de base de qualidade visual antes da conversão para uma representação explícita.
 
 O treinamento poderá ser realizado com ferramentas como Nerfstudio ou Instant-NGP, de acordo com a disponibilidade do ambiente computacional e a compatibilidade com os dados capturados. Durante essa etapa, serão registrados os principais parâmetros utilizados, incluindo quantidade de imagens, resolução de treinamento, tempo de treinamento, configuração de hardware, número de iterações e qualidade visual obtida.
 
@@ -200,35 +200,35 @@ A Figura \ref{fig:viewer_nerfstudio} apresenta um exemplo de ambiente de visuali
     \legend{Fonte: Adaptado do repositório oficial do Nerfstudio \cite{nerfstudioGithub}.}
 \end{figure}
 
-O resultado esperado dessa etapa é um modelo capaz de sintetizar novas vistas da cena com boa fidelidade visual. Mesmo que a renderização volumétrica do NeRF não seja o alvo final da execução em VR, ela serve como referência para comparação com o modelo convertido para 3D-GS.
+O resultado esperado é um modelo capaz de sintetizar novas vistas com fidelidade suficiente para servir de referência ao modelo 3D-GS.
 
 \subsubsection{Conversão e otimização para 3D-GS}
 
-A quarta etapa corresponde à conversão ou reconstrução da cena em uma representação baseada em 3D Gaussian Splatting. Nessa etapa, busca-se obter um conjunto de gaussianas 3D que represente a geometria e a aparência da cena de forma explícita, permitindo renderização mais eficiente do que a consulta volumétrica tradicional do NeRF.
+A quarta etapa corresponde à conversão ou reconstrução da cena em 3D Gaussian Splatting, buscando um conjunto de gaussianas 3D que represente geometria e aparência de forma explícita.
 
-Cada cena convertida deverá ser analisada quanto ao número de gaussianas, tamanho do arquivo gerado, qualidade visual percebida e viabilidade de renderização em tempo real. Quando necessário, serão aplicadas estratégias de otimização, como redução do número de gaussianas, poda de elementos pouco relevantes, ajuste de níveis de detalhe e simplificação da cena. O objetivo não é apenas obter a melhor imagem possível, mas encontrar uma configuração que preserve qualidade visual aceitável dentro das restrições de desempenho do dispositivo-alvo.
+Cada cena convertida será analisada quanto ao número de gaussianas, tamanho do arquivo, qualidade visual percebida e viabilidade de renderização em tempo real. Quando necessário, serão aplicadas otimizações como redução de gaussianas, poda, ajuste de níveis de detalhe e simplificação da cena.
 
-Essa etapa representa o principal ponto de decisão técnica do projeto. Caso o modelo 3D-GS resultante seja visualmente adequado, mas pesado demais para execução no Meta Quest 3, será necessário ajustar a complexidade da cena ou utilizar estratégias alternativas de execução, como testes em desktop com transmissão para o headset.
+Caso o modelo 3D-GS seja visualmente adequado, mas pesado demais para execução no Meta Quest 3S, será necessário ajustar a complexidade da cena ou utilizar estratégias alternativas, como testes em desktop com transmissão para o headset.
 
 \subsection{Integração na Unreal Engine}
 
 Com base na análise conceitual apresentada na Fundamentação Teórica, este trabalho adota a Unreal Engine como motor gráfico principal para a etapa de integração em Realidade Virtual. A escolha se justifica pela existência de iniciativas recentes de integração entre 3D Gaussian Splatting e Unreal Engine, pelo suporte consolidado a aplicações XR e pela maior aderência ao objetivo de construir uma experiência imersiva com controle do pipeline gráfico \cite{jin2024,kerbl2023,tu2025,metaquest3s2024}.
 
-A adoção da Unreal Engine, entretanto, é tratada como uma decisão tecnicamente ambiciosa. O projeto reconhece riscos relacionados à compatibilidade de versões, adaptação de plugins, importação de gaussianas e geração de \textit{build} para o Meta Quest 3S. Por esse motivo, a metodologia prevê estratégias de contingência, como execução assistida por desktop via Quest Link ou avaliação parcial em visualizador dedicado, caso a execução nativa apresente limitações relevantes \cite{xu2023,fei2025survey3dgs,fan2024lightgaussian,metaquest3s2024}.
+A adoção da Unreal Engine é tratada como decisão tecnicamente ambiciosa, devido a riscos de compatibilidade de versões, adaptação de plugins, importação de gaussianas e geração de \textit{build} para o Meta Quest 3S. Por isso, a metodologia prevê contingências, como execução assistida por desktop via Quest Link ou avaliação parcial em visualizador dedicado \cite{xu2023,fei2025survey3dgs,fan2024lightgaussian,metaquest3s2024}.
 
-A quinta etapa consiste na integração da representação 3D-GS em um ambiente de Realidade Virtual. A integração poderá ocorrer por meio de plugin específico de 3D Gaussian Splatting, formato intermediário compatível ou componente customizado de visualização. A aplicação VR deverá conter uma cena mínima funcional, contemplando câmera estereoscópica, configuração OpenXR, locomoção simples ou posicionamento fixo controlado e carregamento do modelo reconstruído.
+A quinta etapa consiste na integração da representação 3D-GS em um ambiente de Realidade Virtual, por meio de plugin específico, formato intermediário compatível ou componente customizado. A aplicação VR deverá conter uma cena mínima funcional com câmera estereoscópica, configuração OpenXR, locomoção simples ou posicionamento fixo controlado e carregamento do modelo reconstruído.
 
-O objetivo é desenvolver um protótipo experimental capaz de validar a visualização da cena reconstruída em contexto imersivo. A integração será considerada bem-sucedida caso o modelo possa ser carregado na aplicação com estabilidade suficiente para permitir a etapa seguinte de execução e avaliação.
+O objetivo é validar a visualização da cena reconstruída em contexto imersivo. A integração será considerada bem-sucedida caso o modelo possa ser carregado com estabilidade suficiente para permitir a avaliação.
 
 \subsection{Execução e avaliação em Realidade Virtual}
 
-A sexta etapa corresponde à execução do protótipo no Meta Quest 3 e à avaliação do comportamento da solução em contexto imersivo. Nessa etapa, a cena reconstruída deve ser visualizada no headset e submetida à coleta de métricas de desempenho, estabilidade e qualidade visual, permitindo analisar se a representação 3D-GS integrada à Unreal Engine atende às restrições práticas de Realidade Virtual.
+A sexta etapa corresponde à execução do protótipo no Meta Quest 3S e à avaliação em contexto imersivo. Nessa etapa, a cena reconstruída será visualizada no headset e submetida à coleta de métricas de desempenho, estabilidade e qualidade visual.
 
-Caso a execução nativa apresente limitações técnicas severas, será adotada como contingência a execução em desktop com transmissão para o headset, preservando a análise imersiva da cena. Essa alternativa não substitui a avaliação do dispositivo-alvo, mas permite manter a comparação visual e registrar os limites encontrados durante a tentativa de execução autônoma.
+Caso a execução nativa apresente limitações severas, será adotada como contingência a execução em desktop com transmissão para o headset. Essa alternativa não substitui a avaliação do dispositivo-alvo, mas permite registrar os limites encontrados na tentativa de execução autônoma.
 
 \subsection{Fluxo de implementação}
 
-O fluxo de implementação do projeto será conduzido de forma incremental. Inicialmente, será construída uma versão mínima do pipeline com uma cena simples, de menor complexidade visual e geométrica. Após a validação dessa primeira cena, o processo será repetido com uma cena mais complexa, permitindo observar como o aumento de detalhes afeta o treinamento, a conversão, o tamanho do modelo e o desempenho em VR. A Figura \ref{fig:fluxo_implementacao_projeto} detalha esse fluxo de implementação, incluindo o ponto de decisão em que a execução é avaliada como estável ou demanda otimizações adicionais.
+O fluxo de implementação será conduzido de forma incremental. Inicialmente, será construída uma versão mínima com uma cena simples; após essa validação, o processo será repetido com uma cena mais complexa. A Figura \ref{fig:fluxo_implementacao_projeto} detalha o fluxo e o ponto de decisão em que a execução é avaliada como estável ou demanda otimizações.
 
 \begin{figure}[H]
 \centering
@@ -291,15 +291,15 @@ O fluxo de implementação do projeto será conduzido de forma incremental. Inic
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
-O fluxo da Figura \ref{fig:fluxo_implementacao_projeto} explicita que a implementação não será tratada como uma sequência rígida de entrega única. A decisão sobre estabilidade funciona como ponto de controle: quando a execução não atinge um comportamento aceitável, o processo retorna à conversão e à otimização do modelo, permitindo reduzir a complexidade da cena, ajustar a quantidade de gaussianas ou simplificar a integração antes da coleta final de métricas.
+O fluxo da Figura \ref{fig:fluxo_implementacao_projeto} explicita o caráter iterativo da implementação. Quando a execução não atinge comportamento aceitável, o processo retorna à conversão e à otimização do modelo antes da coleta final de métricas.
 
 \subsection{Protocolo de avaliação experimental}
 
-A avaliação experimental será conduzida considerando duas dimensões principais: qualidade visual e desempenho computacional. A qualidade visual será analisada por meio da comparação entre imagens de referência e imagens renderizadas a partir de poses de teste. Para essa finalidade, serão utilizadas métricas como PSNR, SSIM e LPIPS, já discutidas na fundamentação teórica.
+A avaliação experimental considerará qualidade visual e desempenho computacional. A qualidade visual será analisada pela comparação entre imagens de referência e imagens renderizadas a partir de poses de teste, utilizando PSNR, SSIM e LPIPS.
 
-O desempenho será avaliado a partir de métricas coletadas durante a execução da aplicação em VR. As principais métricas previstas são taxa de quadros por segundo, tempo médio de renderização por quadro, estabilidade da taxa de quadros e uso de memória. Quando possível, também serão registradas observações sobre estabilidade da aplicação, ocorrência de travamentos, artefatos visuais perceptíveis e limitações de navegação.
+O desempenho será avaliado durante a execução em VR por FPS, tempo médio de quadro, estabilidade da taxa de quadros e uso de memória. Quando possível, serão registradas falhas, artefatos visuais perceptíveis e limitações de navegação.
 
-A avaliação será realizada a partir de poses e cenas previamente definidas, para que os resultados possam ser comparados de forma controlada. Cada cena deverá possuir uma versão de referência associada ao modelo NeRF e uma versão otimizada baseada em 3D-GS. A Figura \ref{fig:fluxo_avaliacao_projeto} apresenta o fluxo dessa avaliação, mostrando a divisão entre a análise de qualidade visual, baseada em imagens renderizadas, e a análise de desempenho, baseada na execução em VR.
+A avaliação será realizada a partir de poses e cenas previamente definidas. Cada cena deverá possuir uma versão de referência associada ao NeRF e uma versão otimizada em 3D-GS. A Figura \ref{fig:fluxo_avaliacao_projeto} apresenta a divisão entre análise de qualidade visual e análise de desempenho.
 
 \begin{figure}[H]
 \centering
@@ -351,9 +351,9 @@ A avaliação será realizada a partir de poses e cenas previamente definidas, p
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
-O fluxo de avaliação separa a análise objetiva das imagens renderizadas da análise prática da execução em VR. Essa separação é necessária porque um modelo pode preservar boa fidelidade visual e, ainda assim, não apresentar desempenho suficiente para uso imersivo. A síntese final combinará as duas dimensões para identificar quais configurações oferecem o melhor compromisso entre qualidade e viabilidade de execução.
+O fluxo de avaliação separa a análise das imagens renderizadas da análise prática da execução em VR, pois um modelo pode preservar boa fidelidade visual e ainda assim não apresentar desempenho suficiente para uso imersivo.
 
-A partir desse fluxo, as métricas previstas são organizadas em três grupos: qualidade visual, desempenho e estabilidade. Essa separação permite distinguir a avaliação da fidelidade da reconstrução, realizada por comparação com imagens de referência, da avaliação prática da execução em Realidade Virtual. O Quadro \ref{qua:metricas_avaliacao} apresenta as métricas consideradas e a finalidade de cada uma no protocolo experimental.
+As métricas são organizadas em três grupos: qualidade visual, desempenho e estabilidade. O Quadro \ref{qua:metricas_avaliacao} apresenta as métricas consideradas e sua finalidade no protocolo experimental.
 
 \begin{quadro}[H]
 \centering
@@ -386,7 +386,7 @@ Estabilidade & Ocorrência de falhas & Registrar travamentos e artefatos. \\ \hl
 
 \subsection{Resultados esperados}
 
-Ao final da execução do projeto, espera-se obter um conjunto de artefatos técnicos e experimentais que permitam analisar a viabilidade do pipeline proposto. Esses artefatos incluem os conjuntos de imagens capturados, os modelos NeRF treinados, os modelos convertidos para 3D Gaussian Splatting, a aplicação ou protótipo em Unreal Engine, os registros de configuração e os resultados das avaliações. O Quadro \ref{qua:artefatos_esperados} organiza esses artefatos, indicando o que deverá ser produzido ao longo do desenvolvimento e como cada item contribui para a análise final do trabalho.
+Ao final do projeto, espera-se obter artefatos técnicos e experimentais suficientes para analisar a viabilidade do pipeline: imagens capturadas, modelos NeRF, modelos 3D-GS, protótipo em Unreal Engine, registros de configuração e resultados das avaliações. O Quadro \ref{qua:artefatos_esperados} organiza esses artefatos.
 
 \begin{quadro}[H]
 \centering
@@ -417,7 +417,7 @@ Registro de limitações & Documentação dos problemas encontrados, decisões t
 
 \subsection{Análise de riscos}
 
-A execução do projeto envolve riscos técnicos relacionados principalmente ao custo e à disponibilidade de recursos computacionais em nuvem, ao desempenho da renderização em VR e à integração de ferramentas experimentais. Como o trabalho depende de componentes recentes, especialmente no contexto de 3D Gaussian Splatting e sua integração em motores gráficos, é necessário prever estratégias de contingência para preservar a viabilidade da pesquisa. O Quadro \ref{qua:riscos_projeto} apresenta os principais riscos identificados, classificando-os quanto à probabilidade, ao impacto e às estratégias previstas para mitigação.
+A execução do projeto envolve riscos relacionados ao custo de recursos computacionais, ao desempenho em VR e à integração de ferramentas experimentais. Como o trabalho depende de componentes recentes, especialmente em 3D Gaussian Splatting e motores gráficos, o Quadro \ref{qua:riscos_projeto} apresenta os principais riscos e estratégias de contingência.
 
 \begin{quadro}[H]
 \centering
@@ -431,7 +431,7 @@ A execução do projeto envolve riscos técnicos relacionados principalmente ao 
 
 Custo de GPU em nuvem & Média & Alto & Controlar o tempo de uso da GPU em nuvem, limitar execuções exploratórias e reduzir a complexidade das cenas quando necessário. \\ \hline
 
-Baixo desempenho no Meta Quest 3 & Média & Alto & Reduzir o número de gaussianas, aplicar poda e simplificação, limitar a complexidade da cena ou utilizar execução em desktop com transmissão para o headset. \\ \hline
+Baixo desempenho no Meta Quest 3S & Média & Alto & Reduzir o número de gaussianas, aplicar poda e simplificação, limitar a complexidade da cena ou utilizar execução em desktop com transmissão para o headset. \\ \hline
 
 Incompatibilidade com plugins de 3D-GS & Média & Médio/Alto & Testar versões alternativas da Unreal Engine, avaliar formatos intermediários ou utilizar visualizador dedicado como rota experimental. \\ \hline
 
@@ -444,7 +444,7 @@ Perda elevada de qualidade após otimização & Média & Médio & Comparar difer
 
 \section{Planejamento do TCC III}
 
-O planejamento do TCC III organiza a continuidade do projeto em cinco meses, articulando a consolidação técnica do pipeline, a integração em Realidade Virtual, a execução dos experimentos e a escrita final do trabalho. A distribuição das atividades considera que a etapa de maior risco técnico está concentrada na integração e nos testes funcionais no Meta Quest 3, enquanto a coleta e a análise dos resultados dependem de um protótipo minimamente estável.
+O planejamento do TCC III organiza a continuidade do projeto em cinco meses, articulando consolidação técnica do pipeline, integração em Realidade Virtual, execução dos experimentos e escrita final. A etapa de maior risco técnico concentra-se na integração e nos testes funcionais no Meta Quest 3S.
 
 \begin{quadro}[H]
 \centering
@@ -459,7 +459,7 @@ O planejamento do TCC III organiza a continuidade do projeto em cinco meses, art
 
 Consolidação do pipeline, cenas e modelos base & XXXX & & & & \\ \hline
 
-Ajustes finais de integração em VR e testes funcionais no Quest 3 & & XXXX & & & \\ \hline
+Ajustes finais de integração em VR e testes funcionais no Quest 3S & & XXXX & & & \\ \hline
 
 Execução dos experimentos e coleta de dados & & & XXXX & & \\ \hline
 
