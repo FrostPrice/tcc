@@ -1,12 +1,12 @@
-\section{Trabalhos relacionados}
+\section{Revisão bibliográfica protocolada}
 
-A presente seção tem por finalidade situar a proposta desta pesquisa no contexto da produção científica recente sobre representações neurais de cena, com ênfase em \textit{Neural Radiance Fields} (NeRF), \textit{3D Gaussian Splatting} (3DGS) e aplicações voltadas à síntese de novas vistas, renderização em tempo real e realidade virtual. Mais do que apresentar uma enumeração de estudos correlatos, busca-se estabelecer um posicionamento analítico da pesquisa, evidenciando os avanços do estado da arte, as limitações ainda presentes e a lacuna específica à qual esta investigação se vincula.
+A presente seção tem por finalidade situar a proposta desta pesquisa no contexto da produção científica recente sobre representações neurais de cena, com ênfase em \textit{Neural Radiance Fields} (NeRF), \textit{3D Gaussian Splatting} (3D-GS) e aplicações voltadas à síntese de novas vistas, renderização em tempo real e realidade virtual. Mais do que apresentar uma enumeração de estudos correlatos, busca-se estabelecer um posicionamento analítico da pesquisa, evidenciando os avanços do estado da arte, as limitações ainda presentes e a lacuna específica à qual esta investigação se vincula.
 
-Para organizar essa análise, os estudos foram selecionados por meio de um protocolo de revisão com foco aplicado, descrito nas subseções seguintes.
+Para organizar essa análise, os estudos foram selecionados por meio de um protocolo de revisão com foco aplicado, descrito nas subseções seguintes. Essa organização busca dar transparência ao levantamento bibliográfico sem caracterizar a seção como uma revisão sistemática formal, pois o objetivo é fundamentar o projeto e comparar trabalhos centrais para a proposta.
 
 \subsection{Protocolo de busca e seleção dos estudos}
 
-O protocolo adotado delimita o objetivo da revisão, a base de busca, o recorte temporal, o idioma, a string utilizada e os critérios de inclusão e exclusão dos estudos. Com isso, busca-se tornar explícito o processo de seleção das referências analisadas e reduzir a subjetividade da revisão.
+O protocolo adotado delimita o objetivo da revisão, a base de busca, o recorte temporal, o idioma, a string utilizada e os critérios de inclusão e exclusão dos estudos. Com isso, busca-se tornar explícito o processo de seleção das referências analisadas, reduzir a subjetividade da revisão e evidenciar quais trabalhos sustentam as decisões de escopo, representação, integração e avaliação.
 
 \subsection{Objetivo da revisão}
 
@@ -55,7 +55,7 @@ Foram definidos os seguintes critérios de inclusão:
 \begin{itemize}
     \item estudos publicados em periódicos ou anais de conferências reconhecidos na área;
     \item estudos publicados entre 2020 e 2025;
-    \item pesquisas diretamente associadas a NeRF, 3DGS, reconstrução de cenas, síntese de novas vistas, renderização em tempo real ou realidade virtual;
+    \item pesquisas diretamente associadas a NeRF, 3D-GS, reconstrução de cenas, síntese de novas vistas, renderização em tempo real ou realidade virtual;
     \item estudos que apresentem contribuição conceitual, metodológica ou aplicada relevante para o problema de pesquisa do presente trabalho.
 \end{itemize}
 
@@ -72,9 +72,9 @@ Por sua vez, os critérios de exclusão foram:
 
 Esta seção discute os estudos selecionados, destacando suas principais contribuições, limitações e relações com o \textit{pipeline} proposto nesta pesquisa.
 
-\subsection{\textit{NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis}}
+\subsection{NeRF}
 
-O trabalho de Mildenhall et al. \cite{mildenhall2020} constitui o marco fundador da linha contemporânea de pesquisa em campos neurais para síntese de novas vistas.
+O trabalho \textit{NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis}, de Mildenhall et al. \cite{mildenhall2020}, constitui o marco fundador da linha contemporânea de pesquisa em campos neurais para síntese de novas vistas.
 
 Sua principal contribuição está na formulação de uma representação implícita contínua da cena, parametrizada por uma rede neural do tipo \textit{multilayer perceptron} (MLP), que recebe como entrada uma coordenada espacial tridimensional e uma direção de observação, produzindo como saída a densidade volumétrica e a cor correspondente naquele ponto. A imagem final é obtida por integração ao longo dos raios emitidos pela câmera, em um processo de renderização volumétrica diferenciável.
 
@@ -141,7 +141,7 @@ Para o presente trabalho, essa dualidade é especialmente importante. O VR-NeRF 
 
 Kerbl et al. \cite{kerbl2023} introduzem o 3D Gaussian Splatting como uma alternativa explícita aos campos neurais implícitos para a síntese de novas vistas e renderização de campos radiantes. O método parte de uma nuvem inicial de pontos obtida por calibração e estrutura a cena como um conjunto de gaussianas 3D anisotrópicas, cada uma dotada de posição, covariância, opacidade e atributos de aparência. A renderização é realizada por meio de uma rasterização diferenciável e \textit{visibility-aware}, com composição ordenada das contribuições na imagem.
 
-A Figura \ref{fig:3dgs_pipeline} é particularmente útil porque explicita a principal mudança de paradigma introduzida pelo método. Em vez de amostrar densamente ao longo de cada raio, como em abordagens implícitas, o 3DGS projeta gaussianas explicitamente representadas e as compõe de forma eficiente na imagem final. Além disso, o bloco de controle adaptativo de densidade mostra que a representação não é fixa: ela pode ser refinada ao longo da otimização, com clonagem, divisão ou remoção de gaussianas, conforme a complexidade local da cena. Esse ponto ajuda a compreender por que o método consegue combinar boa qualidade visual com alta taxa de renderização.
+A Figura \ref{fig:3dgs_pipeline} é particularmente útil porque explicita a principal mudança de paradigma introduzida pelo método. Em vez de amostrar densamente ao longo de cada raio, como em abordagens implícitas, o 3D-GS projeta gaussianas explicitamente representadas e as compõe de forma eficiente na imagem final. Além disso, o bloco de controle adaptativo de densidade mostra que a representação não é fixa: ela pode ser refinada ao longo da otimização, com clonagem, divisão ou remoção de gaussianas, conforme a complexidade local da cena. Esse ponto ajuda a compreender por que o método consegue combinar boa qualidade visual com alta taxa de renderização.
 
 \begin{figure}[H]
     \centering
@@ -174,9 +174,9 @@ A Figura \ref{fig:uegs_qualitative} é pertinente porque evidencia o tipo de gan
     \label{fig:uegs_qualitative}
 \end{figure}
 
-A principal pertinência do estudo decorre do fato de que motores gráficos como o Unreal Engine ocupam posição central na produção de experiências interativas, aplicações de visualização e ambientes virtuais. Assim, a integração do 3DGS à \textit{engine} constitui um passo importante na direção de \textit{pipelines} mais aplicáveis, em que a representação da cena não é apenas avaliada por métricas de qualidade de imagem, mas também por sua compatibilidade com ferramentas, rotinas de renderização e mecanismos de interação amplamente utilizados.
+A principal pertinência do estudo decorre do fato de que motores gráficos como o Unreal Engine ocupam posição central na produção de experiências interativas, aplicações de visualização e ambientes virtuais. Assim, a integração do 3D-GS à \textit{engine} constitui um passo importante na direção de \textit{pipelines} mais aplicáveis, em que a representação da cena não é apenas avaliada por métricas de qualidade de imagem, mas também por sua compatibilidade com ferramentas, rotinas de renderização e mecanismos de interação amplamente utilizados.
 
-Ainda que o trabalho não se concentre especificamente na avaliação de conforto visual ou desempenho em dispositivos autônomos de VR, sua contribuição é metodologicamente significativa. Ele aproxima a literatura de representação neural da dimensão de implantação, aspecto particularmente importante para uma pesquisa cujo objetivo não é apenas compreender o estado da arte, mas examinar sua viabilidade prática em um fluxo de trabalho orientado à realidade virtual.
+Ainda que o trabalho não se concentre especificamente na avaliação de conforto visual ou desempenho em dispositivos de VR \textit{standalone}, sua contribuição é metodologicamente significativa. Ele aproxima a literatura de representação neural da dimensão de implantação, aspecto particularmente importante para uma pesquisa cujo objetivo não é apenas compreender o estado da arte, mas examinar sua viabilidade prática em um fluxo de trabalho orientado à realidade virtual.
 
 \subsection{\textit{VRSplat: Fast and Robust Gaussian Splatting for Virtual Reality}}
 
@@ -195,70 +195,76 @@ A Figura \ref{fig:vrsplat_pipeline} é particularmente relevante porque sintetiz
 
 Essa combinação evidencia uma mudança de maturidade da área: a discussão deixa de ser apenas “é possível renderizar rápido?” e passa a incorporar “é possível renderizar de forma estável e confortável em VR?”.
 
-Para o presente trabalho, a principal contribuição do VRSplat está em mostrar que o uso de 3DGS em ambientes imersivos exige adaptações específicas, e não uma mera transposição direta de um método originalmente pensado para visualização monocular convencional. Essa observação é essencial, pois reforça a necessidade de que a avaliação experimental considere, além de PSNR, SSIM, LPIPS e FPS, aspectos qualitativos ligados à estabilidade visual e à robustez perceptual.
+Para o presente trabalho, a principal contribuição do VRSplat está em mostrar que o uso de 3D-GS em ambientes imersivos exige adaptações específicas, e não uma mera transposição direta de um método originalmente pensado para visualização monocular convencional. Essa observação é essencial, pois reforça a necessidade de que a avaliação experimental considere, além de PSNR, SSIM, LPIPS e FPS, aspectos qualitativos ligados à estabilidade visual e à robustez perceptual.
 
 \section{Quadro comparativo dos estudos}
 
-O Quadro \ref{qua:comparativo_estudos} sintetiza, de forma objetiva, as principais características dos estudos selecionados, com ênfase no tipo de representação adotada, no foco metodológico, na forma de avaliação dos resultados, nos dados ou cenários utilizados e nas limitações mais relevantes frente ao problema investigado. A análise detalhada de cada estudo é apresentada ao longo da seção, enquanto o quadro busca apenas explicitar, de maneira resumida, os principais pontos de convergência e distinção.
+O Quadro \ref{qua:comparativo_estudos} sintetiza, de forma objetiva, as principais características dos estudos selecionados, com ênfase no foco de cada trabalho, no tipo de representação adotada, na forma de avaliação, nos cenários utilizados, na aderência a VR ou integração com \textit{engine} e nas limitações mais relevantes frente ao problema investigado. A análise detalhada de cada estudo é apresentada ao longo da seção, enquanto o quadro explicita os principais pontos de convergência e distinção.
 
 \begin{quadro}[H]
 \centering
-\footnotesize
+\scriptsize
 \caption{Quadro comparativo dos estudos selecionados.}
 \label{qua:comparativo_estudos}
-\renewcommand{\arraystretch}{1.15}
-\setlength{\tabcolsep}{3pt}
-\begin{tabularx}{\textwidth}{|p{2.5cm}|p{2.5cm}|p{1.8cm}|p{2.3cm}|p{2.6cm}|X|}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{2pt}
+\begin{tabularx}{\textwidth}{|p{1.85cm}|p{1.65cm}|p{1.55cm}|p{2.05cm}|p{1.95cm}|p{1.75cm}|X|}
 \hline
-\textbf{Estudo} & \textbf{Representação} & \textbf{Ênfase} & \textbf{Avaliação dos resultados} & \textbf{Dados/cenários utilizados} & \textbf{Limitação} \\
+\textbf{Estudo} & \textbf{Foco} & \textbf{Rep.} & \textbf{Avaliação} & \textbf{Dados} & \textbf{VR/\textit{engine}} & \textbf{Limitação frente ao trabalho} \\
 \hline
 
 \textit{NeRF} \cite{mildenhall2020}
+& Síntese de novas vistas
 & Implícita
-& Fidelidade
 & PSNR, SSIM, visual
 & Cenas sintéticas e reais
-& Alto custo computacional \\
+& Não trata VR ou \textit{engine}
+& Alto custo de inferência para uso imersivo \\
 \hline
 
 \textit{Instant-NGP} \cite{muller2022}
-& Implícita
 & Aceleração
+& Implícita
 & Qualidade e tempo
 & Cenas variadas
-& VR não tratada diretamente \\
+& VR não tratada diretamente
+& Ainda depende de renderização volumétrica \\
 \hline
 
 \textit{VR-NeRF} \cite{xu2023}
+& Espaços caminháveis
 & Implícita
-& VR
 & Fidelidade e FPS
 & Ambientes capturados
-& Dependência de multi-GPU \\
+& Alta aderência a VR
+& Depende de infraestrutura multi-GPU, não de headset \textit{standalone} \\
 \hline
 
 \textit{3D Gaussian Splatting} \cite{kerbl2023}
-& Explícita
 & Tempo real
+& Explícita
 & PSNR, SSIM, LPIPS, FPS
-& Mip-NeRF360, Tanks and Temples, Deep Blending
-& VR não abordada diretamente \\
+& Mip-NeRF360 e outros
+& VR e \textit{engine} não abordadas
+& Memória e artefatos exigem avaliação em VR \\
 \hline
 
 \textit{UE-GS} \cite{jin2024}
+& Integração em \textit{engine}
 & Explícita
-& Engine
 & Comparação visual e FPS
 & Cenas integradas à engine
-& VR autônoma ausente \\
+& Unreal Engine
+& Não avalia VR \textit{standalone} no Quest \\
 \hline
 
 \textit{VRSplat} \cite{tu2025}
+& 3D-GS para VR
 & Explícita
-& VR
-& FPS, visual, estudo com usuários
+& FPS, visual, percepção
 & Cenas para VR
-& Solução específica para 3DGS \\
+& Alta aderência a VR
+& Solução específica, sem foco no pipeline NeRF/Unreal/Quest \\
 \hline
 
 \end{tabularx}
@@ -271,8 +277,8 @@ No recorte específico da realidade virtual, Xu et al. \cite{xu2023} representam
 Por outro lado, os estudos baseados em 3D Gaussian Splatting apontam uma mudança de ênfase em direção a representações explícitas mais compatíveis com
 renderização eficiente. Kerbl et al. \cite{kerbl2023} reposicionam o debate ao mostrar que é possível obter elevada qualidade visual com taxas de renderização substancialmente mais adequadas ao tempo real. Jin et al. \cite{jin2024}, ao aproximarem essa representação do Unreal Engine, reforçam a importância da implantação em motores gráficos reais, enquanto Tu et al. \cite{tu2025} avançam na adaptação desse paradigma às exigências específicas da realidade virtual, como robustez perceptual, mitigação de artefatos e desempenho compatível com uso imersivo.
 
-A inclusão das colunas referentes à avaliação dos resultados e aos dados ou cenários utilizados permite observar que os estudos não diferem apenas em sua formulação metodológica, mas também na forma como validam suas contribuições. Enquanto alguns trabalhos se apoiam predominantemente em métricas objetivas de qualidade e desempenho, outros incorporam comparações visuais, cenários capturados em ambiente real e até avaliações perceptuais com usuários. Essa distinção é particularmente relevante porque evidencia que, no contexto da realidade virtual, a análise de resultados não pode se restringir apenas à fidelidade de reconstrução, devendo também considerar estabilidade visual, robustez perceptual e viabilidade de execução.
+A inclusão das colunas referentes à avaliação, aos cenários utilizados e à aderência a VR ou \textit{engine} permite observar que os estudos não diferem apenas em sua formulação metodológica, mas também na forma como validam suas contribuições. Enquanto alguns trabalhos se apoiam predominantemente em métricas objetivas de qualidade e desempenho, outros incorporam comparações visuais, cenários capturados em ambiente real e avaliações perceptuais. Essa distinção é particularmente relevante porque evidencia que, no contexto da realidade virtual, a análise de resultados não pode se restringir apenas à fidelidade de reconstrução, devendo também considerar estabilidade visual, robustez perceptual, integração com ferramentas reais e viabilidade de execução.
 
-Em conjunto, esses estudos mostram que a literatura evoluiu de modelos fortemente orientados à fidelidade visual para soluções cada vez mais comprometidas com viabilidade prática, integração e desempenho. Contudo, também revelam que ainda persiste uma lacuna entre a excelência técnica dos métodos propostos e sua adoção em um fluxo de trabalho aplicado, capaz de articular reconstrução neural, representação eficiente da cena e uso em realidade virtual sob restrições concretas de hardware e execução.
+Em conjunto, esses estudos mostram que a literatura evoluiu de modelos fortemente orientados à fidelidade visual para soluções cada vez mais comprometidas com viabilidade prática, integração e desempenho. Contudo, também revelam que ainda persiste uma lacuna entre a excelência técnica dos métodos propostos e sua adoção em um fluxo de trabalho aplicado, capaz de articular reconstrução neural, representação eficiente da cena, motor gráfico e uso em VR \textit{standalone} sob restrições concretas de hardware e execução.
 
-É nesse contexto que se insere o presente trabalho. Em vez de se restringir à análise isolada de uma única técnica, esta pesquisa propõe uma abordagem aplicada, voltada à avaliação da viabilidade de um \textit{pipeline} que envolva reconstrução neural, representação eficiente e integração em ambiente imersivo. Desse modo, busca-se compreender, de forma experimental, em que medida os avanços observados na literatura podem ser articulados de maneira coerente para atender simultaneamente aos requisitos de qualidade visual, desempenho e implantação prática em realidade virtual.
+É nesse contexto que se insere o presente trabalho. Em vez de se restringir à análise isolada de uma única técnica, esta pesquisa propõe uma abordagem aplicada, voltada à avaliação da viabilidade de um \textit{pipeline} que envolva reconstrução neural, representação eficiente, integração em Unreal Engine e visualização em Meta Quest 3S. Desse modo, busca-se compreender, de forma experimental, em que medida os avanços observados na literatura podem ser articulados de maneira coerente para atender simultaneamente aos requisitos de qualidade visual, desempenho, estabilidade perceptual e implantação prática em VR \textit{standalone}.
