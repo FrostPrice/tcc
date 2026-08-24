@@ -3,14 +3,32 @@
 /SplatVRLab/DerivedDataCache/
 /SplatVRLab/Intermediate/
 /SplatVRLab/Saved/
+/SplatVRLab/.idea/
+/SplatVRLab/.vs/
+/SplatVRLab/.vscode/
 /SplatVRLab/Plugins/*/Binaries/
 /SplatVRLab/Plugins/*/Intermediate/
 /SplatVRLabUnrealEngine/Binaries/
 /SplatVRLabUnrealEngine/DerivedDataCache/
 /SplatVRLabUnrealEngine/Intermediate/
 /SplatVRLabUnrealEngine/Saved/
+/SplatVRLabUnrealEngine/.idea/
+/SplatVRLabUnrealEngine/.vs/
+/SplatVRLabUnrealEngine/.vscode/
 /SplatVRLabUnrealEngine/Plugins/*/Binaries/
 /SplatVRLabUnrealEngine/Plugins/*/Intermediate/
+/SplatVRLab/*.sln
+/SplatVRLab/*.suo
+/SplatVRLab/*.opensdf
+/SplatVRLab/*.sdf
+/SplatVRLab/*.VC.db
+/SplatVRLab/*.VC.opendb
+/SplatVRLabUnrealEngine/*.sln
+/SplatVRLabUnrealEngine/*.suo
+/SplatVRLabUnrealEngine/*.opensdf
+/SplatVRLabUnrealEngine/*.sdf
+/SplatVRLabUnrealEngine/*.VC.db
+/SplatVRLabUnrealEngine/*.VC.opendb
 
 # Assets gerados pela prova; reproduzir a partir do PLY registrado no manifesto
 /SplatVRLab/Content/NanoGSViability/
@@ -24,13 +42,39 @@
 /SplatVRLabUnity/[Bb]uilds/
 /SplatVRLabUnity/[Ll]ogs/
 /SplatVRLabUnity/[Uu]serSettings/
+/SplatVRLabUnity/.utmp/
+/SplatVRLabUnity/.idea/
+/SplatVRLabUnity/.vs/
 /SplatVRLabUnity/MemoryCaptures/
 /SplatVRLabUnity/Recordings/
+/SplatVRLabUnity/[Ee]xported[Oo]bj/
 /SplatVRLabUnity/*.csproj
 /SplatVRLabUnity/*.sln
 /SplatVRLabUnity/*.slnx
+/SplatVRLabUnity/*.unityproj
+/SplatVRLabUnity/*.user
+/SplatVRLabUnity/*.userprefs
+/SplatVRLabUnity/*.pidb
+/SplatVRLabUnity/*.booproj
+/SplatVRLabUnity/*.apk
+/SplatVRLabUnity/*.aab
 /SplatVRLabUnity/.vscode/
 
 # Artefatos 3D-GS grandes são reproduzidos a partir dos manifestos, não versionados
 *.ply
 /SplatVRLabUnity/Assets/Research/Data/
+
+# Experimentos: manter manifestos, métricas, configurações, logs de falha e
+# evidências selecionadas; excluir saídas volumosas reproduzíveis.
+/experiments/**/evaluation/**/renders/
+/experiments/**/checkpoints/
+/experiments/**/datasets/
+/experiments/**/exports/
+/experiments/**/outputs/
+/experiments/unity_setup_batch.log
+
+# Artefatos locais comuns
+**/__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
