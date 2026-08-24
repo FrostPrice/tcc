@@ -1,0 +1,36 @@
+# Unreal Engine: artefatos locais e gerados
+/SplatVRLab/Binaries/
+/SplatVRLab/DerivedDataCache/
+/SplatVRLab/Intermediate/
+/SplatVRLab/Saved/
+/SplatVRLab/Plugins/*/Binaries/
+/SplatVRLab/Plugins/*/Intermediate/
+/SplatVRLabUnrealEngine/Binaries/
+/SplatVRLabUnrealEngine/DerivedDataCache/
+/SplatVRLabUnrealEngine/Intermediate/
+/SplatVRLabUnrealEngine/Saved/
+/SplatVRLabUnrealEngine/Plugins/*/Binaries/
+/SplatVRLabUnrealEngine/Plugins/*/Intermediate/
+
+# Assets gerados pela prova; reproduzir a partir do PLY registrado no manifesto
+/SplatVRLab/Content/NanoGSViability/
+/SplatVRLabUnrealEngine/Content/NanoGSViability/
+
+# Unity: cache, configuração local e saídas geradas
+/SplatVRLabUnity/[Ll]ibrary/
+/SplatVRLabUnity/[Tt]emp/
+/SplatVRLabUnity/[Oo]bj/
+/SplatVRLabUnity/[Bb]uild/
+/SplatVRLabUnity/[Bb]uilds/
+/SplatVRLabUnity/[Ll]ogs/
+/SplatVRLabUnity/[Uu]serSettings/
+/SplatVRLabUnity/MemoryCaptures/
+/SplatVRLabUnity/Recordings/
+/SplatVRLabUnity/*.csproj
+/SplatVRLabUnity/*.sln
+/SplatVRLabUnity/*.slnx
+/SplatVRLabUnity/.vscode/
+
+# Artefatos 3D-GS grandes são reproduzidos a partir dos manifestos, não versionados
+*.ply
+/SplatVRLabUnity/Assets/Research/Data/
