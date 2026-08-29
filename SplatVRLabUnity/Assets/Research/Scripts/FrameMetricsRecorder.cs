@@ -37,10 +37,21 @@ namespace SplatVRLab
             public string scalePolicy;
             public bool metricScaleCalibrated;
             public float metersPerNerfstudioUnit;
+            public bool locomotionEnabled;
+            public string locomotionProfileId;
+            public string locomotionMode;
+            public string movementInput;
+            public float moveSpeedUnityUnitsPerSecond;
+            public string turnMode;
+            public string turnInput;
+            public float snapTurnDegrees;
+            public bool gravityEnabled;
+            public string collisionPolicy;
             public bool referencePoseAlignmentCompleted;
             public float referencePosePositionErrorMeters;
             public float referencePoseHorizontalForwardErrorDegrees;
             public string startedAtUtc;
+            public string measurementStartedAtUtc;
             public string finishedAtUtc;
             public string completionReason;
             public string unityVersion;
@@ -74,6 +85,18 @@ namespace SplatVRLab
         public bool MetricScaleCalibrated;
         [Min(0.000001f)] public float MetersPerNerfstudioUnit = 1f;
 
+        [Header("Locomoção")]
+        public bool LocomotionEnabled;
+        public string LocomotionProfileId = "stationary_baseline";
+        public string LocomotionMode = "stationary";
+        public string MovementInput = "none";
+        [Min(0f)] public float MoveSpeedUnityUnitsPerSecond;
+        public string TurnMode = "none";
+        public string TurnInput = "none";
+        [Min(0f)] public float SnapTurnDegrees;
+        public bool GravityEnabled;
+        public string CollisionPolicy = "not_applicable_stationary";
+
         [Header("Janela de medição")]
         [Min(0)] public int WarmupFrames = 180;
         [Min(1f)] public float MeasurementSeconds = 30f;
@@ -85,7 +108,9 @@ namespace SplatVRLab
         private int _framesSeen;
         private float _measurementElapsed;
         private bool _reportWritten;
+        private bool _measurementStarted;
         private string _startedAtUtc;
+        private string _measurementStartedAtUtc;
 
         private void Start()
         {
@@ -98,6 +123,13 @@ namespace SplatVRLab
             _framesSeen++;
             if (_framesSeen <= WarmupFrames || _reportWritten)
                 return;
+
+            if (!_measurementStarted)
+            {
+                _measurementStarted = true;
+                _measurementStartedAtUtc = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+                Debug.Log($"[SplatVRLab] Frame metrics measurement window started: {_measurementStartedAtUtc}");
+            }
 
             float frameIntervalMs = Time.unscaledDeltaTime * 1000f;
             _applicationFrameIntervals.Add(frameIntervalMs);
@@ -142,11 +174,22 @@ namespace SplatVRLab
                 scalePolicy = ScalePolicy,
                 metricScaleCalibrated = MetricScaleCalibrated,
                 metersPerNerfstudioUnit = MetersPerNerfstudioUnit,
+                locomotionEnabled = LocomotionEnabled,
+                locomotionProfileId = LocomotionProfileId,
+                locomotionMode = LocomotionMode,
+                movementInput = MovementInput,
+                moveSpeedUnityUnitsPerSecond = MoveSpeedUnityUnitsPerSecond,
+                turnMode = TurnMode,
+                turnInput = TurnInput,
+                snapTurnDegrees = SnapTurnDegrees,
+                gravityEnabled = GravityEnabled,
+                collisionPolicy = CollisionPolicy,
                 referencePoseAlignmentCompleted = aligner && aligner.AlignmentCompleted,
                 referencePosePositionErrorMeters = aligner ? aligner.PositionErrorMeters : 0f,
                 referencePoseHorizontalForwardErrorDegrees =
                     aligner ? aligner.HorizontalForwardErrorDegrees : 0f,
                 startedAtUtc = _startedAtUtc,
+                measurementStartedAtUtc = _measurementStartedAtUtc,
                 finishedAtUtc = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture),
                 completionReason = completionReason,
                 unityVersion = Application.unityVersion,

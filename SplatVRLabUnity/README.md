@@ -65,6 +65,39 @@ O mesmo procedimento pode ser executado sem interface:
   -executeMethod SplatVRLab.Editor.SplatVRLabSetup.Configure
 ```
 
+## Variante de locomoção controlada
+
+A baseline estacionária continua disponível e não foi substituída. Para gerar a
+variante `spark_locomotion_v01`, execute:
+
+```text
+SplatVRLab > Configure locomotion variant
+```
+
+A configuração é lida de
+[`locomotion_profile.json`](../experiments/unitysplats_viability_v01/locomotion_profile.json)
+e validada pelo checksum antes da cena ser salva. Os controles são:
+
+- joystick esquerdo: movimento contínuo e horizontal, relativo à direção da
+  cabeça, a `1,0` unidade Unity por segundo;
+- joystick direito: giro em passos de `30` graus;
+- gravidade, teleporte, escalada, movimento por agarrar e salto: desativados.
+
+A cena 3D-GS não possui colisores correspondentes à geometria observada. Portanto,
+essa variante permite atravessar superfícies visuais e serve para avaliar
+navegação, estabilidade e artefatos durante mudança de ponto de vista, não física
+ou colisão. Como a escala permanece `canonical_non_metric`, a velocidade não deve
+ser descrita como metros por segundo.
+
+Para gerar o APK próprio da variante, sem sobrescrever o APK estacionário, use:
+
+```text
+SplatVRLab > Build Android locomotion development APK
+```
+
+O resultado local é
+`Builds/Android/SplatVRLabUnity-locomotion-dev.apk`.
+
 Os registros de execução são gravados em
 `Application.persistentDataPath/measurements`. O campo
 `unityReportedGraphicsMemoryMb` reproduz o valor exposto pela API da Unity e não

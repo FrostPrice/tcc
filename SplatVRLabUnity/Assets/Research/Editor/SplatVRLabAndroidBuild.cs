@@ -10,10 +10,33 @@ namespace SplatVRLab.Editor
 {
     public static class SplatVRLabAndroidBuild
     {
-        private const string OutputRelativePath = "Builds/Android/SplatVRLabUnity-dev.apk";
+        private const string StationaryOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-dev.apk";
+        private const string LocomotionOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-locomotion-dev.apk";
 
         [MenuItem("SplatVRLab/Build Android development APK")]
         public static void BuildDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                StationaryOutputRelativePath,
+                "spark_baseline",
+                SplatVRLabSetup.Configure);
+        }
+
+        [MenuItem("SplatVRLab/Build Android locomotion development APK")]
+        public static void BuildLocomotionDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                LocomotionOutputRelativePath,
+                "spark_locomotion_v01",
+                SplatVRLabSetup.ConfigureLocomotion);
+        }
+
+        private static void BuildDevelopmentApk(
+            string outputRelativePath,
+            string variantId,
+            Action configure)
         {
             if (!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android, BuildTarget.Android))
             {
@@ -22,7 +45,7 @@ namespace SplatVRLab.Editor
                     "Add Android Build Support, Android SDK & NDK Tools, and OpenJDK in Unity Hub.");
             }
 
-            SplatVRLabSetup.Configure();
+            configure();
             if (!EditorUserBuildSettings.SwitchActiveBuildTarget(
                     BuildTargetGroup.Android, BuildTarget.Android))
                 throw new InvalidOperationException("Unity could not switch the active target to Android.");
@@ -36,7 +59,7 @@ namespace SplatVRLab.Editor
 
             string outputPath = Path.GetFullPath(Path.Combine(
                 Directory.GetParent(Application.dataPath)?.FullName ?? Environment.CurrentDirectory,
-                OutputRelativePath));
+                outputRelativePath));
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 
             var options = new BuildPlayerOptions
@@ -65,6 +88,7 @@ namespace SplatVRLab.Editor
 
             Debug.Log(
                 $"[SplatVRLab] ANDROID_BUILD_OK: {outputPath}; " +
+                $"variant={variantId}; " +
                 $"apkBytes={apkSizeBytes}; sha256={apkSha256}; " +
                 $"reportTotalBytes={report.summary.totalSize}; duration={report.summary.totalTime}; " +
                 $"warnings={report.summary.totalWarnings}");
