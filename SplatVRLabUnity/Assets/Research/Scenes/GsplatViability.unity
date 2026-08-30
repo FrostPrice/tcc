@@ -132,11 +132,19 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 153982007679157697, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 153982007679157697, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_MoveSpeed
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 153982007679157697, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_UseGravity
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 153982007679157697, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_EnableStrafe
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 153982007679157697, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
@@ -228,8 +236,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7347985736721345035, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7347985736721345035, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_TurnAmount
-      value: 30
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7347985736721345035, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_DebounceTime
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7347985736721345035, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_EnableTurnAround
@@ -245,31 +261,53 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 441087510}
+    - targetCorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 441087509}
   m_SourcePrefab: {fileID: 100100000, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
---- !u!1 &441087507 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
-  m_PrefabInstance: {fileID: 441087506}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &441087508 stripped
+--- !u!114 &441087507 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1178791450436251564, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
   m_PrefabInstance: {fileID: 441087506}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 441087507}
+  m_GameObject: {fileID: 441087508}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e0cb9aa70a22847b5925ee5f067c10a9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
+--- !u!1 &441087508 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+  m_PrefabInstance: {fileID: 441087506}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &441087509
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 441087507}
+  m_GameObject: {fileID: 441087508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43ac86849be79c5eb94861a2369ffb2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SplatVRLab.AutomatedLocomotionSequence
+  Metrics: {fileID: 1706047441}
+  ReferencePoseAligner: {fileID: 441087510}
+  Origin: {fileID: 441087507}
+  Mode: 0
+  TranslationSpeedUnityUnitsPerSecond: 0
+  SnapTurnDegrees: 0
+  SnapTurnIntervalSeconds: 0
+--- !u!114 &441087510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 441087508}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dfeb0ba6874078d79a38694607cd4de9, type: 3}
@@ -280,13 +318,13 @@ MonoBehaviour:
   ScalePolicy: canonical_non_metric
   MetricScaleCalibrated: 0
   MetersPerNerfstudioUnit: 1
-  Origin: {fileID: 441087508}
+  Origin: {fileID: 441087507}
   TargetCameraPosition: {x: 0, y: 1.6, z: 0}
   TargetUp: {x: 0, y: 1, z: 0}
   TargetHorizontalForward: {x: 0, y: 0, z: 1}
   ExactReferenceCameraRotation: {x: 0.12372711, y: 0.003363524, z: -0.026965998, w: 0.99194413}
   TrackingWaitSeconds: 30
---- !u!1 &456141183
+--- !u!1 &454648716
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -294,57 +332,51 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 456141185}
-  - component: {fileID: 456141184}
+  - component: {fileID: 454648718}
+  - component: {fileID: 454648717}
   m_Layer: 0
-  m_Name: ExperimentMetrics
+  m_Name: Poster_opacity_topk_100k_v01_Gsplat
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &456141184
+--- !u!114 &454648717
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 456141183}
+  m_GameObject: {fileID: 454648716}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9ec38a2d376f7fda9095ac67d3e1539, type: 3}
+  m_Script: {fileID: 11500000, guid: ce0eaa90dbf24670a230447dc3ec09f2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SplatVRLab.FrameMetricsRecorder
-  ExperimentId: unitysplats_viability_v01
-  SceneId: poster_baseline
-  VariantId: spark_locomotion_v01
-  ReferencePoseId: ns_poster_test_frame_00001
-  ReferenceFrame: ./images/frame_00001.png
-  ScalePolicy: canonical_non_metric
-  MetricScaleCalibrated: 0
-  MetersPerNerfstudioUnit: 1
-  LocomotionEnabled: 1
-  LocomotionProfileId: quest_continuous_move_snap_turn_v01
-  LocomotionMode: continuous
-  MovementInput: left_thumbstick
-  MoveSpeedUnityUnitsPerSecond: 1
-  TurnMode: snap
-  TurnInput: right_thumbstick
-  SnapTurnDegrees: 30
-  GravityEnabled: 0
-  CollisionPolicy: no_scene_colliders_free_horizontal_motion
-  WarmupFrames: 180
-  MeasurementSeconds: 30
---- !u!4 &456141185
+  m_EditorClassIdentifier: Gsplat::Gsplat.GsplatRenderer
+  GsplatAsset: {fileID: 4599839170941234424, guid: 32fe60530068130309b4b77941e48616, type: 3}
+  SHDegree: 3
+  RenderOrder: 0
+  Brightness: 1
+  SplatDownscaleFactor: 0
+  GammaToLinear: 1
+  m_gammaToLinearDefaultApplied: 1
+  AsyncUpload: 0
+  RenderBeforeUploadComplete: 1
+  CutoutsUpdateBounds: 1
+  SortMode: 0
+  SortRefreshRate: 1
+  CutoutsRefreshRate: 1
+  m_assetGuid: 
+--- !u!4 &454648718
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 456141183}
+  m_GameObject: {fileID: 454648716}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.68166906, y: -0.18795556, z: 0.18795556, w: 0.68166906}
+  m_LocalPosition: {x: 0.18643726, y: 1.7232983, z: 0.7816895}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -378,7 +410,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 83e4e6cca11330d4088d729ab4fc9d9f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_StartingHoverFilters: []
   m_StartingSelectFilters: []
 --- !u!4 &756192408
@@ -396,7 +428,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1790231700
+--- !u!1 &1706047440
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -404,51 +436,62 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1790231702}
-  - component: {fileID: 1790231701}
+  - component: {fileID: 1706047442}
+  - component: {fileID: 1706047441}
   m_Layer: 0
-  m_Name: PosterBaseline_Gsplat
+  m_Name: ExperimentMetrics
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1790231701
+--- !u!114 &1706047441
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1790231700}
+  m_GameObject: {fileID: 1706047440}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce0eaa90dbf24670a230447dc3ec09f2, type: 3}
+  m_Script: {fileID: 11500000, guid: c9ec38a2d376f7fda9095ac67d3e1539, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Gsplat::Gsplat.GsplatRenderer
-  GsplatAsset: {fileID: 4599839170941234424, guid: af5511aa8fe3476529daee668a4adb7a, type: 3}
-  SHDegree: 3
-  RenderOrder: 0
-  Brightness: 1
-  SplatDownscaleFactor: 0
-  GammaToLinear: 1
-  m_gammaToLinearDefaultApplied: 1
-  AsyncUpload: 0
-  RenderBeforeUploadComplete: 1
-  CutoutsUpdateBounds: 1
-  SortMode: 0
-  SortRefreshRate: 1
-  CutoutsRefreshRate: 1
-  m_assetGuid: 
---- !u!4 &1790231702
+  m_EditorClassIdentifier: Assembly-CSharp::SplatVRLab.FrameMetricsRecorder
+  ExperimentId: unitysplats_viability_v01
+  SceneId: poster_baseline
+  VariantId: spark_opacity_topk_100k_visual_reference_v01
+  RepresentationVariantId: opacity_topk_100k_v01
+  RepresentationGaussianCount: 100000
+  RepresentationPlySha256: b2af0f8f9bda2ab2cc54db3e34147b6e02ea73cd71eb682ae803739f4f34c1d3
+  ReferencePoseId: ns_poster_test_frame_00001
+  ReferenceFrame: ./images/frame_00001.png
+  ScalePolicy: canonical_non_metric
+  MetricScaleCalibrated: 0
+  MetersPerNerfstudioUnit: 1
+  LocomotionEnabled: 1
+  LocomotionProfileId: quest_visual_opacity_topk_100k_reference_v01
+  LocomotionMode: none
+  MovementInput: none
+  MoveSpeedUnityUnitsPerSecond: 0
+  TurnMode: none
+  TurnInput: none
+  SnapTurnDegrees: 0
+  GravityEnabled: 0
+  CollisionPolicy: no_scene_colliders_free_horizontal_motion
+  ConditionId: static_reference
+  AutomatedSequenceId: stationary_automated_instrumentation_v01
+  WarmupFrames: 180
+  MeasurementSeconds: 30
+--- !u!4 &1706047442
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1790231700}
+  m_GameObject: {fileID: 1706047440}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.68166906, y: -0.18795556, z: 0.18795556, w: 0.68166906}
-  m_LocalPosition: {x: 0.18643726, y: 1.7232983, z: 0.7816895}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -483,7 +526,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ab68ce6587aab0146b8dabefbd806791, type: 3}
   m_Name: 
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_SendPointerHoverToParent: 1
   m_ClickSpeed: 0.3
   m_MoveDeadzone: 0.6
@@ -524,7 +567,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   m_FirstSelected: {fileID: 0}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
@@ -543,6 +586,60 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2136832050
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2136832052}
+  - component: {fileID: 2136832051}
+  m_Layer: 0
+  m_Name: TrackedPoseCaptureMarker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2136832051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2136832050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b724e9ba560a4da6980f0cd639990727, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SplatVRLab.TrackedPoseCaptureMarker
+  Origin: {fileID: 441087507}
+  Aligner: {fileID: 0}
+  VariantId: spark_opacity_topk_100k_visual_reference_v01
+  RepresentationVariantId: opacity_topk_100k_v01
+  ReferencePoseId: ns_poster_test_frame_00001
+  ReferenceFrame: ./images/frame_00001.png
+  RepresentationGaussianCount: 100000
+  TargetPosition: {x: 0, y: 1.6, z: 0}
+  TargetRotation: {x: 0.12372711, y: 0.003363524, z: -0.026965998, w: 0.99194413}
+  DelaySeconds: 12
+--- !u!4 &2136832052
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2136832050}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -550,5 +647,6 @@ SceneRoots:
   - {fileID: 441087506}
   - {fileID: 756192408}
   - {fileID: 2092139010}
-  - {fileID: 1790231702}
-  - {fileID: 456141185}
+  - {fileID: 454648718}
+  - {fileID: 2136832052}
+  - {fileID: 1706047442}

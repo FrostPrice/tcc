@@ -23,29 +23,94 @@ namespace SplatVRLab.Editor
     {
         private const string SourcePlyRelativeToRepository =
             "experiments/baseline_v01/exp_ns_poster_baseline_v01_baseline_v01.ply";
+        private const string PrunedPlyRelativeToRepository =
+            "experiments/pruning_v01/exp_ns_poster_opacity_topk_100k_v01.ply";
         private const string ReferencePoseRelativeToRepository =
             "experiments/unitysplats_viability_v01/reference_pose.json";
         private const string LocomotionProfileRelativeToRepository =
             "experiments/unitysplats_viability_v01/locomotion_profile.json";
+        private const string AutomatedWalkProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/automated_continuous_walk_profile.json";
+        private const string AutomatedStaticProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/automated_static_reference_profile.json";
+        private const string PrunedAutomatedStaticProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/automated_static_pruned_profile.json";
+        private const string VisualBaselineProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_baseline_profile.json";
+        private const string VisualPrunedProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_pruned100k_profile.json";
+        private const string AutomatedSnapTurnProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/automated_snap_turn_profile.json";
         private const string ImportedPlyAssetPath =
             "Assets/Research/Data/poster_baseline_v01.ply";
+        private const string ImportedPrunedPlyAssetPath =
+            "Assets/Research/Data/poster_opacity_topk_100k_v01.ply";
         private const string SourceSceneAssetPath = "Assets/Scenes/BasicScene.unity";
         private const string ViabilitySceneAssetPath =
             "Assets/Research/Scenes/GsplatViability.unity";
         private const uint ExpectedSplatCount = 195760;
+        private const uint ExpectedPrunedSplatCount = 100000;
         private const string ExpectedSceneId = "ns_poster";
         private const string ExpectedExperimentId = "exp_ns_poster_baseline_v01";
         private const string ExpectedVariantId = "baseline_v01";
         private const string ExpectedSplatSha256 =
             "23e3b3d3cd47e1aa0ad1daf7df96c4bd620af9edaf7996ccb865f5b60b80bebb";
+        private const string ExpectedPrunedSplatSha256 =
+            "b2af0f8f9bda2ab2cc54db3e34147b6e02ea73cd71eb682ae803739f4f34c1d3";
         private const string ExpectedLocomotionProfileSha256 =
             "7233b2fc9c092052fcf7a70dc8646f55aac068c910834fd686f7beb8ec9f6e41";
+        private const string ExpectedAutomatedWalkProfileSha256 =
+            "279a9cc47c0828d2836573d7159c41be68825397a8d7063d6cf3680ec3803b9f";
+        private const string ExpectedAutomatedStaticProfileSha256 =
+            "cb58fd1aee6fcee8146fe53751f7fd9713cb00915d6e9aa6075cc07afc086ea6";
+        private const string ExpectedPrunedAutomatedStaticProfileSha256 =
+            "7f7f1dd174e40e05a1df820f8c0caec19bb34af00e7891e2737056515e10b87b";
+        private const string ExpectedVisualBaselineProfileSha256 =
+            "e2ec9073dc6d2b8d248acab04ec552b0f4531cf938ae98a0bf42e7a97a2447d0";
+        private const string ExpectedVisualPrunedProfileSha256 =
+            "25c7b5618ff88253557437f6cad08a58e77fd88fbd5d8a8acc9152fcc688ad00";
+        private const string ExpectedAutomatedSnapTurnProfileSha256 =
+            "31a6ab51ff51d8a7966744f49276297fadbc770c9fcee94b039631f82372c47b";
         private const string StationaryVariantId = "spark_baseline";
         private const string ExpectedLocomotionProfileId =
             "quest_continuous_move_snap_turn_v01";
         private const string ExpectedLocomotionVariantId = "spark_locomotion_v01";
+        private const string AutomatedWalkVariantId = "spark_automated_continuous_walk_v01";
+        private const string AutomatedStaticVariantId = "spark_automated_static_reference_v01";
+        private const string PrunedAutomatedStaticVariantId =
+            "spark_opacity_topk_100k_automated_static_v01";
+        private const string VisualBaselineVariantId = "spark_baseline_visual_reference_v01";
+        private const string VisualPrunedVariantId = "spark_opacity_topk_100k_visual_reference_v01";
+        private const string AutomatedSnapTurnVariantId = "spark_automated_snap_turn_v01";
         private const string ControllerInputActionManagerTypeName =
             "UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets.ControllerInputActionManager";
+
+        private sealed class RepresentationSpec
+        {
+            public string VariantId;
+            public string SourceRelativePath;
+            public string ImportedAssetPath;
+            public string Sha256;
+            public uint SplatCount;
+        }
+
+        private static readonly RepresentationSpec BaselineRepresentation = new()
+        {
+            VariantId = "baseline_v01",
+            SourceRelativePath = SourcePlyRelativeToRepository,
+            ImportedAssetPath = ImportedPlyAssetPath,
+            Sha256 = ExpectedSplatSha256,
+            SplatCount = ExpectedSplatCount,
+        };
+
+        private static readonly RepresentationSpec PrunedRepresentation = new()
+        {
+            VariantId = "opacity_topk_100k_v01",
+            SourceRelativePath = PrunedPlyRelativeToRepository,
+            ImportedAssetPath = ImportedPrunedPlyAssetPath,
+            Sha256 = ExpectedPrunedSplatSha256,
+            SplatCount = ExpectedPrunedSplatCount,
+        };
 
         [Serializable]
         private sealed class LocomotionProfile
@@ -57,6 +122,7 @@ namespace SplatVRLab.Editor
             public TurnSettings turn;
             public ProviderSettings providers;
             public string collision_policy;
+            public AutomationSettings automation;
         }
 
         [Serializable]
@@ -90,6 +156,17 @@ namespace SplatVRLab.Editor
             public bool jump_enabled;
         }
 
+        [Serializable]
+        private sealed class AutomationSettings
+        {
+            public string condition_id;
+            public string sequence_id;
+            public string mode;
+            public float translation_speed_unity_units_per_second;
+            public float snap_turn_degrees;
+            public float snap_turn_interval_seconds;
+        }
+
         [MenuItem("SplatVRLab/Configure viability harness")]
         public static void Configure()
         {
@@ -102,13 +179,69 @@ namespace SplatVRLab.Editor
             ConfigureVariant(LoadLocomotionProfile());
         }
 
+        [MenuItem("SplatVRLab/Configure automated continuous-walk metrics variant")]
+        public static void ConfigureAutomatedContinuousWalk()
+        {
+            ConfigureVariant(LoadAutomatedProfile(
+                AutomatedWalkProfileRelativeToRepository, ExpectedAutomatedWalkProfileSha256,
+                AutomatedWalkVariantId, "continuous_walk", "continuous_walk"));
+        }
+
+        [MenuItem("SplatVRLab/Configure automated stationary-control metrics variant")]
+        public static void ConfigureAutomatedStaticReference()
+        {
+            ConfigureVariant(LoadAutomatedProfile(
+                AutomatedStaticProfileRelativeToRepository, ExpectedAutomatedStaticProfileSha256,
+                AutomatedStaticVariantId, "static_reference", "static_reference"));
+        }
+
+        [MenuItem("SplatVRLab/Configure pruned automated stationary metrics variant")]
+        public static void ConfigurePrunedAutomatedStaticReference()
+        {
+            ConfigureVariant(PrunedRepresentation, LoadAutomatedProfile(
+                PrunedAutomatedStaticProfileRelativeToRepository, ExpectedPrunedAutomatedStaticProfileSha256,
+                PrunedAutomatedStaticVariantId, "static_reference", "static_reference"));
+        }
+
+        [MenuItem("SplatVRLab/Configure baseline visual-reference variant")]
+        public static void ConfigureVisualBaseline()
+        {
+            ConfigureVariant(BaselineRepresentation, LoadAutomatedProfile(
+                VisualBaselineProfileRelativeToRepository, ExpectedVisualBaselineProfileSha256,
+                VisualBaselineVariantId, "static_reference", "static_reference"), true);
+        }
+
+        [MenuItem("SplatVRLab/Configure pruned-100k visual-reference variant")]
+        public static void ConfigureVisualPruned()
+        {
+            ConfigureVariant(PrunedRepresentation, LoadAutomatedProfile(
+                VisualPrunedProfileRelativeToRepository, ExpectedVisualPrunedProfileSha256,
+                VisualPrunedVariantId, "static_reference", "static_reference"), true);
+        }
+
+        [MenuItem("SplatVRLab/Configure automated snap-turn metrics variant")]
+        public static void ConfigureAutomatedSnapTurn()
+        {
+            ConfigureVariant(LoadAutomatedProfile(
+                AutomatedSnapTurnProfileRelativeToRepository, ExpectedAutomatedSnapTurnProfileSha256,
+                AutomatedSnapTurnVariantId, "snap_turn", "snap_turn"));
+        }
+
         private static void ConfigureVariant(LocomotionProfile locomotionProfile)
+        {
+            ConfigureVariant(BaselineRepresentation, locomotionProfile);
+        }
+
+        private static void ConfigureVariant(
+            RepresentationSpec representation,
+            LocomotionProfile locomotionProfile,
+            bool enableReferenceCapture = false)
         {
             ConfigureProjectSettings();
             EnsureGsplatRendererFeatures();
-            GsplatAsset baseline = ImportBaseline();
+            GsplatAsset splatAsset = ImportRepresentation(representation);
             ReferencePoseRecord referencePose = LoadReferencePose();
-            CreateViabilityScene(baseline, referencePose, locomotionProfile);
+            CreateViabilityScene(splatAsset, representation, referencePose, locomotionProfile, enableReferenceCapture);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Validate();
@@ -116,7 +249,7 @@ namespace SplatVRLab.Editor
             string variantId = locomotionProfile?.variant_id ?? StationaryVariantId;
             Debug.Log(
                 $"[SplatVRLab] SETUP_OK: Unity {Application.unityVersion}; " +
-                $"{baseline.SplatCount} splats; pose={referencePose.reference_pose_id}; " +
+                $"{splatAsset.SplatCount} splats; representation={representation.VariantId}; pose={referencePose.reference_pose_id}; " +
                 $"scalePolicy={referencePose.scale.policy}; variant={variantId}; " +
                 $"scene={ViabilitySceneAssetPath}");
         }
@@ -124,15 +257,6 @@ namespace SplatVRLab.Editor
         [MenuItem("SplatVRLab/Validate viability harness")]
         public static void Validate()
         {
-            GsplatAsset baseline = AssetDatabase.LoadAssetAtPath<GsplatAsset>(ImportedPlyAssetPath);
-            if (!baseline)
-                throw new InvalidOperationException($"Missing imported baseline: {ImportedPlyAssetPath}");
-            if (baseline.SplatCount != ExpectedSplatCount)
-            {
-                throw new InvalidOperationException(
-                    $"Unexpected splat count: {baseline.SplatCount}; expected {ExpectedSplatCount}.");
-            }
-
             foreach (UniversalRendererData rendererData in FindProjectRendererData())
             {
                 bool hasFeature = rendererData.rendererFeatures.Any(
@@ -148,21 +272,28 @@ namespace SplatVRLab.Editor
             ReferencePosePlacement expectedPlacement =
                 NerfstudioReferencePose.ComputePlacement(referencePose);
             Scene scene = EditorSceneManager.OpenScene(ViabilitySceneAssetPath, OpenSceneMode.Single);
+            FrameMetricsRecorder metrics =
+                UnityEngine.Object.FindAnyObjectByType<FrameMetricsRecorder>();
+            if (!metrics)
+                throw new InvalidOperationException("The viability scene is missing FrameMetricsRecorder.");
+            RepresentationSpec representation = ResolveRepresentation(metrics.RepresentationVariantId);
+            GsplatAsset splatAsset = AssetDatabase.LoadAssetAtPath<GsplatAsset>(representation.ImportedAssetPath);
+            if (!splatAsset || splatAsset.SplatCount != representation.SplatCount)
+                throw new InvalidOperationException(
+                    $"The imported representation is missing or has an unexpected splat count: {representation.ImportedAssetPath}.");
             GsplatRenderer renderer = UnityEngine.Object.FindAnyObjectByType<GsplatRenderer>();
-            if (!renderer || renderer.GsplatAsset != baseline)
-                throw new InvalidOperationException("The viability scene does not reference the baseline splat.");
+            if (!renderer || renderer.GsplatAsset != splatAsset)
+                throw new InvalidOperationException("The viability scene does not reference the recorded splat representation.");
             if (Vector3.Distance(renderer.transform.position, expectedPlacement.ModelPosition) > 1e-4f ||
                 Quaternion.Angle(renderer.transform.rotation, expectedPlacement.ModelRotation) > 0.01f ||
                 Vector3.Distance(
                     renderer.transform.localScale,
                     Vector3.one * expectedPlacement.ModelScale) > 1e-5f)
                 throw new InvalidOperationException("The splat transform does not match the reference pose.");
-            FrameMetricsRecorder metrics =
-                UnityEngine.Object.FindAnyObjectByType<FrameMetricsRecorder>();
-            if (!metrics)
-                throw new InvalidOperationException("The viability scene is missing FrameMetricsRecorder.");
             if (metrics.ExperimentId != "unitysplats_viability_v01" ||
                 metrics.SceneId != "poster_baseline" ||
+                metrics.RepresentationGaussianCount != (int)representation.SplatCount ||
+                metrics.RepresentationPlySha256 != representation.Sha256 ||
                 metrics.ReferencePoseId != referencePose.reference_pose_id ||
                 metrics.ReferenceFrame != referencePose.selection.frame_file_path ||
                 metrics.ScalePolicy != referencePose.scale.policy ||
@@ -176,6 +307,31 @@ namespace SplatVRLab.Editor
                 ValidateStationaryConfiguration(scene, metrics);
             else if (metrics.VariantId == ExpectedLocomotionVariantId)
                 ValidateLocomotionConfiguration(scene, metrics, LoadLocomotionProfile());
+            else if (metrics.VariantId == AutomatedWalkVariantId)
+                ValidateAutomatedConfiguration(scene, metrics, LoadAutomatedProfile(
+                    AutomatedWalkProfileRelativeToRepository, ExpectedAutomatedWalkProfileSha256, AutomatedWalkVariantId,
+                    "continuous_walk", "continuous_walk"));
+            else if (metrics.VariantId == AutomatedStaticVariantId)
+                ValidateAutomatedConfiguration(scene, metrics, LoadAutomatedProfile(
+                    AutomatedStaticProfileRelativeToRepository, ExpectedAutomatedStaticProfileSha256,
+                    AutomatedStaticVariantId, "static_reference", "static_reference"));
+            else if (metrics.VariantId == PrunedAutomatedStaticVariantId)
+                ValidateAutomatedConfiguration(scene, metrics, LoadAutomatedProfile(
+                    PrunedAutomatedStaticProfileRelativeToRepository,
+                    ExpectedPrunedAutomatedStaticProfileSha256,
+                    PrunedAutomatedStaticVariantId, "static_reference", "static_reference"));
+            else if (metrics.VariantId == VisualBaselineVariantId)
+                ValidateVisualReferenceConfiguration(scene, metrics, LoadAutomatedProfile(
+                    VisualBaselineProfileRelativeToRepository, ExpectedVisualBaselineProfileSha256,
+                    VisualBaselineVariantId, "static_reference", "static_reference"), referencePose, representation);
+            else if (metrics.VariantId == VisualPrunedVariantId)
+                ValidateVisualReferenceConfiguration(scene, metrics, LoadAutomatedProfile(
+                    VisualPrunedProfileRelativeToRepository, ExpectedVisualPrunedProfileSha256,
+                    VisualPrunedVariantId, "static_reference", "static_reference"), referencePose, representation);
+            else if (metrics.VariantId == AutomatedSnapTurnVariantId)
+                ValidateAutomatedConfiguration(scene, metrics, LoadAutomatedProfile(
+                    AutomatedSnapTurnProfileRelativeToRepository, ExpectedAutomatedSnapTurnProfileSha256, AutomatedSnapTurnVariantId,
+                    "snap_turn", "snap_turn"));
             else
                 throw new InvalidOperationException($"Unknown harness variant: {metrics.VariantId}.");
 
@@ -214,8 +370,8 @@ namespace SplatVRLab.Editor
             bool androidModuleInstalled = BuildPipeline.IsBuildTargetSupported(
                 BuildTargetGroup.Android, BuildTarget.Android);
             Debug.Log(
-                $"[SplatVRLab] VALIDATION_OK: splats={baseline.SplatCount}; " +
-                $"shBands={baseline.SHBands}; pose={referencePose.reference_pose_id}; " +
+                $"[SplatVRLab] VALIDATION_OK: splats={splatAsset.SplatCount}; " +
+                $"representation={representation.VariantId}; shBands={splatAsset.SHBands}; pose={referencePose.reference_pose_id}; " +
                 $"variant={metrics.VariantId}; locomotion={metrics.LocomotionMode}; " +
                 $"frame={referencePose.selection.frame_file_path}; " +
                 $"metersPerNerfstudioUnit={referencePose.scale.meters_per_nerfstudio_unit:F6}; " +
@@ -287,15 +443,29 @@ namespace SplatVRLab.Editor
 
         private static GsplatAsset ImportBaseline()
         {
+            return ImportRepresentation(BaselineRepresentation);
+        }
+
+        private static RepresentationSpec ResolveRepresentation(string variantId)
+        {
+            if (variantId == BaselineRepresentation.VariantId)
+                return BaselineRepresentation;
+            if (variantId == PrunedRepresentation.VariantId)
+                return PrunedRepresentation;
+            throw new InvalidOperationException($"Unknown splat representation: {variantId}.");
+        }
+
+        private static GsplatAsset ImportRepresentation(RepresentationSpec representation)
+        {
             string projectRoot = ResolveProjectRoot();
-            string sourcePath = ResolveRepositoryPath(SourcePlyRelativeToRepository);
-            string destinationPath = Path.Combine(projectRoot, ImportedPlyAssetPath);
+            string sourcePath = ResolveRepositoryPath(representation.SourceRelativePath);
+            string destinationPath = Path.Combine(projectRoot, representation.ImportedAssetPath);
 
             if (!File.Exists(sourcePath))
-                throw new FileNotFoundException("Baseline PLY is missing.", sourcePath);
+                throw new FileNotFoundException("Representation PLY is missing.", sourcePath);
             if (!string.Equals(
-                    ComputeSha256(sourcePath), ExpectedSplatSha256, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("Baseline PLY checksum differs from the recorded artifact.");
+                    ComputeSha256(sourcePath), representation.Sha256, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Representation PLY checksum differs from the recorded artifact.");
 
             Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
             var sourceInfo = new FileInfo(sourcePath);
@@ -304,10 +474,10 @@ namespace SplatVRLab.Editor
                 File.Copy(sourcePath, destinationPath, overwrite: true);
 
             AssetDatabase.ImportAsset(
-                ImportedPlyAssetPath,
+                representation.ImportedAssetPath,
                 ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
 
-            AssetImporter importer = AssetImporter.GetAtPath(ImportedPlyAssetPath);
+            AssetImporter importer = AssetImporter.GetAtPath(representation.ImportedAssetPath);
             var serializedImporter = new SerializedObject(importer);
             SerializedProperty compression = serializedImporter.FindProperty("Compression");
             SerializedProperty coordinates = serializedImporter.FindProperty("SourceCoordinates");
@@ -321,8 +491,12 @@ namespace SplatVRLab.Editor
                 importer.SaveAndReimport();
             }
 
-            return AssetDatabase.LoadAssetAtPath<GsplatAsset>(ImportedPlyAssetPath)
+            GsplatAsset imported = AssetDatabase.LoadAssetAtPath<GsplatAsset>(representation.ImportedAssetPath)
                    ?? throw new InvalidOperationException("UnitySplats did not create a GsplatAsset.");
+            if (imported.SplatCount != representation.SplatCount)
+                throw new InvalidOperationException(
+                    $"Unexpected splat count: {imported.SplatCount}; expected {representation.SplatCount}.");
+            return imported;
         }
 
         internal static ReferencePoseRecord LoadReferencePose()
@@ -381,10 +555,48 @@ namespace SplatVRLab.Editor
             return profile;
         }
 
+        private static LocomotionProfile LoadAutomatedProfile(
+            string relativePath, string expectedSha256, string variantId, string conditionId, string mode)
+        {
+            string path = ResolveRepositoryPath(relativePath);
+            if (!File.Exists(path))
+                throw new FileNotFoundException("Automated locomotion profile is missing.", path);
+            if (!string.Equals(ComputeSha256(path), expectedSha256, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Automated locomotion profile checksum differs from the recorded configuration.");
+            LocomotionProfile profile = JsonUtility.FromJson<LocomotionProfile>(File.ReadAllText(path));
+            if (profile == null || profile.movement == null || profile.turn == null ||
+                profile.providers == null || profile.automation == null ||
+                profile.schema_version != "1.0" || profile.variant_id != variantId ||
+                profile.automation.condition_id != conditionId || profile.automation.mode != mode ||
+                profile.providers.gravity_enabled || profile.providers.teleportation_enabled ||
+                profile.providers.climb_enabled || profile.providers.grab_move_enabled ||
+                profile.providers.jump_enabled ||
+                profile.collision_policy != "no_scene_colliders_free_horizontal_motion")
+                throw new InvalidOperationException("Automated locomotion profile is inconsistent.");
+
+            if (mode == "continuous_walk" &&
+                (profile.automation.translation_speed_unity_units_per_second <= 0f ||
+                 profile.automation.snap_turn_degrees != 0f))
+                throw new InvalidOperationException("Automated walk profile has invalid motion parameters.");
+            if (mode == "static_reference" &&
+                (profile.automation.translation_speed_unity_units_per_second != 0f ||
+                 profile.automation.snap_turn_degrees != 0f ||
+                 profile.automation.snap_turn_interval_seconds != 0f))
+                throw new InvalidOperationException("Automated static profile has invalid motion parameters.");
+            if (mode == "snap_turn" &&
+                (profile.automation.snap_turn_degrees <= 0f ||
+                 profile.automation.snap_turn_interval_seconds <= 0f ||
+                 profile.automation.translation_speed_unity_units_per_second != 0f))
+                throw new InvalidOperationException("Automated turn profile has invalid motion parameters.");
+            return profile;
+        }
+
         private static void CreateViabilityScene(
-            GsplatAsset baseline,
+            GsplatAsset splatAsset,
+            RepresentationSpec representation,
             ReferencePoseRecord referencePose,
-            LocomotionProfile locomotionProfile)
+            LocomotionProfile locomotionProfile,
+            bool enableReferenceCapture)
         {
             Scene scene = EditorSceneManager.OpenScene(SourceSceneAssetPath, OpenSceneMode.Single);
             DestroyRootIfPresent(scene, "Plane");
@@ -397,6 +609,7 @@ namespace SplatVRLab.Editor
 
             GameObject splatObject = GameObject.Find("PosterBaseline_Gsplat") ??
                                      new GameObject("PosterBaseline_Gsplat");
+            splatObject.name = $"Poster_{representation.VariantId}_Gsplat";
             ReferencePosePlacement placement =
                 NerfstudioReferencePose.ComputePlacement(referencePose);
             splatObject.transform.SetPositionAndRotation(
@@ -404,8 +617,8 @@ namespace SplatVRLab.Editor
             splatObject.transform.localScale = Vector3.one * placement.ModelScale;
             GsplatRenderer renderer = splatObject.GetComponent<GsplatRenderer>() ??
                                       splatObject.AddComponent<GsplatRenderer>();
-            renderer.GsplatAsset = baseline;
-            renderer.SHDegree = Mathf.Clamp(3, 0, baseline.SHBands);
+            renderer.GsplatAsset = splatAsset;
+            renderer.SHDegree = Mathf.Clamp(3, 0, splatAsset.SHBands);
             renderer.Brightness = 1f;
             renderer.SplatDownscaleFactor = 0f;
             renderer.GammaToLinear = true;
@@ -432,6 +645,9 @@ namespace SplatVRLab.Editor
             aligner.ExactReferenceCameraRotation = placement.ReferenceCameraRotation;
             aligner.TrackingWaitSeconds = 30f;
 
+            ConfigureReferenceEvaluationCapture(
+                scene, origin, representation, referencePose, placement, locomotionProfile, enableReferenceCapture);
+
             GameObject metricsObject = GameObject.Find("ExperimentMetrics") ??
                                        new GameObject("ExperimentMetrics");
             FrameMetricsRecorder metrics = metricsObject.GetComponent<FrameMetricsRecorder>() ??
@@ -439,6 +655,9 @@ namespace SplatVRLab.Editor
             metrics.ExperimentId = "unitysplats_viability_v01";
             metrics.SceneId = "poster_baseline";
             metrics.VariantId = locomotionProfile?.variant_id ?? StationaryVariantId;
+            metrics.RepresentationVariantId = representation.VariantId;
+            metrics.RepresentationGaussianCount = (int)representation.SplatCount;
+            metrics.RepresentationPlySha256 = representation.Sha256;
             metrics.ReferencePoseId = referencePose.reference_pose_id;
             metrics.ReferenceFrame = referencePose.selection.frame_file_path;
             metrics.ScalePolicy = referencePose.scale.policy;
@@ -457,8 +676,36 @@ namespace SplatVRLab.Editor
             metrics.GravityEnabled = locomotionProfile?.providers.gravity_enabled ?? false;
             metrics.CollisionPolicy =
                 locomotionProfile?.collision_policy ?? "not_applicable_stationary";
+            metrics.ConditionId = locomotionProfile?.automation?.condition_id ?? "static_reference";
+            metrics.AutomatedSequenceId = locomotionProfile?.automation?.sequence_id ?? "none";
             metrics.WarmupFrames = 180;
             metrics.MeasurementSeconds = 30f;
+
+            AutomatedLocomotionSequence automated =
+                xrRoot.GetComponent<AutomatedLocomotionSequence>();
+            if (locomotionProfile?.automation == null)
+            {
+                if (automated)
+                    UnityEngine.Object.DestroyImmediate(automated);
+            }
+            else
+            {
+                automated ??= xrRoot.AddComponent<AutomatedLocomotionSequence>();
+                automated.Metrics = metrics;
+                automated.ReferencePoseAligner = aligner;
+                automated.Origin = origin;
+                automated.Mode = locomotionProfile.automation.mode == "continuous_walk"
+                    ? AutomatedLocomotionSequence.SequenceMode.ContinuousWalk
+                    : locomotionProfile.automation.mode == "snap_turn"
+                        ? AutomatedLocomotionSequence.SequenceMode.SnapTurn
+                        : AutomatedLocomotionSequence.SequenceMode.StaticReference;
+                automated.TranslationSpeedUnityUnitsPerSecond =
+                    locomotionProfile.automation.translation_speed_unity_units_per_second;
+                automated.SnapTurnDegrees = locomotionProfile.automation.snap_turn_degrees;
+                automated.SnapTurnIntervalSeconds =
+                    locomotionProfile.automation.snap_turn_interval_seconds;
+                DisableManualMotionProviders(scene);
+            }
 
             Directory.CreateDirectory(Path.GetDirectoryName(ViabilitySceneAssetPath)!);
             EditorSceneManager.SaveScene(scene, ViabilitySceneAssetPath);
@@ -468,9 +715,52 @@ namespace SplatVRLab.Editor
             };
         }
 
+        private static void ConfigureReferenceEvaluationCapture(
+            Scene scene,
+            XROrigin origin,
+            RepresentationSpec representation,
+            ReferencePoseRecord referencePose,
+            ReferencePosePlacement placement,
+            LocomotionProfile locomotionProfile,
+            bool enabled)
+        {
+            GameObject existing = GameObject.Find("TrackedPoseCaptureMarker");
+            GameObject legacy = GameObject.Find("ReferencePoseEvaluationCamera");
+            if (legacy)
+                UnityEngine.Object.DestroyImmediate(legacy);
+            if (!enabled)
+            {
+                if (existing)
+                    UnityEngine.Object.DestroyImmediate(existing);
+                return;
+            }
+
+            GameObject markerObject = existing ?? new GameObject("TrackedPoseCaptureMarker");
+            TrackedPoseCaptureMarker marker = markerObject.GetComponent<TrackedPoseCaptureMarker>() ??
+                                              markerObject.AddComponent<TrackedPoseCaptureMarker>();
+            marker.Origin = origin;
+            marker.VariantId = locomotionProfile.variant_id;
+            marker.RepresentationVariantId = representation.VariantId;
+            marker.RepresentationGaussianCount = (int)representation.SplatCount;
+            marker.ReferencePoseId = referencePose.reference_pose_id;
+            marker.ReferenceFrame = referencePose.selection.frame_file_path;
+            marker.TargetPosition = placement.ReferenceCameraPosition;
+            marker.TargetRotation = placement.ReferenceCameraRotation;
+            marker.DelaySeconds = 12f;
+        }
+
         private static void ConfigureStationaryRig(Scene scene)
         {
             FindRequiredChild(scene, "XR Origin (XR Rig)", "Locomotion").SetActive(false);
+        }
+
+        private static void DisableManualMotionProviders(Scene scene)
+        {
+            const string rootName = "XR Origin (XR Rig)";
+            FindRequiredChild(scene, rootName, "Locomotion/Move")
+                .GetComponent<ContinuousMoveProvider>().enabled = false;
+            FindRequiredChild(scene, rootName, "Locomotion/Turn")
+                .GetComponent<SnapTurnProvider>().enabled = false;
         }
 
         private static void ConfigureLocomotionRig(
@@ -580,7 +870,8 @@ namespace SplatVRLab.Editor
         private static void ValidateLocomotionConfiguration(
             Scene scene,
             FrameMetricsRecorder metrics,
-            LocomotionProfile profile)
+            LocomotionProfile profile,
+            bool manualProvidersEnabled = true)
         {
             const string rootName = "XR Origin (XR Rig)";
             GameObject xrRoot = FindRequiredRoot(scene, rootName);
@@ -635,7 +926,9 @@ namespace SplatVRLab.Editor
                 moveProvider.rightHandMoveInput.inputSourceMode !=
                     XRInputValueReader.InputSourceMode.Unused ||
                 ReadLegacyMoveGravity(moveProvider) || gravityProvider.useGravity ||
-                !snapTurnProvider.enabled || continuousTurnProvider.enabled ||
+                (manualProvidersEnabled ? !snapTurnProvider.enabled : snapTurnProvider.enabled) ||
+                (manualProvidersEnabled ? !moveProvider.enabled : moveProvider.enabled) ||
+                continuousTurnProvider.enabled ||
                 Mathf.Abs(snapTurnProvider.turnAmount - profile.turn.angle_degrees) > 1e-6f ||
                 Mathf.Abs(snapTurnProvider.debounceTime - profile.turn.debounce_seconds) > 1e-6f ||
                 snapTurnProvider.enableTurnAround ||
@@ -661,6 +954,46 @@ namespace SplatVRLab.Editor
                 teleportInteractors.Any(interactor => interactor.activeSelf))
                 throw new InvalidOperationException(
                     "Teleport interactors must remain disabled in the locomotion variant.");
+        }
+
+        private static void ValidateAutomatedConfiguration(
+            Scene scene, FrameMetricsRecorder metrics, LocomotionProfile profile)
+        {
+            ValidateLocomotionConfiguration(scene, metrics, profile, manualProvidersEnabled: false);
+            const string rootName = "XR Origin (XR Rig)";
+            ContinuousMoveProvider moveProvider = FindRequiredChild(scene, rootName, "Locomotion/Move")
+                .GetComponent<ContinuousMoveProvider>();
+            SnapTurnProvider snapTurnProvider = FindRequiredChild(scene, rootName, "Locomotion/Turn")
+                .GetComponent<SnapTurnProvider>();
+            AutomatedLocomotionSequence sequence =
+                UnityEngine.Object.FindAnyObjectByType<AutomatedLocomotionSequence>();
+            if (!sequence || sequence.Metrics != metrics || !sequence.Origin ||
+                metrics.ConditionId != profile.automation.condition_id ||
+                metrics.AutomatedSequenceId != profile.automation.sequence_id ||
+                moveProvider.enabled || snapTurnProvider.enabled)
+                throw new InvalidOperationException(
+                    "Automated locomotion sequence provenance or provider state is inconsistent.");
+        }
+
+        private static void ValidateVisualReferenceConfiguration(
+            Scene scene,
+            FrameMetricsRecorder metrics,
+            LocomotionProfile profile,
+            ReferencePoseRecord referencePose,
+            RepresentationSpec representation)
+        {
+            ValidateAutomatedConfiguration(scene, metrics, profile);
+            ReferencePosePlacement placement = NerfstudioReferencePose.ComputePlacement(referencePose);
+            TrackedPoseCaptureMarker marker =
+                UnityEngine.Object.FindAnyObjectByType<TrackedPoseCaptureMarker>();
+            if (!marker || !marker.Origin || marker.VariantId != profile.variant_id ||
+                marker.RepresentationVariantId != representation.VariantId ||
+                marker.RepresentationGaussianCount != (int)representation.SplatCount ||
+                marker.ReferencePoseId != referencePose.reference_pose_id ||
+                marker.ReferenceFrame != referencePose.selection.frame_file_path ||
+                Vector3.Distance(marker.TargetPosition, placement.ReferenceCameraPosition) > 1e-5f ||
+                Quaternion.Angle(marker.TargetRotation, placement.ReferenceCameraRotation) > 0.01f)
+                throw new InvalidOperationException("Tracked-pose capture marker is missing or inconsistent.");
         }
 
         private static void SetLegacyMoveGravity(

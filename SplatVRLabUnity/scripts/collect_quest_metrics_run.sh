@@ -18,6 +18,11 @@ Opções:
   --output-dir PATH          diretório de evidência; padrão: experiments/.../evidence/RUN_ID
   --capture-seconds N        duração externa da sessão; padrão: 45
   --skip-install             não reinstala o APK
+  --require-automated-sequence rejeita o relatório se a sequência automática não iniciar
+  --expected-variant ID      rejeita o relatório se variantId for diferente
+  --expected-representation ID rejeita o relatório se representationVariantId for diferente
+  --require-visual-capture  rejeita a execução se não houver PNG e JSON novos da câmera de avaliação
+  --require-tracked-pose-marker rejeita a execução se não houver JSON novo de pose rastreada
 
 Antes de iniciar, ative a gravação CSV no OVR Metrics Tool. O script não remove
 nenhuma medição do headset. O JSON interno registra a hora exata em que a janela
@@ -34,6 +39,11 @@ CAPTURE_SECONDS=45
 MAX_REPORT_WAIT_SECONDS=60
 LAUNCH_CHECK_SECONDS=5
 INSTALL_APK=true
+REQUIRE_AUTOMATED_SEQUENCE=false
+EXPECTED_VARIANT=""
+EXPECTED_REPRESENTATION=""
+REQUIRE_VISUAL_CAPTURE=false
+REQUIRE_TRACKED_POSE_MARKER=false
 
 while (($# > 0)); do
     case "$1" in
@@ -44,6 +54,11 @@ while (($# > 0)); do
         --output-dir) OUTPUT_DIR="$2"; shift 2 ;;
         --capture-seconds) CAPTURE_SECONDS="$2"; shift 2 ;;
         --skip-install) INSTALL_APK=false; shift ;;
+        --require-automated-sequence) REQUIRE_AUTOMATED_SEQUENCE=true; shift ;;
+        --expected-variant) EXPECTED_VARIANT="$2"; shift 2 ;;
+        --expected-representation) EXPECTED_REPRESENTATION="$2"; shift 2 ;;
+        --require-visual-capture) REQUIRE_VISUAL_CAPTURE=true; shift ;;
+        --require-tracked-pose-marker) REQUIRE_TRACKED_POSE_MARKER=true; shift ;;
         -h|--help) usage; exit 0 ;;
         *) echo "Opção desconhecida: $1" >&2; usage >&2; exit 2 ;;
     esac
@@ -87,6 +102,7 @@ APK_SHA256="$(sha256sum "$APK" | awk '{print $1}')"
 APK_BYTES="$(wc -c < "$APK" | tr -d '[:space:]')"
 HOST_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 APP_METRICS_DIR="/sdcard/Android/data/br.edu.univali.splatvrlab/files/measurements"
+APP_VISUAL_DIR="/sdcard/Android/data/br.edu.univali.splatvrlab/files/visual_evaluation"
 OVR_METRICS_DIR="/sdcard/Android/data/com.oculus.ovrmonitormetricsservice/files/CapturedMetrics"
 
 "$ADB" get-state | grep -qx "device"
@@ -98,6 +114,8 @@ fi
 
 { "$ADB" shell ls -1 "$APP_METRICS_DIR" 2>/dev/null || true; } | tr -d '\r' | sort \
     > "$OUTPUT_DIR/app_measurements_before.txt"
+{ "$ADB" shell ls -1 "$APP_VISUAL_DIR" 2>/dev/null || true; } | tr -d '\r' | sort \
+    > "$OUTPUT_DIR/visual_evaluation_before.txt"
 { "$ADB" shell ls -1 "$OVR_METRICS_DIR" 2>/dev/null || true; } | tr -d '\r' | sort \
     > "$OUTPUT_DIR/ovr_metrics_before.txt"
 "$ADB" logcat -c
@@ -120,10 +138,10 @@ case "$CONDITION" in
         INSTRUCTION="Permaneça parado na pose inicial, sem tocar nos controles, até o término da captura."
         ;;
     continuous_walk)
-        INSTRUCTION="Movimente-se continuamente com o joystick esquerdo, sem giro deliberado, até o término da captura."
+        INSTRUCTION="A variante automatizada translada a origem na direção canônica durante a janela interna. Não toque nos controles."
         ;;
     snap_turn)
-        INSTRUCTION="Permaneça aproximadamente na posição inicial e execute giros de 30 graus com o joystick direito até o término da captura."
+        INSTRUCTION="A variante automatizada executa giros de 30 graus durante a janela interna. Não toque nos controles."
         ;;
 esac
 printf '%s\n' "$INSTRUCTION" | tee "$OUTPUT_DIR/operator_instruction.txt"
@@ -163,11 +181,75 @@ if [[ -s "$OUTPUT_DIR/app_measurements_new.txt" ]]; then
         printf '%s\n' \
             'O aplicativo foi pausado ou encerrado antes de concluir a janela de medição. Esta execução não é uma repetição válida.' \
             > "$OUTPUT_DIR/app_measurements_status.txt"
+    elif ! grep -Fq "\"conditionId\": \"$CONDITION\"" \
+        "$OUTPUT_DIR"/app_measurements/*.json; then
+        APPLICATION_REPORT_COMPLETE=false
+        printf 'O APK não corresponde à condição solicitada (%s). Esta execução não é uma repetição válida.\n' "$CONDITION" \
+            > "$OUTPUT_DIR/app_measurements_status.txt"
+    elif [[ "$REQUIRE_AUTOMATED_SEQUENCE" == true ]] && \
+         ! grep -Fq '"automatedSequenceStarted": true' "$OUTPUT_DIR"/app_measurements/*.json; then
+        APPLICATION_REPORT_COMPLETE=false
+        printf 'A sequência automatizada obrigatória não iniciou. Esta execução não é uma repetição válida.\n' \
+            > "$OUTPUT_DIR/app_measurements_status.txt"
+    elif [[ -n "$EXPECTED_VARIANT" ]] && \
+         ! grep -Fq "\"variantId\": \"$EXPECTED_VARIANT\"" "$OUTPUT_DIR"/app_measurements/*.json; then
+        APPLICATION_REPORT_COMPLETE=false
+        printf 'O APK não corresponde à variante solicitada (%s). Esta execução não é uma repetição válida.\n' "$EXPECTED_VARIANT" \
+            > "$OUTPUT_DIR/app_measurements_status.txt"
+    elif [[ -n "$EXPECTED_REPRESENTATION" ]] && \
+         ! grep -Fq "\"representationVariantId\": \"$EXPECTED_REPRESENTATION\"" "$OUTPUT_DIR"/app_measurements/*.json; then
+        APPLICATION_REPORT_COMPLETE=false
+        printf 'O APK não corresponde à representação solicitada (%s). Esta execução não é uma repetição válida.\n' "$EXPECTED_REPRESENTATION" \
+            > "$OUTPUT_DIR/app_measurements_status.txt"
+    elif [[ "$CONDITION" == "continuous_walk" ]] && \
+         ! grep -Fq '"automatedSequenceStarted": true' "$OUTPUT_DIR"/app_measurements/*.json; then
+        APPLICATION_REPORT_COMPLETE=false
+        printf 'A sequência automatizada de caminhada não iniciou. Esta execução não é uma repetição válida.\n' \
+            > "$OUTPUT_DIR/app_measurements_status.txt"
+    elif [[ "$CONDITION" == "snap_turn" ]] && \
+         ! grep -Fq '"automatedSequenceStarted": true' "$OUTPUT_DIR"/app_measurements/*.json; then
+        APPLICATION_REPORT_COMPLETE=false
+        printf 'A sequência automatizada de giros não iniciou. Esta execução não é uma repetição válida.\n' \
+            > "$OUTPUT_DIR/app_measurements_status.txt"
     fi
 else
     APPLICATION_REPORT_COMPLETE=false
     printf 'Nenhum JSON novo foi criado após %s s adicionais de espera. Esta execução não é uma repetição válida.\n' "$REPORT_WAITED_SECONDS" \
         > "$OUTPUT_DIR/app_measurements_status.txt"
+fi
+
+{ "$ADB" shell ls -1 "$APP_VISUAL_DIR" 2>/dev/null || true; } | tr -d '\r' | sort \
+    > "$OUTPUT_DIR/visual_evaluation_after.txt"
+comm -13 "$OUTPUT_DIR/visual_evaluation_before.txt" "$OUTPUT_DIR/visual_evaluation_after.txt" \
+    > "$OUTPUT_DIR/visual_evaluation_new.txt"
+VISUAL_CAPTURE_COMPLETE=true
+if [[ -s "$OUTPUT_DIR/visual_evaluation_new.txt" ]]; then
+    mkdir -p "$OUTPUT_DIR/visual_evaluation"
+    while IFS= read -r visual_file; do
+        "$ADB" pull "$APP_VISUAL_DIR/$visual_file" "$OUTPUT_DIR/visual_evaluation/$visual_file"
+    done < "$OUTPUT_DIR/visual_evaluation_new.txt"
+fi
+if [[ "$REQUIRE_VISUAL_CAPTURE" == true ]]; then
+    if ! compgen -G "$OUTPUT_DIR/visual_evaluation/*.png" > /dev/null || \
+       ! compgen -G "$OUTPUT_DIR/visual_evaluation/*.json" > /dev/null; then
+        VISUAL_CAPTURE_COMPLETE=false
+        printf 'A câmera de avaliação não produziu PNG e JSON novos. Esta execução não é uma repetição visual válida.\n' \
+            > "$OUTPUT_DIR/visual_evaluation_status.txt"
+    else
+        printf 'Captura visual de referência copiada.\n' > "$OUTPUT_DIR/visual_evaluation_status.txt"
+    fi
+else
+    printf 'Captura visual não exigida nesta execução.\n' > "$OUTPUT_DIR/visual_evaluation_status.txt"
+fi
+if [[ "$REQUIRE_TRACKED_POSE_MARKER" == true ]]; then
+    if ! compgen -G "$OUTPUT_DIR/visual_evaluation/tracked_pose_*.json" > /dev/null; then
+        VISUAL_CAPTURE_COMPLETE=false
+        printf 'O marcador de pose rastreada não produziu JSON novo. Esta execução não é uma repetição visual válida.\n' \
+            > "$OUTPUT_DIR/visual_evaluation_status.txt"
+    else
+        printf 'Marcador de pose rastreada copiado; screenshot.png foi capturado pelo host ao final da sessão.\n' \
+            > "$OUTPUT_DIR/visual_evaluation_status.txt"
+    fi
 fi
 
 if "$ADB" shell test -d "$OVR_METRICS_DIR"; then
@@ -191,8 +273,8 @@ else
 fi
 
 HOST_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-printf '{\n  "schema_version": "1.0",\n  "run_id": "%s",\n  "condition_id": "%s",\n  "apk_path": "%s",\n  "apk_sha256": "%s",\n  "apk_size_bytes": %s,\n  "host_capture_started_at_utc": "%s",\n  "host_capture_finished_at_utc": "%s",\n  "external_capture_seconds": %s,\n  "report_wait_seconds": %s,\n  "operator_instruction_file": "operator_instruction.txt",\n  "application_measurement_index": "app_measurements_new.txt",\n  "ovr_metrics_index": "ovr_metrics_new.txt",\n  "ovr_metrics_status_file": "ovr_metrics_status.txt",\n  "notes": "Only application JSON and OVR CSV files created during this run are pulled. The app JSON contains the exact post-warmup measurement window when produced by the current APK. Source files remain on the headset."\n}\n' \
-    "$RUN_ID" "$CONDITION" "$APK" "$APK_SHA256" "$APK_BYTES" "$HOST_STARTED_AT" "$HOST_FINISHED_AT" "$CAPTURE_SECONDS" "$REPORT_WAITED_SECONDS" \
+printf '{\n  "schema_version": "1.0",\n  "run_id": "%s",\n  "condition_id": "%s",\n  "expected_variant_id": "%s",\n  "expected_representation_variant_id": "%s",\n  "require_visual_capture": %s,\n  "require_tracked_pose_marker": %s,\n  "apk_path": "%s",\n  "apk_sha256": "%s",\n  "apk_size_bytes": %s,\n  "host_capture_started_at_utc": "%s",\n  "host_capture_finished_at_utc": "%s",\n  "external_capture_seconds": %s,\n  "report_wait_seconds": %s,\n  "operator_instruction_file": "operator_instruction.txt",\n  "application_measurement_index": "app_measurements_new.txt",\n  "visual_evaluation_index": "visual_evaluation_new.txt",\n  "ovr_metrics_index": "ovr_metrics_new.txt",\n  "ovr_metrics_status_file": "ovr_metrics_status.txt",\n  "notes": "Only application JSON, tracked-pose markers and OVR CSV files created during this run are pulled. screenshot.png is captured by the host after the fixed external session."\n}\n' \
+    "$RUN_ID" "$CONDITION" "$EXPECTED_VARIANT" "$EXPECTED_REPRESENTATION" "$REQUIRE_VISUAL_CAPTURE" "$REQUIRE_TRACKED_POSE_MARKER" "$APK" "$APK_SHA256" "$APK_BYTES" "$HOST_STARTED_AT" "$HOST_FINISHED_AT" "$CAPTURE_SECONDS" "$REPORT_WAITED_SECONDS" \
     > "$OUTPUT_DIR/run_metadata.json"
 
 printf 'Evidências preservadas em: %s\n' "$OUTPUT_DIR"
@@ -200,4 +282,9 @@ if [[ "$APPLICATION_REPORT_COMPLETE" != true ]]; then
     printf '%s\n' \
         'ERRO: o JSON da aplicação não completou a janela de medição; esta execução não deve integrar a bateria.' >&2
     exit 4
+fi
+if [[ "$VISUAL_CAPTURE_COMPLETE" != true ]]; then
+    printf '%s\n' \
+        'ERRO: a captura visual de referência não foi produzida; esta execução não deve integrar a comparação visual.' >&2
+    exit 5
 fi

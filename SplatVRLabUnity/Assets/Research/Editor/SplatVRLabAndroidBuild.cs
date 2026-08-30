@@ -14,6 +14,18 @@ namespace SplatVRLab.Editor
             "Builds/Android/SplatVRLabUnity-dev.apk";
         private const string LocomotionOutputRelativePath =
             "Builds/Android/SplatVRLabUnity-locomotion-dev.apk";
+        private const string AutomatedWalkOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-automated-walk-dev.apk";
+        private const string AutomatedStaticOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-automated-static-dev.apk";
+        private const string PrunedAutomatedStaticOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-pruned-100k-static-dev.apk";
+        private const string VisualBaselineOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-baseline-dev.apk";
+        private const string VisualPrunedOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-pruned100k-dev.apk";
+        private const string AutomatedSnapTurnOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-automated-snapturn-dev.apk";
 
         [MenuItem("SplatVRLab/Build Android development APK")]
         public static void BuildDevelopmentApk()
@@ -31,6 +43,60 @@ namespace SplatVRLab.Editor
                 LocomotionOutputRelativePath,
                 "spark_locomotion_v01",
                 SplatVRLabSetup.ConfigureLocomotion);
+        }
+
+        [MenuItem("SplatVRLab/Build Android automated continuous-walk metrics APK")]
+        public static void BuildAutomatedContinuousWalkDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                AutomatedWalkOutputRelativePath,
+                "spark_automated_continuous_walk_v01",
+                SplatVRLabSetup.ConfigureAutomatedContinuousWalk);
+        }
+
+        [MenuItem("SplatVRLab/Build Android automated stationary-control metrics APK")]
+        public static void BuildAutomatedStaticReferenceDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                AutomatedStaticOutputRelativePath,
+                "spark_automated_static_reference_v01",
+                SplatVRLabSetup.ConfigureAutomatedStaticReference);
+        }
+
+        [MenuItem("SplatVRLab/Build Android pruned-100k stationary metrics APK")]
+        public static void BuildPrunedAutomatedStaticReferenceDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                PrunedAutomatedStaticOutputRelativePath,
+                "spark_opacity_topk_100k_automated_static_v01",
+                SplatVRLabSetup.ConfigurePrunedAutomatedStaticReference);
+        }
+
+        [MenuItem("SplatVRLab/Build Android baseline visual-reference APK")]
+        public static void BuildVisualBaselineDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualBaselineOutputRelativePath,
+                "spark_baseline_visual_reference_v01",
+                SplatVRLabSetup.ConfigureVisualBaseline);
+        }
+
+        [MenuItem("SplatVRLab/Build Android pruned-100k visual-reference APK")]
+        public static void BuildVisualPrunedDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualPrunedOutputRelativePath,
+                "spark_opacity_topk_100k_visual_reference_v01",
+                SplatVRLabSetup.ConfigureVisualPruned);
+        }
+
+        [MenuItem("SplatVRLab/Build Android automated snap-turn metrics APK")]
+        public static void BuildAutomatedSnapTurnDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                AutomatedSnapTurnOutputRelativePath,
+                "spark_automated_snap_turn_v01",
+                SplatVRLabSetup.ConfigureAutomatedSnapTurn);
         }
 
         private static void BuildDevelopmentApk(

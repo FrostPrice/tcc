@@ -15,7 +15,14 @@ ocorre no headset e não por Quest Link.
 - API gráfica: Vulkan;
 - runtime XR: OpenXR;
 - APK estacionário: `Builds/Android/SplatVRLabUnity-dev.apk`;
-- APK de locomoção: `Builds/Android/SplatVRLabUnity-locomotion-dev.apk`.
+- APK de locomoção manual: `Builds/Android/SplatVRLabUnity-locomotion-dev.apk`;
+- APK de controle estacionário automatizado: `Builds/Android/SplatVRLabUnity-automated-static-dev.apk`;
+- APK automatizado de caminhada: `Builds/Android/SplatVRLabUnity-automated-walk-dev.apk`;
+- APK automatizado de giro: `Builds/Android/SplatVRLabUnity-automated-snapturn-dev.apk`.
+- APK estacionário automatizado com poda de 100 mil splats:
+  `Builds/Android/SplatVRLabUnity-pruned-100k-static-dev.apk`.
+- APKs de captura visual de referência: `Builds/Android/SplatVRLabUnity-visual-baseline-dev.apk`
+  e `Builds/Android/SplatVRLabUnity-visual-pruned100k-dev.apk`.
 
 ## 1. Preparar o computador e o headset
 
@@ -119,8 +126,35 @@ e salto. O APK é salvo como
 
 O splat não fornece colisores para paredes ou objetos. A variante permite
 atravessar a geometria visual e deve ser avaliada somente como navegação simples.
+
+### Variantes automatizadas para a bateria de movimento
+
+Para eliminar a intervenção do participante durante a coleta, há duas variantes
+separadas: `SplatVRLab > Build Android automated continuous-walk metrics APK` e
+`SplatVRLab > Build Android automated snap-turn metrics APK`. Elas aplicam,
+respectivamente, translação da origem a 0,25 unidade Unity/s na direção canônica
+e giro horário de 30 graus a cada 0,75 s, somente depois do aquecimento e do
+início efetivo da janela de métricas. Os provedores manuais de movimento e giro
+ficam desabilitados nesses APKs.
+
+Essas variantes medem uma carga visual de movimento reproduzível; elas não
+validam mapeamento de controles, conforto ou usabilidade da locomoção manual.
+
+O menu `SplatVRLab > Build Android automated stationary-control metrics APK`
+gera a referência pareada sem translação ou giro. Ele preserva a mesma sequência
+de instrumentação pós-aquecimento e os provedores manuais desligados; use-o para
+comparar as condições automatizadas sem atribuir diferenças ao APK anterior.
 A velocidade de `1,0` está em unidades Unity por segundo porque a escala ainda
 não foi calibrada em metros.
+
+### Variante podada de 100 mil splats
+
+O menu `SplatVRLab > Build Android pruned-100k stationary metrics APK` importa
+o PLY `opacity_topk_100k_v01` como asset separado, valida seus 100.000 splats e
+gera um controle estacionário automatizado. Ele preserva a baseline de 195.760
+splats e deve ser medido inicialmente apenas contra o controle estacionário
+automatizado equivalente. A configuração e o hash do PLY estão em
+`experiments/pruning_v01/manifest.json`.
 
 ### Cena com alterações manuais
 
@@ -292,16 +326,30 @@ Ele fixa cinco repetições para cada condição: `static_reference`,
 no Quest e ative a gravação CSV em modo de relatório. Se usar o Meta Quest
 Developer Hub, desative casting durante o perfilamento.
 
-Para cada repetição, execute a partir da raiz do repositório. O primeiro comando
-instala o APK; nas demais repetições use `--skip-install` para conservar a mesma
-instalação.
+Para cada repetição, execute a partir da raiz do repositório. A série
+`static_reference` já foi concluída e preservada. Para `continuous_walk` e
+`snap_turn`, compile e use o APK automatizado correspondente; o primeiro comando
+instala o APK e, nas demais repetições, use `--skip-install` para conservar a
+mesma instalação.
+
+Para o controle estacionário pareado, use o APK automatizado estático e a opção
+`--require-automated-sequence`:
 
 ```bash
 bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
   --adb "$QUEST_ADB" \
-  --apk SplatVRLabUnity/Builds/Android/SplatVRLabUnity-locomotion-dev.apk \
+  --apk SplatVRLabUnity/Builds/Android/SplatVRLabUnity-automated-static-dev.apk \
   --condition static_reference \
-  --run-id quest_metrics_v01_static_r01
+  --run-id quest_metrics_v01_static_control_r01 \
+  --require-automated-sequence
+```
+
+```bash
+bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
+  --adb "$QUEST_ADB" \
+  --apk SplatVRLabUnity/Builds/Android/SplatVRLabUnity-automated-walk-dev.apk \
+  --condition continuous_walk \
+  --run-id quest_metrics_v01_walk_r01
 ```
 
 O script abre o aplicativo, informa a atividade a executar, aguarda 45 s e, se
@@ -314,6 +362,39 @@ frames de aquecimento; use essa janela, e não o tempo externo aproximado, para
 relacionar os dados internos ao CSV do OVR Metrics Tool.
 Os índices `app_measurements_new.txt` e `ovr_metrics_new.txt` identificam apenas
 os arquivos criados na repetição, sem misturar relatórios históricos do headset.
+O coletor também rejeita o relatório se o `conditionId` do APK não corresponder à
+condição pedida ou se a sequência automatizada não tiver iniciado.
+Para variantes de representação, use também `--expected-variant` e
+`--expected-representation`; o JSON interno será rejeitado se identificar outro
+APK ou outro PLY.
+
+## 10. Captura visual diagnóstica em pose Nerfstudio
+
+Os menus `SplatVRLab > Build Android baseline visual-reference APK` e
+`SplatVRLab > Build Android pruned-100k visual-reference APK` geram APKs que,
+após 12 s, renderizam uma câmera monoscópica auxiliar na posição e rotação
+exatas da pose `ns_poster_test_frame_00001`. A câmera não usa a pose física do
+HMD, e produz um PNG de 540 × 960 mais um JSON de proveniência em
+`visual_evaluation/` no armazenamento privado do aplicativo.
+
+Esta é uma comparação visual reproduzível entre representações, não uma métrica
+de fidelidade pixel a pixel nem uma validação estéreo: as intrínsecas registradas
+ainda precedem a undistorção da imagem de avaliação do Nerfstudio.
+
+Para cada APK, execute uma vez com a opção obrigatória de captura; o coletor
+copiará apenas o PNG e o JSON novos:
+
+```bash
+bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
+  --adb "$QUEST_ADB" \
+  --apk SplatVRLabUnity/Builds/Android/SplatVRLabUnity-visual-baseline-dev.apk \
+  --condition static_reference \
+  --run-id quest_visual_v01_baseline_r01 \
+  --require-automated-sequence \
+  --expected-variant spark_baseline_visual_reference_v01 \
+  --expected-representation baseline_v01 \
+  --require-visual-capture
+```
 
 Se o Quest bloquear a abertura por um diálogo do sistema, o coletor detecta a
 mensagem `Reprojected OS dialog`, preserva `launch_logcat.txt`, retorna o código

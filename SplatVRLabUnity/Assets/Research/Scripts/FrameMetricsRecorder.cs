@@ -32,6 +32,9 @@ namespace SplatVRLab
             public string experimentId;
             public string sceneId;
             public string variantId;
+            public string representationVariantId;
+            public int representationGaussianCount;
+            public string representationPlySha256;
             public string referencePoseId;
             public string referenceFrame;
             public string scalePolicy;
@@ -47,6 +50,11 @@ namespace SplatVRLab
             public float snapTurnDegrees;
             public bool gravityEnabled;
             public string collisionPolicy;
+            public string conditionId;
+            public string automatedSequenceId;
+            public bool automatedSequenceStarted;
+            public float automatedTranslationDistanceUnityUnits;
+            public int automatedSnapTurnsExecuted;
             public bool referencePoseAlignmentCompleted;
             public float referencePosePositionErrorMeters;
             public float referencePoseHorizontalForwardErrorDegrees;
@@ -77,6 +85,9 @@ namespace SplatVRLab
         public string ExperimentId = "unitysplats_viability_v01";
         public string SceneId = "poster_baseline";
         public string VariantId = "spark_baseline";
+        public string RepresentationVariantId = "baseline_v01";
+        [Min(1)] public int RepresentationGaussianCount = 195760;
+        public string RepresentationPlySha256;
 
         [Header("Pose de referencia e escala")]
         public string ReferencePoseId;
@@ -97,6 +108,10 @@ namespace SplatVRLab
         public bool GravityEnabled;
         public string CollisionPolicy = "not_applicable_stationary";
 
+        [Header("Condição automatizada")]
+        public string ConditionId = "static_reference";
+        public string AutomatedSequenceId = "none";
+
         [Header("Janela de medição")]
         [Min(0)] public int WarmupFrames = 180;
         [Min(1f)] public float MeasurementSeconds = 30f;
@@ -111,6 +126,9 @@ namespace SplatVRLab
         private bool _measurementStarted;
         private string _startedAtUtc;
         private string _measurementStartedAtUtc;
+
+        public bool MeasurementWindowStarted => _measurementStarted;
+        public float MeasurementElapsedSeconds => _measurementElapsed;
 
         private void Start()
         {
@@ -164,11 +182,16 @@ namespace SplatVRLab
         {
             _reportWritten = true;
             XrReferencePoseAligner aligner = FindAnyObjectByType<XrReferencePoseAligner>();
+            AutomatedLocomotionSequence automatedSequence =
+                FindAnyObjectByType<AutomatedLocomotionSequence>();
             var report = new FrameMetricsReport
             {
                 experimentId = ExperimentId,
                 sceneId = SceneId,
                 variantId = VariantId,
+                representationVariantId = RepresentationVariantId,
+                representationGaussianCount = RepresentationGaussianCount,
+                representationPlySha256 = RepresentationPlySha256,
                 referencePoseId = ReferencePoseId,
                 referenceFrame = ReferenceFrame,
                 scalePolicy = ScalePolicy,
@@ -184,6 +207,13 @@ namespace SplatVRLab
                 snapTurnDegrees = SnapTurnDegrees,
                 gravityEnabled = GravityEnabled,
                 collisionPolicy = CollisionPolicy,
+                conditionId = ConditionId,
+                automatedSequenceId = AutomatedSequenceId,
+                automatedSequenceStarted = automatedSequence && automatedSequence.SequenceStarted,
+                automatedTranslationDistanceUnityUnits =
+                    automatedSequence ? automatedSequence.TranslationDistanceUnityUnits : 0f,
+                automatedSnapTurnsExecuted =
+                    automatedSequence ? automatedSequence.SnapTurnsExecuted : 0,
                 referencePoseAlignmentCompleted = aligner && aligner.AlignmentCompleted,
                 referencePosePositionErrorMeters = aligner ? aligner.PositionErrorMeters : 0f,
                 referencePoseHorizontalForwardErrorDegrees =
