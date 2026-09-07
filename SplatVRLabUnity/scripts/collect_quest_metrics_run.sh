@@ -23,6 +23,7 @@ Opções:
   --expected-representation ID rejeita o relatório se representationVariantId for diferente
   --require-visual-capture  rejeita a execução se não houver PNG e JSON novos da câmera de avaliação
   --require-tracked-pose-marker rejeita a execução se não houver JSON novo de pose rastreada
+  --expected-alignment-mode MODE rejeita o marcador se o modo XR não corresponder
 
 Antes de iniciar, ative a gravação CSV no OVR Metrics Tool. O script não remove
 nenhuma medição do headset. O JSON interno registra a hora exata em que a janela
@@ -44,6 +45,7 @@ EXPECTED_VARIANT=""
 EXPECTED_REPRESENTATION=""
 REQUIRE_VISUAL_CAPTURE=false
 REQUIRE_TRACKED_POSE_MARKER=false
+EXPECTED_ALIGNMENT_MODE=""
 
 while (($# > 0)); do
     case "$1" in
@@ -59,6 +61,7 @@ while (($# > 0)); do
         --expected-representation) EXPECTED_REPRESENTATION="$2"; shift 2 ;;
         --require-visual-capture) REQUIRE_VISUAL_CAPTURE=true; shift ;;
         --require-tracked-pose-marker) REQUIRE_TRACKED_POSE_MARKER=true; shift ;;
+        --expected-alignment-mode) EXPECTED_ALIGNMENT_MODE="$2"; shift 2 ;;
         -h|--help) usage; exit 0 ;;
         *) echo "Opção desconhecida: $1" >&2; usage >&2; exit 2 ;;
     esac
@@ -79,6 +82,14 @@ if [[ ! "$CONDITION" =~ ^(static_reference|continuous_walk|snap_turn)$ ]]; then
 fi
 if [[ ! "$RUN_ID" =~ ^[A-Za-z0-9._-]+$ ]]; then
     echo "--run-id aceita apenas letras, números, ponto, sublinhado e hífen." >&2
+    exit 2
+fi
+if [[ -n "$EXPECTED_ALIGNMENT_MODE" && "$REQUIRE_TRACKED_POSE_MARKER" != true ]]; then
+    echo "--expected-alignment-mode exige --require-tracked-pose-marker." >&2
+    exit 2
+fi
+if [[ -n "$EXPECTED_ALIGNMENT_MODE" && ! "$EXPECTED_ALIGNMENT_MODE" =~ ^(YawOnly|FullPoseOnce)$ ]]; then
+    echo "--expected-alignment-mode aceita apenas YawOnly ou FullPoseOnce." >&2
     exit 2
 fi
 if [[ ! "$CAPTURE_SECONDS" =~ ^[0-9]+$ ]] || (( CAPTURE_SECONDS < 40 )); then
@@ -144,6 +155,9 @@ case "$CONDITION" in
         INSTRUCTION="A variante automatizada executa giros de 30 graus durante a janela interna. Não toque nos controles."
         ;;
 esac
+if [[ "$EXPECTED_ALIGNMENT_MODE" == "FullPoseOnce" ]]; then
+    INSTRUCTION="$INSTRUCTION Mantenha o headset imóvel na orientação inicial: esta variante fixa uma vez a pose completa após o tracking."
+fi
 printf '%s\n' "$INSTRUCTION" | tee "$OUTPUT_DIR/operator_instruction.txt"
 printf 'A sessão externa dura %s s. A janela interna exata está no JSON do aplicativo.\n' "$CAPTURE_SECONDS"
 sleep "$CAPTURE_SECONDS"
@@ -242,13 +256,28 @@ else
     printf 'Captura visual não exigida nesta execução.\n' > "$OUTPUT_DIR/visual_evaluation_status.txt"
 fi
 if [[ "$REQUIRE_TRACKED_POSE_MARKER" == true ]]; then
-    if ! compgen -G "$OUTPUT_DIR/visual_evaluation/tracked_pose_*.json" > /dev/null; then
+    shopt -s nullglob
+    tracked_markers=("$OUTPUT_DIR"/visual_evaluation/tracked_pose_*.json)
+    shopt -u nullglob
+    marker_count="${#tracked_markers[@]}"
+    if [[ "$marker_count" != 1 ]]; then
         VISUAL_CAPTURE_COMPLETE=false
-        printf 'O marcador de pose rastreada não produziu JSON novo. Esta execução não é uma repetição visual válida.\n' \
+        printf 'A execução deve produzir exatamente um marcador de pose rastreada; encontrados: %s.\n' "$marker_count" \
             > "$OUTPUT_DIR/visual_evaluation_status.txt"
     else
+        marker_path="${tracked_markers[0]}"
         printf 'Marcador de pose rastreada copiado; screenshot.png foi capturado pelo host ao final da sessão.\n' \
             > "$OUTPUT_DIR/visual_evaluation_status.txt"
+        if [[ -n "$EXPECTED_ALIGNMENT_MODE" ]] && \
+           ! grep -Fq "\"alignmentMode\": \"$EXPECTED_ALIGNMENT_MODE\"" "$marker_path"; then
+            VISUAL_CAPTURE_COMPLETE=false
+            printf 'O marcador de pose rastreada não declara o modo XR esperado (%s). Esta execução não é válida.\n' \
+                "$EXPECTED_ALIGNMENT_MODE" > "$OUTPUT_DIR/visual_evaluation_status.txt"
+        elif ! grep -Fq '"alignmentCompleted": true' "$marker_path"; then
+            VISUAL_CAPTURE_COMPLETE=false
+            printf 'O marcador de pose rastreada informa alinhamento XR não concluído. Esta execução não é válida.\n' \
+                > "$OUTPUT_DIR/visual_evaluation_status.txt"
+        fi
     fi
 fi
 
@@ -273,8 +302,8 @@ else
 fi
 
 HOST_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-printf '{\n  "schema_version": "1.0",\n  "run_id": "%s",\n  "condition_id": "%s",\n  "expected_variant_id": "%s",\n  "expected_representation_variant_id": "%s",\n  "require_visual_capture": %s,\n  "require_tracked_pose_marker": %s,\n  "apk_path": "%s",\n  "apk_sha256": "%s",\n  "apk_size_bytes": %s,\n  "host_capture_started_at_utc": "%s",\n  "host_capture_finished_at_utc": "%s",\n  "external_capture_seconds": %s,\n  "report_wait_seconds": %s,\n  "operator_instruction_file": "operator_instruction.txt",\n  "application_measurement_index": "app_measurements_new.txt",\n  "visual_evaluation_index": "visual_evaluation_new.txt",\n  "ovr_metrics_index": "ovr_metrics_new.txt",\n  "ovr_metrics_status_file": "ovr_metrics_status.txt",\n  "notes": "Only application JSON, tracked-pose markers and OVR CSV files created during this run are pulled. screenshot.png is captured by the host after the fixed external session."\n}\n' \
-    "$RUN_ID" "$CONDITION" "$EXPECTED_VARIANT" "$EXPECTED_REPRESENTATION" "$REQUIRE_VISUAL_CAPTURE" "$REQUIRE_TRACKED_POSE_MARKER" "$APK" "$APK_SHA256" "$APK_BYTES" "$HOST_STARTED_AT" "$HOST_FINISHED_AT" "$CAPTURE_SECONDS" "$REPORT_WAITED_SECONDS" \
+printf '{\n  "schema_version": "1.0",\n  "run_id": "%s",\n  "condition_id": "%s",\n  "expected_variant_id": "%s",\n  "expected_representation_variant_id": "%s",\n  "expected_alignment_mode": "%s",\n  "require_visual_capture": %s,\n  "require_tracked_pose_marker": %s,\n  "apk_path": "%s",\n  "apk_sha256": "%s",\n  "apk_size_bytes": %s,\n  "host_capture_started_at_utc": "%s",\n  "host_capture_finished_at_utc": "%s",\n  "external_capture_seconds": %s,\n  "report_wait_seconds": %s,\n  "operator_instruction_file": "operator_instruction.txt",\n  "application_measurement_index": "app_measurements_new.txt",\n  "visual_evaluation_index": "visual_evaluation_new.txt",\n  "ovr_metrics_index": "ovr_metrics_new.txt",\n  "ovr_metrics_status_file": "ovr_metrics_status.txt",\n  "notes": "Only application JSON, tracked-pose markers and OVR CSV files created during this run are pulled. screenshot.png is captured by the host after the fixed external session."\n}\n' \
+    "$RUN_ID" "$CONDITION" "$EXPECTED_VARIANT" "$EXPECTED_REPRESENTATION" "$EXPECTED_ALIGNMENT_MODE" "$REQUIRE_VISUAL_CAPTURE" "$REQUIRE_TRACKED_POSE_MARKER" "$APK" "$APK_SHA256" "$APK_BYTES" "$HOST_STARTED_AT" "$HOST_FINISHED_AT" "$CAPTURE_SECONDS" "$REPORT_WAITED_SECONDS" \
     > "$OUTPUT_DIR/run_metadata.json"
 
 printf 'Evidências preservadas em: %s\n' "$OUTPUT_DIR"

@@ -372,17 +372,16 @@ APK ou outro PLY.
 
 Os menus `SplatVRLab > Build Android baseline visual-reference APK` e
 `SplatVRLab > Build Android pruned-100k visual-reference APK` geram APKs que,
-após 12 s, renderizam uma câmera monoscópica auxiliar na posição e rotação
-exatas da pose `ns_poster_test_frame_00001`. A câmera não usa a pose física do
-HMD, e produz um PNG de 540 × 960 mais um JSON de proveniência em
-`visual_evaluation/` no armazenamento privado do aplicativo.
+após 12 s, escrevem um marcador timestampado da pose rastreada em
+`visual_evaluation/`. O screenshot é capturado pelo host via ADB ao final da
+sessão; ele é o framebuffer estéreo efetivamente produzido pelo Quest.
 
-Esta é uma comparação visual reproduzível entre representações, não uma métrica
-de fidelidade pixel a pixel nem uma validação estéreo: as intrínsecas registradas
-ainda precedem a undistorção da imagem de avaliação do Nerfstudio.
+Essas variantes usam o alinhamento padrão de posição e yaw. Elas possibilitam
+uma inspeção qualitativa pareada em uma pose física estável, mas não são a pose
+de rotação completa do Nerfstudio nem uma entrada para métricas pixel a pixel.
 
-Para cada APK, execute uma vez com a opção obrigatória de captura; o coletor
-copiará apenas o PNG e o JSON novos:
+Para cada APK, execute uma vez com o marcador obrigatório; o coletor copiará
+apenas o JSON novo e fará o screenshot do framebuffer:
 
 ```bash
 bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
@@ -393,7 +392,7 @@ bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
   --require-automated-sequence \
   --expected-variant spark_baseline_visual_reference_v01 \
   --expected-representation baseline_v01 \
-  --require-visual-capture
+  --require-tracked-pose-marker
 ```
 
 Se o Quest bloquear a abertura por um diálogo do sistema, o coletor detecta a
@@ -411,6 +410,195 @@ Ao terminar cada repetição, acrescente um `observation.md` com estabilidade de
 altura, mapeamento de controles, stuttering, floaters, estéreo observado no
 headset, escala não métrica, conforto e falhas. Não derive consistência
 estereoscópica de `screenshot.png`.
+
+## 11. Variante visual de pose completa
+
+Os menus `SplatVRLab > Build Android baseline visual full-pose APK` e
+`SplatVRLab > Build Android pruned-100k visual full-pose APK` criam variantes
+diagnósticas para a pose `ns_poster_test_frame_00001`. Após o tracking iniciar,
+elas aplicam uma única transformação no pai do XR Origin para que a câmera fique
+na posição **e** rotação da pose Nerfstudio. Movimentos posteriores do HMD
+continuam sendo aplicados como deltas rastreados; isto não é uma configuração de
+conforto e não deve ser usada para avaliar locomoção.
+
+O marcador JSON deve informar `alignmentMode: "FullPoseOnce"`,
+`alignmentCompleted: true` e erro de rotação próximo de zero no instante de 12 s.
+O coletor abaixo rejeita automaticamente qualquer outro modo:
+
+```bash
+bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
+  --adb "$QUEST_ADB" \
+  --apk SplatVRLabUnity/Builds/Android/SplatVRLabUnity-visual-baseline-fullpose-dev.apk \
+  --condition static_reference \
+  --run-id quest_visual_v02_baseline_fullpose_r01 \
+  --require-automated-sequence \
+  --expected-variant spark_baseline_visual_full_pose_v01 \
+  --expected-representation baseline_v01 \
+  --require-tracked-pose-marker \
+  --expected-alignment-mode FullPoseOnce
+```
+
+Repita trocando o APK, identificadores esperados e `run-id` por
+`SplatVRLabUnity-visual-pruned100k-fullpose-dev.apk`,
+`spark_opacity_topk_100k_visual_full_pose_v01`, `opacity_topk_100k_v01` e
+`quest_visual_v02_pruned100k_fullpose_r01`, respectivamente. Mantenha o
+headset imóvel desde a abertura até a captura: a comparação é uma inspeção
+qualitativa pareada, não PSNR, SSIM ou LPIPS.
+
+## 12. Série de desempenho com pose completa
+
+O protocolo
+[`full_pose_performance_protocol_v01.json`](../experiments/unitysplats_viability_v01/full_pose_performance_protocol_v01.json)
+requer cinco repetições estacionárias por representação. Ative antes o CSV do
+OVR Metrics Tool e mantenha o headset imóvel. Na primeira repetição de cada APK,
+omita `--skip-install`; nas quatro seguintes, acrescente-o ao final.
+
+```bash
+bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
+  --adb "$QUEST_ADB" \
+  --apk SplatVRLabUnity/Builds/Android/SplatVRLabUnity-visual-baseline-fullpose-dev.apk \
+  --condition static_reference \
+  --run-id quest_fullpose_perf_v01_baseline_r01 \
+  --require-automated-sequence \
+  --expected-variant spark_baseline_visual_full_pose_v01 \
+  --expected-representation baseline_v01 \
+  --require-tracked-pose-marker \
+  --expected-alignment-mode FullPoseOnce
+```
+
+Para `r02` a `r05`, troque apenas o `run-id` e acrescente `--skip-install` em
+uma linha própria. Depois, faça o mesmo com o APK podado e os valores
+`quest_fullpose_perf_v01_pruned100k_r01` a `r05`,
+`spark_opacity_topk_100k_visual_full_pose_v01` e `opacity_topk_100k_v01`.
+Quando as dez capturas estiverem válidas, gere os resultados derivados uma única
+vez:
+
+```bash
+python3 experiments/unitysplats_viability_v01/scripts/analyze_full_pose_performance_v01.py
+```
+
+O analisador cria `derived/quest_full_pose_performance_v01/` e falha se houver
+algum relatório, marcador ou CSV ausente ou incompatível. Ele não altera as
+evidências brutas.
+
+## 13. Variante de 50 mil Gaussianas
+
+O APK `SplatVRLabUnity-visual-pruned50k-fullpose-dev.apk` corresponde à
+representação `opacity_topk_50k_v01`. Primeiro, produza uma captura de
+confirmação da pose completa:
+
+```bash
+bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
+  --adb "$QUEST_ADB" \
+  --apk SplatVRLabUnity/Builds/Android/SplatVRLabUnity-visual-pruned50k-fullpose-dev.apk \
+  --condition static_reference \
+  --run-id quest_visual_v03_pruned50k_fullpose_r01 \
+  --require-automated-sequence \
+  --expected-variant spark_opacity_topk_50k_visual_full_pose_v01 \
+  --expected-representation opacity_topk_50k_v01 \
+  --require-tracked-pose-marker \
+  --expected-alignment-mode FullPoseOnce
+```
+
+Se esse marcador concluir corretamente, colete cinco repetições para desempenho
+com os identificadores `quest_fullpose_perf_v01_pruned50k_r01` a `r05` e os
+mesmos argumentos; acrescente `--skip-install` de `r02` em diante. Após a quinta:
+
+```bash
+python3 experiments/unitysplats_viability_v01/scripts/analyze_full_pose_performance_v01.py \
+  --include-50k
+```
+
+Isso gera `derived/quest_full_pose_performance_with_50k_v01/` e preserva a
+análise original baseline × 100k sem sobrescrevê-la.
+
+## 14. Diagnóstico de fidelidade do UnitySplats
+
+As duas variantes abaixo mantêm a baseline de 195.760 Gaussianas, a pose
+`FullPoseOnce`, URP, OpenXR e todos os demais parâmetros do renderer. Cada uma
+altera **um** fator: `gamma-linear-off` desabilita `GammaToLinear`, enquanto
+`sh0` usa somente o termo DC (`SHDegree = 0`). Elas são diagnósticos de
+fidelidade, não configurações de desempenho ou correções de cor.
+
+Construa pelo menu correspondente em `SplatVRLab`, instale o APK recém-gerado e
+faça uma captura por variante. O JSON de métricas retém os cinco parâmetros do
+renderer e a validação em batch escreve os valores em `VALIDATION_OK`.
+
+```bash
+bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
+  --adb "$QUEST_ADB" \
+  --apk SplatVRLabUnity/Builds/Android/SplatVRLabUnity-visual-baseline-gamma-linear-off-fullpose-dev.apk \
+  --condition static_reference \
+  --run-id quest_renderer_fidelity_v01_gamma_linear_off_baseline_r01 \
+  --require-automated-sequence \
+  --expected-variant spark_baseline_visual_gamma_linear_off_full_pose_v01 \
+  --expected-representation baseline_v01 \
+  --require-tracked-pose-marker \
+  --expected-alignment-mode FullPoseOnce
+```
+
+Para o segundo diagnóstico, substitua o APK por
+`SplatVRLabUnity-visual-baseline-sh0-fullpose-dev.apk`, o identificador por
+`quest_renderer_fidelity_v01_sh0_baseline_r01` e a variante esperada por
+`spark_baseline_visual_sh0_full_pose_v01`. Em ambos os casos, mantenha o
+headset imóvel; preserve um JSON de métricas, marcador de pose, CSV OVR e
+screenshot por execução. Os screenshots são evidência qualitativa e não devem
+receber PSNR, SSIM ou LPIPS.
+
+## 15. Diagnóstico da compactação Spark
+
+A variante `uncompressed_baseline_visual_full_pose_v01` importa o mesmo PLY da
+baseline sem compactação (`Uncompressed`). Ela conserva `GammaToLinear=true`,
+`SHDegree=3`, a pose `FullPoseOnce` e os demais controles da seção 14. Não é
+uma variante de desempenho: o seu tamanho, compatibilidade e desempenho no
+Quest são evidências do diagnóstico. A validação e o JSON do aplicativo
+registram `representationImportCompression=Uncompressed`.
+
+Construa pelo menu `SplatVRLab > Build Android baseline uncompressed visual
+full-pose APK` e colete somente uma execução estática:
+
+```bash
+bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
+  --adb "$QUEST_ADB" \
+  --apk SplatVRLabUnity/Builds/Android/SplatVRLabUnity-visual-baseline-uncompressed-fullpose-dev.apk \
+  --condition static_reference \
+  --run-id quest_renderer_fidelity_v02_uncompressed_baseline_r01 \
+  --require-automated-sequence \
+  --expected-variant uncompressed_baseline_visual_full_pose_v01 \
+  --expected-representation baseline_uncompressed_import_v01 \
+  --require-tracked-pose-marker \
+  --expected-alignment-mode FullPoseOnce
+```
+
+Compare qualitativamente apenas com a baseline Spark de pose completa. Preserve
+JSON, marcador, CSV OVR e screenshot; screenshots continuam inadequados para
+PSNR, SSIM ou LPIPS.
+
+## 16. Diagnóstico da saída monoscópica
+
+`SplatVRLabUnity-visual-baseline-monoscopic-output-fullpose-dev.apk` preserva a
+baseline Spark e grava uma câmera monoscópica offscreen no próprio Quest. Ela
+serve para contrastar a saída URP com o screenshot estéreo externo; não é uma
+métrica de fidelidade pixel a pixel. Exija a captura visual no coletor:
+
+```bash
+bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
+  --adb "$QUEST_ADB" \
+  --apk SplatVRLabUnity/Builds/Android/SplatVRLabUnity-visual-baseline-monoscopic-output-fullpose-dev.apk \
+  --condition static_reference \
+  --run-id quest_renderer_output_v01_monoscopic_baseline_r02_urp_camera \
+  --require-automated-sequence \
+  --require-visual-capture \
+  --expected-variant spark_baseline_monoscopic_output_full_pose_v01 \
+  --expected-representation baseline_v01 \
+  --require-tracked-pose-marker \
+  --expected-alignment-mode FullPoseOnce
+```
+
+Uma imagem preta de uma implementação que use `Camera.Render()` manual no
+Android deve ser registrada como falha de integração; não use-a para comparar
+cores. A captura válida precisa indicar pixels não pertencentes ao fundo no JSON
+monoscópico.
 
 ## Referências operacionais
 

@@ -24,6 +24,24 @@ namespace SplatVRLab.Editor
             "Builds/Android/SplatVRLabUnity-visual-baseline-dev.apk";
         private const string VisualPrunedOutputRelativePath =
             "Builds/Android/SplatVRLabUnity-visual-pruned100k-dev.apk";
+        private const string VisualBaselineFullPoseOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-baseline-fullpose-dev.apk";
+        private const string VisualPrunedFullPoseOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-pruned100k-fullpose-dev.apk";
+        private const string VisualPruned50kFullPoseOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-pruned50k-fullpose-dev.apk";
+        private const string VisualBaselineGammaLinearOffFullPoseOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-baseline-gamma-linear-off-fullpose-dev.apk";
+        private const string VisualBaselineSh0FullPoseOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-baseline-sh0-fullpose-dev.apk";
+        private const string VisualBaselineUncompressedFullPoseOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-baseline-uncompressed-fullpose-dev.apk";
+        private const string VisualBaselineMonoscopicOutputFullPoseOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-baseline-monoscopic-output-fullpose-dev.apk";
+        private const string VisualBaselinePerRendererSortFullPoseOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-baseline-per-renderer-sort-fullpose-dev.apk";
+        private const string VisualPrunedPerRendererSortFullPoseOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-pruned100k-per-renderer-sort-fullpose-dev.apk";
         private const string AutomatedSnapTurnOutputRelativePath =
             "Builds/Android/SplatVRLabUnity-automated-snapturn-dev.apk";
 
@@ -88,6 +106,87 @@ namespace SplatVRLab.Editor
                 VisualPrunedOutputRelativePath,
                 "spark_opacity_topk_100k_visual_reference_v01",
                 SplatVRLabSetup.ConfigureVisualPruned);
+        }
+
+        [MenuItem("SplatVRLab/Build Android baseline visual full-pose APK")]
+        public static void BuildVisualBaselineFullPoseDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualBaselineFullPoseOutputRelativePath,
+                "spark_baseline_visual_full_pose_v01",
+                SplatVRLabSetup.ConfigureVisualBaselineFullPose);
+        }
+
+        [MenuItem("SplatVRLab/Build Android pruned-100k visual full-pose APK")]
+        public static void BuildVisualPrunedFullPoseDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualPrunedFullPoseOutputRelativePath,
+                "spark_opacity_topk_100k_visual_full_pose_v01",
+                SplatVRLabSetup.ConfigureVisualPrunedFullPose);
+        }
+
+        [MenuItem("SplatVRLab/Build Android pruned-50k visual full-pose APK")]
+        public static void BuildVisualPruned50kFullPoseDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualPruned50kFullPoseOutputRelativePath,
+                "spark_opacity_topk_50k_visual_full_pose_v01",
+                SplatVRLabSetup.ConfigureVisualPruned50kFullPose);
+        }
+
+        [MenuItem("SplatVRLab/Build Android baseline visual gamma-linear-off full-pose APK")]
+        public static void BuildVisualBaselineGammaLinearOffFullPoseDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualBaselineGammaLinearOffFullPoseOutputRelativePath,
+                "spark_baseline_visual_gamma_linear_off_full_pose_v01",
+                SplatVRLabSetup.ConfigureVisualBaselineGammaLinearOffFullPose);
+        }
+
+        [MenuItem("SplatVRLab/Build Android baseline visual SH0 full-pose APK")]
+        public static void BuildVisualBaselineSh0FullPoseDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualBaselineSh0FullPoseOutputRelativePath,
+                "spark_baseline_visual_sh0_full_pose_v01",
+                SplatVRLabSetup.ConfigureVisualBaselineSh0FullPose);
+        }
+
+        [MenuItem("SplatVRLab/Build Android baseline uncompressed visual full-pose APK")]
+        public static void BuildVisualBaselineUncompressedFullPoseDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualBaselineUncompressedFullPoseOutputRelativePath,
+                "uncompressed_baseline_visual_full_pose_v01",
+                SplatVRLabSetup.ConfigureVisualBaselineUncompressedFullPose);
+        }
+
+        [MenuItem("SplatVRLab/Build Android baseline monoscopic-output visual full-pose APK")]
+        public static void BuildVisualBaselineMonoscopicOutputFullPoseDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualBaselineMonoscopicOutputFullPoseOutputRelativePath,
+                "spark_baseline_monoscopic_output_full_pose_v01",
+                SplatVRLabSetup.ConfigureVisualBaselineMonoscopicOutputFullPose);
+        }
+
+        [MenuItem("SplatVRLab/Build Android baseline per-renderer-sort visual full-pose APK")]
+        public static void BuildVisualBaselinePerRendererSortFullPoseDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualBaselinePerRendererSortFullPoseOutputRelativePath,
+                "spark_baseline_per_renderer_sort_full_pose_v01",
+                SplatVRLabSetup.ConfigureVisualBaselinePerRendererSortFullPose);
+        }
+
+        [MenuItem("SplatVRLab/Build Android pruned-100k per-renderer-sort visual full-pose APK")]
+        public static void BuildVisualPrunedPerRendererSortFullPoseDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualPrunedPerRendererSortFullPoseOutputRelativePath,
+                "spark_opacity_topk_100k_per_renderer_sort_full_pose_v01",
+                SplatVRLabSetup.ConfigureVisualPrunedPerRendererSortFullPose);
         }
 
         [MenuItem("SplatVRLab/Build Android automated snap-turn metrics APK")]

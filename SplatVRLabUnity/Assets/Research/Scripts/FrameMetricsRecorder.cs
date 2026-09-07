@@ -35,6 +35,17 @@ namespace SplatVRLab
             public string representationVariantId;
             public int representationGaussianCount;
             public string representationPlySha256;
+            public string representationImportCompression;
+            public bool rendererGammaToLinear;
+            public int rendererShDegree;
+            public float rendererBrightness;
+            public float rendererSplatDownscaleFactor;
+            public bool rendererAsyncUpload;
+            public string rendererSortMode;
+            public int rendererSortRefreshRate;
+            public int rendererCutoutsRefreshRate;
+            public int rendererRenderOrder;
+            public bool globalSortEnabledAtReport;
             public string referencePoseId;
             public string referenceFrame;
             public string scalePolicy;
@@ -56,8 +67,10 @@ namespace SplatVRLab
             public float automatedTranslationDistanceUnityUnits;
             public int automatedSnapTurnsExecuted;
             public bool referencePoseAlignmentCompleted;
+            public string referencePoseAlignmentMode;
             public float referencePosePositionErrorMeters;
             public float referencePoseHorizontalForwardErrorDegrees;
+            public float referencePoseFullRotationErrorDegrees;
             public string startedAtUtc;
             public string measurementStartedAtUtc;
             public string finishedAtUtc;
@@ -88,6 +101,18 @@ namespace SplatVRLab
         public string RepresentationVariantId = "baseline_v01";
         [Min(1)] public int RepresentationGaussianCount = 195760;
         public string RepresentationPlySha256;
+        public string RepresentationImportCompression = "Spark";
+
+        [Header("Renderer UnitySplats")]
+        public bool RendererGammaToLinear = true;
+        [Min(0)] public int RendererShDegree = 3;
+        public float RendererBrightness = 1f;
+        [Range(0f, 1f)] public float RendererSplatDownscaleFactor;
+        public bool RendererAsyncUpload;
+        public string RendererSortMode = "Always";
+        [Min(1)] public int RendererSortRefreshRate = 1;
+        [Min(1)] public int RendererCutoutsRefreshRate = 1;
+        [Min(0)] public int RendererRenderOrder;
 
         [Header("Pose de referencia e escala")]
         public string ReferencePoseId;
@@ -192,6 +217,17 @@ namespace SplatVRLab
                 representationVariantId = RepresentationVariantId,
                 representationGaussianCount = RepresentationGaussianCount,
                 representationPlySha256 = RepresentationPlySha256,
+                representationImportCompression = RepresentationImportCompression,
+                rendererGammaToLinear = RendererGammaToLinear,
+                rendererShDegree = RendererShDegree,
+                rendererBrightness = RendererBrightness,
+                rendererSplatDownscaleFactor = RendererSplatDownscaleFactor,
+                rendererAsyncUpload = RendererAsyncUpload,
+                rendererSortMode = RendererSortMode,
+                rendererSortRefreshRate = RendererSortRefreshRate,
+                rendererCutoutsRefreshRate = RendererCutoutsRefreshRate,
+                rendererRenderOrder = RendererRenderOrder,
+                globalSortEnabledAtReport = Gsplat.GsplatSorter.Instance.GlobalRenderEnabled,
                 referencePoseId = ReferencePoseId,
                 referenceFrame = ReferenceFrame,
                 scalePolicy = ScalePolicy,
@@ -215,9 +251,12 @@ namespace SplatVRLab
                 automatedSnapTurnsExecuted =
                     automatedSequence ? automatedSequence.SnapTurnsExecuted : 0,
                 referencePoseAlignmentCompleted = aligner && aligner.AlignmentCompleted,
+                referencePoseAlignmentMode = aligner ? aligner.Mode.ToString() : "missing",
                 referencePosePositionErrorMeters = aligner ? aligner.PositionErrorMeters : 0f,
                 referencePoseHorizontalForwardErrorDegrees =
                     aligner ? aligner.HorizontalForwardErrorDegrees : 0f,
+                referencePoseFullRotationErrorDegrees =
+                    aligner ? aligner.FullRotationErrorDegrees : 0f,
                 startedAtUtc = _startedAtUtc,
                 measurementStartedAtUtc = _measurementStartedAtUtc,
                 finishedAtUtc = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture),

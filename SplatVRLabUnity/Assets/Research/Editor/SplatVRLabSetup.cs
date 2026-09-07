@@ -25,6 +25,8 @@ namespace SplatVRLab.Editor
             "experiments/baseline_v01/exp_ns_poster_baseline_v01_baseline_v01.ply";
         private const string PrunedPlyRelativeToRepository =
             "experiments/pruning_v01/exp_ns_poster_opacity_topk_100k_v01.ply";
+        private const string Pruned50kPlyRelativeToRepository =
+            "experiments/pruning_50k_v01/exp_ns_poster_opacity_topk_50k_v01.ply";
         private const string ReferencePoseRelativeToRepository =
             "experiments/unitysplats_viability_v01/reference_pose.json";
         private const string LocomotionProfileRelativeToRepository =
@@ -39,17 +41,38 @@ namespace SplatVRLab.Editor
             "experiments/unitysplats_viability_v01/visual_baseline_profile.json";
         private const string VisualPrunedProfileRelativeToRepository =
             "experiments/unitysplats_viability_v01/visual_pruned100k_profile.json";
+        private const string VisualBaselineFullPoseProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_baseline_full_pose_profile.json";
+        private const string VisualPrunedFullPoseProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_pruned100k_full_pose_profile.json";
+        private const string VisualPruned50kFullPoseProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_pruned50k_full_pose_profile.json";
+        private const string VisualBaselineGammaLinearOffFullPoseProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_baseline_gamma_linear_off_full_pose_profile.json";
+        private const string VisualBaselineSh0FullPoseProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_baseline_sh0_full_pose_profile.json";
+        private const string VisualBaselineUncompressedFullPoseProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_baseline_uncompressed_full_pose_profile.json";
+        private const string VisualBaselineMonoscopicOutputFullPoseProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_baseline_monoscopic_output_full_pose_profile.json";
+        private const string VisualBaselinePerRendererSortFullPoseProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_baseline_per_renderer_sort_full_pose_profile.json";
+        private const string VisualPrunedPerRendererSortFullPoseProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_pruned100k_per_renderer_sort_full_pose_profile.json";
         private const string AutomatedSnapTurnProfileRelativeToRepository =
             "experiments/unitysplats_viability_v01/automated_snap_turn_profile.json";
         private const string ImportedPlyAssetPath =
             "Assets/Research/Data/poster_baseline_v01.ply";
         private const string ImportedPrunedPlyAssetPath =
             "Assets/Research/Data/poster_opacity_topk_100k_v01.ply";
+        private const string ImportedPruned50kPlyAssetPath =
+            "Assets/Research/Data/poster_opacity_topk_50k_v01.ply";
         private const string SourceSceneAssetPath = "Assets/Scenes/BasicScene.unity";
         private const string ViabilitySceneAssetPath =
             "Assets/Research/Scenes/GsplatViability.unity";
         private const uint ExpectedSplatCount = 195760;
         private const uint ExpectedPrunedSplatCount = 100000;
+        private const uint ExpectedPruned50kSplatCount = 50000;
         private const string ExpectedSceneId = "ns_poster";
         private const string ExpectedExperimentId = "exp_ns_poster_baseline_v01";
         private const string ExpectedVariantId = "baseline_v01";
@@ -57,6 +80,8 @@ namespace SplatVRLab.Editor
             "23e3b3d3cd47e1aa0ad1daf7df96c4bd620af9edaf7996ccb865f5b60b80bebb";
         private const string ExpectedPrunedSplatSha256 =
             "b2af0f8f9bda2ab2cc54db3e34147b6e02ea73cd71eb682ae803739f4f34c1d3";
+        private const string ExpectedPruned50kSplatSha256 =
+            "f4a5a1f80cd2d448338c22b2b21a777e2151f0171ad42dfd74046623742b26e5";
         private const string ExpectedLocomotionProfileSha256 =
             "7233b2fc9c092052fcf7a70dc8646f55aac068c910834fd686f7beb8ec9f6e41";
         private const string ExpectedAutomatedWalkProfileSha256 =
@@ -69,6 +94,24 @@ namespace SplatVRLab.Editor
             "e2ec9073dc6d2b8d248acab04ec552b0f4531cf938ae98a0bf42e7a97a2447d0";
         private const string ExpectedVisualPrunedProfileSha256 =
             "25c7b5618ff88253557437f6cad08a58e77fd88fbd5d8a8acc9152fcc688ad00";
+        private const string ExpectedVisualBaselineFullPoseProfileSha256 =
+            "2c38a5e8822b4f08b46e18a895e08802ccbf90e336589ea4d115e5018252fbb4";
+        private const string ExpectedVisualPrunedFullPoseProfileSha256 =
+            "4194128708cd761815a881bfc5ec2faf983c3555d518a37538945db92252f2d4";
+        private const string ExpectedVisualPruned50kFullPoseProfileSha256 =
+            "f9381a035e54d6556f998702b26c3b46e92f7acbdaac94884e5566e940b64664";
+        private const string ExpectedVisualBaselineGammaLinearOffFullPoseProfileSha256 =
+            "4eb4a67f8b2d6204f984dc1e438894dc6bfa301b8911eb676016e5cb6fa4b7ee";
+        private const string ExpectedVisualBaselineSh0FullPoseProfileSha256 =
+            "a5a66ea5590eeb90aa035241ae434efc265203c3a18297535490b4efe7f61dce";
+        private const string ExpectedVisualBaselineUncompressedFullPoseProfileSha256 =
+            "c9fa9660ce3e688a8efe6789618964510a802437d7822606f72e665e85b2d468";
+        private const string ExpectedVisualBaselineMonoscopicOutputFullPoseProfileSha256 =
+            "ed9abd42243daad00597cb570c99a7199c475c6a1172aca2a3d0dfdd468ef361";
+        private const string ExpectedVisualBaselinePerRendererSortFullPoseProfileSha256 =
+            "53ddebfba96eddc1a40bedac85b3c96d506b6477fe66fde1dd9ef5e82c1227be";
+        private const string ExpectedVisualPrunedPerRendererSortFullPoseProfileSha256 =
+            "e73716380cfc92717b6d1d477d73f3edb2c1d8c8409ae1a9f292e06da12774b3";
         private const string ExpectedAutomatedSnapTurnProfileSha256 =
             "31a6ab51ff51d8a7966744f49276297fadbc770c9fcee94b039631f82372c47b";
         private const string StationaryVariantId = "spark_baseline";
@@ -81,6 +124,24 @@ namespace SplatVRLab.Editor
             "spark_opacity_topk_100k_automated_static_v01";
         private const string VisualBaselineVariantId = "spark_baseline_visual_reference_v01";
         private const string VisualPrunedVariantId = "spark_opacity_topk_100k_visual_reference_v01";
+        private const string VisualBaselineFullPoseVariantId =
+            "spark_baseline_visual_full_pose_v01";
+        private const string VisualPrunedFullPoseVariantId =
+            "spark_opacity_topk_100k_visual_full_pose_v01";
+        private const string VisualPruned50kFullPoseVariantId =
+            "spark_opacity_topk_50k_visual_full_pose_v01";
+        private const string VisualBaselineGammaLinearOffFullPoseVariantId =
+            "spark_baseline_visual_gamma_linear_off_full_pose_v01";
+        private const string VisualBaselineSh0FullPoseVariantId =
+            "spark_baseline_visual_sh0_full_pose_v01";
+        private const string VisualBaselineUncompressedFullPoseVariantId =
+            "uncompressed_baseline_visual_full_pose_v01";
+        private const string VisualBaselineMonoscopicOutputFullPoseVariantId =
+            "spark_baseline_monoscopic_output_full_pose_v01";
+        private const string VisualBaselinePerRendererSortFullPoseVariantId =
+            "spark_baseline_per_renderer_sort_full_pose_v01";
+        private const string VisualPrunedPerRendererSortFullPoseVariantId =
+            "spark_opacity_topk_100k_per_renderer_sort_full_pose_v01";
         private const string AutomatedSnapTurnVariantId = "spark_automated_snap_turn_v01";
         private const string ControllerInputActionManagerTypeName =
             "UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets.ControllerInputActionManager";
@@ -92,6 +153,7 @@ namespace SplatVRLab.Editor
             public string ImportedAssetPath;
             public string Sha256;
             public uint SplatCount;
+            public CompressionMode Compression;
         }
 
         private static readonly RepresentationSpec BaselineRepresentation = new()
@@ -101,6 +163,7 @@ namespace SplatVRLab.Editor
             ImportedAssetPath = ImportedPlyAssetPath,
             Sha256 = ExpectedSplatSha256,
             SplatCount = ExpectedSplatCount,
+            Compression = CompressionMode.Spark,
         };
 
         private static readonly RepresentationSpec PrunedRepresentation = new()
@@ -110,6 +173,27 @@ namespace SplatVRLab.Editor
             ImportedAssetPath = ImportedPrunedPlyAssetPath,
             Sha256 = ExpectedPrunedSplatSha256,
             SplatCount = ExpectedPrunedSplatCount,
+            Compression = CompressionMode.Spark,
+        };
+
+        private static readonly RepresentationSpec Pruned50kRepresentation = new()
+        {
+            VariantId = "opacity_topk_50k_v01",
+            SourceRelativePath = Pruned50kPlyRelativeToRepository,
+            ImportedAssetPath = ImportedPruned50kPlyAssetPath,
+            Sha256 = ExpectedPruned50kSplatSha256,
+            SplatCount = ExpectedPruned50kSplatCount,
+            Compression = CompressionMode.Spark,
+        };
+
+        private static readonly RepresentationSpec BaselineUncompressedRepresentation = new()
+        {
+            VariantId = "baseline_uncompressed_import_v01",
+            SourceRelativePath = SourcePlyRelativeToRepository,
+            ImportedAssetPath = ImportedPlyAssetPath,
+            Sha256 = ExpectedSplatSha256,
+            SplatCount = ExpectedSplatCount,
+            Compression = CompressionMode.Uncompressed,
         };
 
         [Serializable]
@@ -123,7 +207,25 @@ namespace SplatVRLab.Editor
             public ProviderSettings providers;
             public string collision_policy;
             public AutomationSettings automation;
+            public string xr_alignment_mode;
+            public RendererSettings renderer;
         }
+
+        [Serializable]
+        private sealed class RendererSettings
+        {
+            public bool gamma_to_linear = true;
+            public int sh_degree = 3;
+            public float brightness = 1f;
+            public float splat_downscale_factor;
+            public bool async_upload;
+            public string sort_mode = "always";
+            public uint sort_refresh_rate = 1;
+            public uint cutouts_refresh_rate = 1;
+            public uint render_order;
+        }
+
+        private static readonly RendererSettings DefaultRendererSettings = new();
 
         [Serializable]
         private sealed class MovementSettings
@@ -219,6 +321,88 @@ namespace SplatVRLab.Editor
                 VisualPrunedVariantId, "static_reference", "static_reference"), true);
         }
 
+        [MenuItem("SplatVRLab/Configure baseline visual full-pose variant")]
+        public static void ConfigureVisualBaselineFullPose()
+        {
+            ConfigureVariant(BaselineRepresentation, LoadVisualFullPoseProfile(
+                VisualBaselineFullPoseProfileRelativeToRepository,
+                ExpectedVisualBaselineFullPoseProfileSha256,
+                VisualBaselineFullPoseVariantId), true);
+        }
+
+        [MenuItem("SplatVRLab/Configure pruned-100k visual full-pose variant")]
+        public static void ConfigureVisualPrunedFullPose()
+        {
+            ConfigureVariant(PrunedRepresentation, LoadVisualFullPoseProfile(
+                VisualPrunedFullPoseProfileRelativeToRepository,
+                ExpectedVisualPrunedFullPoseProfileSha256,
+                VisualPrunedFullPoseVariantId), true);
+        }
+
+        [MenuItem("SplatVRLab/Configure pruned-50k visual full-pose variant")]
+        public static void ConfigureVisualPruned50kFullPose()
+        {
+            ConfigureVariant(Pruned50kRepresentation, LoadVisualFullPoseProfile(
+                VisualPruned50kFullPoseProfileRelativeToRepository,
+                ExpectedVisualPruned50kFullPoseProfileSha256,
+                VisualPruned50kFullPoseVariantId), true);
+        }
+
+        [MenuItem("SplatVRLab/Configure baseline visual gamma-linear-off full-pose variant")]
+        public static void ConfigureVisualBaselineGammaLinearOffFullPose()
+        {
+            ConfigureVariant(BaselineRepresentation, LoadVisualDiagnosticProfile(
+                VisualBaselineGammaLinearOffFullPoseProfileRelativeToRepository,
+                ExpectedVisualBaselineGammaLinearOffFullPoseProfileSha256,
+                VisualBaselineGammaLinearOffFullPoseVariantId, gammaToLinear: false, shDegree: 3), true);
+        }
+
+        [MenuItem("SplatVRLab/Configure baseline visual SH0 full-pose variant")]
+        public static void ConfigureVisualBaselineSh0FullPose()
+        {
+            ConfigureVariant(BaselineRepresentation, LoadVisualDiagnosticProfile(
+                VisualBaselineSh0FullPoseProfileRelativeToRepository,
+                ExpectedVisualBaselineSh0FullPoseProfileSha256,
+                VisualBaselineSh0FullPoseVariantId, gammaToLinear: true, shDegree: 0), true);
+        }
+
+        [MenuItem("SplatVRLab/Configure baseline uncompressed visual full-pose variant")]
+        public static void ConfigureVisualBaselineUncompressedFullPose()
+        {
+            ConfigureVariant(BaselineUncompressedRepresentation, LoadVisualDiagnosticProfile(
+                VisualBaselineUncompressedFullPoseProfileRelativeToRepository,
+                ExpectedVisualBaselineUncompressedFullPoseProfileSha256,
+                VisualBaselineUncompressedFullPoseVariantId, gammaToLinear: true, shDegree: 3), true);
+        }
+
+        [MenuItem("SplatVRLab/Configure baseline monoscopic-output visual full-pose variant")]
+        public static void ConfigureVisualBaselineMonoscopicOutputFullPose()
+        {
+            ConfigureVariant(BaselineRepresentation, LoadVisualDiagnosticProfile(
+                VisualBaselineMonoscopicOutputFullPoseProfileRelativeToRepository,
+                ExpectedVisualBaselineMonoscopicOutputFullPoseProfileSha256,
+                VisualBaselineMonoscopicOutputFullPoseVariantId, gammaToLinear: true, shDegree: 3),
+                enableReferenceCapture: true, enableMonoscopicReferenceCapture: true);
+        }
+
+        [MenuItem("SplatVRLab/Configure baseline per-renderer-sort visual full-pose variant")]
+        public static void ConfigureVisualBaselinePerRendererSortFullPose()
+        {
+            ConfigureVariant(BaselineRepresentation, LoadVisualSortDiagnosticProfile(
+                VisualBaselinePerRendererSortFullPoseProfileRelativeToRepository,
+                ExpectedVisualBaselinePerRendererSortFullPoseProfileSha256,
+                VisualBaselinePerRendererSortFullPoseVariantId, renderOrder: 1), true);
+        }
+
+        [MenuItem("SplatVRLab/Configure pruned-100k per-renderer-sort visual full-pose variant")]
+        public static void ConfigureVisualPrunedPerRendererSortFullPose()
+        {
+            ConfigureVariant(PrunedRepresentation, LoadVisualSortDiagnosticProfile(
+                VisualPrunedPerRendererSortFullPoseProfileRelativeToRepository,
+                ExpectedVisualPrunedPerRendererSortFullPoseProfileSha256,
+                VisualPrunedPerRendererSortFullPoseVariantId, renderOrder: 1), true);
+        }
+
         [MenuItem("SplatVRLab/Configure automated snap-turn metrics variant")]
         public static void ConfigureAutomatedSnapTurn()
         {
@@ -235,13 +419,16 @@ namespace SplatVRLab.Editor
         private static void ConfigureVariant(
             RepresentationSpec representation,
             LocomotionProfile locomotionProfile,
-            bool enableReferenceCapture = false)
+            bool enableReferenceCapture = false,
+            bool enableMonoscopicReferenceCapture = false)
         {
             ConfigureProjectSettings();
             EnsureGsplatRendererFeatures();
             GsplatAsset splatAsset = ImportRepresentation(representation);
             ReferencePoseRecord referencePose = LoadReferencePose();
-            CreateViabilityScene(splatAsset, representation, referencePose, locomotionProfile, enableReferenceCapture);
+            CreateViabilityScene(splatAsset, representation, referencePose, locomotionProfile,
+                ResolveRendererSettings(locomotionProfile), enableReferenceCapture,
+                enableMonoscopicReferenceCapture);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Validate();
@@ -303,6 +490,7 @@ namespace SplatVRLab.Editor
                     referencePose.scale.meters_per_nerfstudio_unit) > 1e-6f)
                 throw new InvalidOperationException("Frame metrics provenance does not match the reference pose.");
 
+            RendererSettings expectedRendererSettings = DefaultRendererSettings;
             if (metrics.VariantId == StationaryVariantId)
                 ValidateStationaryConfiguration(scene, metrics);
             else if (metrics.VariantId == ExpectedLocomotionVariantId)
@@ -328,12 +516,84 @@ namespace SplatVRLab.Editor
                 ValidateVisualReferenceConfiguration(scene, metrics, LoadAutomatedProfile(
                     VisualPrunedProfileRelativeToRepository, ExpectedVisualPrunedProfileSha256,
                     VisualPrunedVariantId, "static_reference", "static_reference"), referencePose, representation);
+            else if (metrics.VariantId == VisualBaselineFullPoseVariantId)
+                ValidateVisualReferenceConfiguration(scene, metrics, LoadVisualFullPoseProfile(
+                    VisualBaselineFullPoseProfileRelativeToRepository,
+                    ExpectedVisualBaselineFullPoseProfileSha256,
+                    VisualBaselineFullPoseVariantId), referencePose, representation);
+            else if (metrics.VariantId == VisualPrunedFullPoseVariantId)
+                ValidateVisualReferenceConfiguration(scene, metrics, LoadVisualFullPoseProfile(
+                    VisualPrunedFullPoseProfileRelativeToRepository,
+                    ExpectedVisualPrunedFullPoseProfileSha256,
+                    VisualPrunedFullPoseVariantId), referencePose, representation);
+            else if (metrics.VariantId == VisualPruned50kFullPoseVariantId)
+                ValidateVisualReferenceConfiguration(scene, metrics, LoadVisualFullPoseProfile(
+                    VisualPruned50kFullPoseProfileRelativeToRepository,
+                    ExpectedVisualPruned50kFullPoseProfileSha256,
+                    VisualPruned50kFullPoseVariantId), referencePose, representation);
+            else if (metrics.VariantId == VisualBaselineGammaLinearOffFullPoseVariantId)
+            {
+                LocomotionProfile profile = LoadVisualDiagnosticProfile(
+                    VisualBaselineGammaLinearOffFullPoseProfileRelativeToRepository,
+                    ExpectedVisualBaselineGammaLinearOffFullPoseProfileSha256,
+                    VisualBaselineGammaLinearOffFullPoseVariantId, gammaToLinear: false, shDegree: 3);
+                ValidateVisualReferenceConfiguration(scene, metrics, profile, referencePose, representation);
+                expectedRendererSettings = ResolveRendererSettings(profile);
+            }
+            else if (metrics.VariantId == VisualBaselineSh0FullPoseVariantId)
+            {
+                LocomotionProfile profile = LoadVisualDiagnosticProfile(
+                    VisualBaselineSh0FullPoseProfileRelativeToRepository,
+                    ExpectedVisualBaselineSh0FullPoseProfileSha256,
+                    VisualBaselineSh0FullPoseVariantId, gammaToLinear: true, shDegree: 0);
+                ValidateVisualReferenceConfiguration(scene, metrics, profile, referencePose, representation);
+                expectedRendererSettings = ResolveRendererSettings(profile);
+            }
+            else if (metrics.VariantId == VisualBaselineUncompressedFullPoseVariantId)
+            {
+                LocomotionProfile profile = LoadVisualDiagnosticProfile(
+                    VisualBaselineUncompressedFullPoseProfileRelativeToRepository,
+                    ExpectedVisualBaselineUncompressedFullPoseProfileSha256,
+                    VisualBaselineUncompressedFullPoseVariantId, gammaToLinear: true, shDegree: 3);
+                ValidateVisualReferenceConfiguration(scene, metrics, profile, referencePose, representation);
+                expectedRendererSettings = ResolveRendererSettings(profile);
+            }
+            else if (metrics.VariantId == VisualBaselineMonoscopicOutputFullPoseVariantId)
+            {
+                LocomotionProfile profile = LoadVisualDiagnosticProfile(
+                    VisualBaselineMonoscopicOutputFullPoseProfileRelativeToRepository,
+                    ExpectedVisualBaselineMonoscopicOutputFullPoseProfileSha256,
+                    VisualBaselineMonoscopicOutputFullPoseVariantId, gammaToLinear: true, shDegree: 3);
+                ValidateVisualReferenceConfiguration(scene, metrics, profile, referencePose, representation);
+                ValidateMonoscopicReferenceOutputCapture(referencePose, representation, profile);
+                expectedRendererSettings = ResolveRendererSettings(profile);
+            }
+            else if (metrics.VariantId == VisualBaselinePerRendererSortFullPoseVariantId)
+            {
+                LocomotionProfile profile = LoadVisualSortDiagnosticProfile(
+                    VisualBaselinePerRendererSortFullPoseProfileRelativeToRepository,
+                    ExpectedVisualBaselinePerRendererSortFullPoseProfileSha256,
+                    VisualBaselinePerRendererSortFullPoseVariantId, renderOrder: 1);
+                ValidateVisualReferenceConfiguration(scene, metrics, profile, referencePose, representation);
+                expectedRendererSettings = ResolveRendererSettings(profile);
+            }
+            else if (metrics.VariantId == VisualPrunedPerRendererSortFullPoseVariantId)
+            {
+                LocomotionProfile profile = LoadVisualSortDiagnosticProfile(
+                    VisualPrunedPerRendererSortFullPoseProfileRelativeToRepository,
+                    ExpectedVisualPrunedPerRendererSortFullPoseProfileSha256,
+                    VisualPrunedPerRendererSortFullPoseVariantId, renderOrder: 1);
+                ValidateVisualReferenceConfiguration(scene, metrics, profile, referencePose, representation);
+                expectedRendererSettings = ResolveRendererSettings(profile);
+            }
             else if (metrics.VariantId == AutomatedSnapTurnVariantId)
                 ValidateAutomatedConfiguration(scene, metrics, LoadAutomatedProfile(
                     AutomatedSnapTurnProfileRelativeToRepository, ExpectedAutomatedSnapTurnProfileSha256, AutomatedSnapTurnVariantId,
                     "snap_turn", "snap_turn"));
             else
                 throw new InvalidOperationException($"Unknown harness variant: {metrics.VariantId}.");
+
+            ValidateRendererSettings(renderer, metrics, splatAsset, representation, expectedRendererSettings);
 
             XrReferencePoseAligner aligner =
                 UnityEngine.Object.FindAnyObjectByType<XrReferencePoseAligner>();
@@ -371,8 +631,12 @@ namespace SplatVRLab.Editor
                 BuildTargetGroup.Android, BuildTarget.Android);
             Debug.Log(
                 $"[SplatVRLab] VALIDATION_OK: splats={splatAsset.SplatCount}; " +
-                $"representation={representation.VariantId}; shBands={splatAsset.SHBands}; pose={referencePose.reference_pose_id}; " +
+                $"representation={representation.VariantId}; compression={splatAsset.Compression}; shBands={splatAsset.SHBands}; pose={referencePose.reference_pose_id}; " +
                 $"variant={metrics.VariantId}; locomotion={metrics.LocomotionMode}; " +
+                $"gammaToLinear={renderer.GammaToLinear}; shDegree={renderer.SHDegree}; " +
+                $"brightness={renderer.Brightness:F3}; splatDownscaleFactor={renderer.SplatDownscaleFactor:F3}; " +
+                $"sortMode={renderer.SortMode}; sortRefreshRate={renderer.SortRefreshRate}; " +
+                $"cutoutsRefreshRate={renderer.CutoutsRefreshRate}; renderOrder={renderer.RenderOrder}; " +
                 $"frame={referencePose.selection.frame_file_path}; " +
                 $"metersPerNerfstudioUnit={referencePose.scale.meters_per_nerfstudio_unit:F6}; " +
                 $"metricScaleCalibrated={referencePose.scale.metric_calibrated}; " +
@@ -452,6 +716,10 @@ namespace SplatVRLab.Editor
                 return BaselineRepresentation;
             if (variantId == PrunedRepresentation.VariantId)
                 return PrunedRepresentation;
+            if (variantId == Pruned50kRepresentation.VariantId)
+                return Pruned50kRepresentation;
+            if (variantId == BaselineUncompressedRepresentation.VariantId)
+                return BaselineUncompressedRepresentation;
             throw new InvalidOperationException($"Unknown splat representation: {variantId}.");
         }
 
@@ -481,11 +749,11 @@ namespace SplatVRLab.Editor
             var serializedImporter = new SerializedObject(importer);
             SerializedProperty compression = serializedImporter.FindProperty("Compression");
             SerializedProperty coordinates = serializedImporter.FindProperty("SourceCoordinates");
-            bool importerChanged = compression.enumValueIndex != (int)Gsplat.CompressionMode.Spark ||
+            bool importerChanged = compression.enumValueIndex != (int)representation.Compression ||
                                    coordinates.enumValueIndex != (int)SourceCoordinates.RUB;
             if (importerChanged)
             {
-                compression.enumValueIndex = (int)Gsplat.CompressionMode.Spark;
+                compression.enumValueIndex = (int)representation.Compression;
                 coordinates.enumValueIndex = (int)SourceCoordinates.RUB;
                 serializedImporter.ApplyModifiedPropertiesWithoutUndo();
                 importer.SaveAndReimport();
@@ -496,6 +764,9 @@ namespace SplatVRLab.Editor
             if (imported.SplatCount != representation.SplatCount)
                 throw new InvalidOperationException(
                     $"Unexpected splat count: {imported.SplatCount}; expected {representation.SplatCount}.");
+            if (imported.Compression != representation.Compression)
+                throw new InvalidOperationException(
+                    $"Unexpected import compression: {imported.Compression}; expected {representation.Compression}.");
             return imported;
         }
 
@@ -591,12 +862,90 @@ namespace SplatVRLab.Editor
             return profile;
         }
 
+        private static LocomotionProfile LoadVisualFullPoseProfile(
+            string relativePath, string expectedSha256, string variantId)
+        {
+            LocomotionProfile profile = LoadAutomatedProfile(
+                relativePath, expectedSha256, variantId, "static_reference", "static_reference");
+            if (profile.xr_alignment_mode != "full_pose_once")
+                throw new InvalidOperationException(
+                    "Visual full-pose profile must request full_pose_once alignment.");
+            return profile;
+        }
+
+        private static LocomotionProfile LoadVisualDiagnosticProfile(
+            string relativePath, string expectedSha256, string variantId, bool gammaToLinear, int shDegree)
+        {
+            LocomotionProfile profile = LoadVisualFullPoseProfile(relativePath, expectedSha256, variantId);
+            RendererSettings settings = profile.renderer ?? throw new InvalidOperationException(
+                "Visual diagnostic profile must declare renderer settings.");
+            if (settings.gamma_to_linear != gammaToLinear || settings.sh_degree != shDegree ||
+                Mathf.Abs(settings.brightness - 1f) > 1e-6f ||
+                Mathf.Abs(settings.splat_downscale_factor) > 1e-6f || settings.async_upload)
+                throw new InvalidOperationException(
+                    "Visual diagnostic profile contains changes beyond its declared single renderer factor.");
+            return profile;
+        }
+
+        private static LocomotionProfile LoadVisualSortDiagnosticProfile(
+            string relativePath, string expectedSha256, string variantId, uint renderOrder)
+        {
+            LocomotionProfile profile = LoadVisualDiagnosticProfile(
+                relativePath, expectedSha256, variantId, gammaToLinear: true, shDegree: 3);
+            RendererSettings settings = profile.renderer;
+            if (settings.sort_mode != "always" || settings.sort_refresh_rate != 1 ||
+                settings.cutouts_refresh_rate != 1 || settings.render_order != renderOrder)
+                throw new InvalidOperationException(
+                    "Visual sort diagnostic profile differs from the controlled per-renderer variant.");
+            return profile;
+        }
+
+        private static GsplatRenderer.GsplatSortMode ResolveSortMode(string value) => value switch
+        {
+            "always" => GsplatRenderer.GsplatSortMode.Always,
+            "every_n_frames" => GsplatRenderer.GsplatSortMode.SortEveryNFrames,
+            "cutouts_every_n_sorts" => GsplatRenderer.GsplatSortMode.CutoutsEveryNSorts,
+            _ => throw new InvalidOperationException($"Unsupported UnitySplats sort mode: {value}."),
+        };
+
+        private static RendererSettings ResolveRendererSettings(LocomotionProfile profile) =>
+            profile?.renderer ?? DefaultRendererSettings;
+
+        private static void ValidateRendererSettings(
+            GsplatRenderer renderer, FrameMetricsRecorder metrics, GsplatAsset splatAsset,
+            RepresentationSpec representation, RendererSettings expected)
+        {
+            if (splatAsset.Compression != representation.Compression ||
+                metrics.RepresentationImportCompression != representation.Compression.ToString() ||
+                renderer.GammaToLinear != expected.gamma_to_linear ||
+                renderer.SHDegree != Mathf.Clamp(expected.sh_degree, 0, splatAsset.SHBands) ||
+                Mathf.Abs(renderer.Brightness - expected.brightness) > 1e-6f ||
+                Mathf.Abs(renderer.SplatDownscaleFactor - expected.splat_downscale_factor) > 1e-6f ||
+                renderer.AsyncUpload != expected.async_upload ||
+                renderer.SortMode != ResolveSortMode(expected.sort_mode) ||
+                renderer.SortRefreshRate != expected.sort_refresh_rate ||
+                renderer.CutoutsRefreshRate != expected.cutouts_refresh_rate ||
+                renderer.RenderOrder != expected.render_order ||
+                metrics.RendererGammaToLinear != renderer.GammaToLinear ||
+                metrics.RendererShDegree != renderer.SHDegree ||
+                Mathf.Abs(metrics.RendererBrightness - renderer.Brightness) > 1e-6f ||
+                Mathf.Abs(metrics.RendererSplatDownscaleFactor - renderer.SplatDownscaleFactor) > 1e-6f ||
+                metrics.RendererAsyncUpload != renderer.AsyncUpload ||
+                metrics.RendererSortMode != renderer.SortMode.ToString() ||
+                metrics.RendererSortRefreshRate != (int)renderer.SortRefreshRate ||
+                metrics.RendererCutoutsRefreshRate != (int)renderer.CutoutsRefreshRate ||
+                metrics.RendererRenderOrder != (int)renderer.RenderOrder)
+                throw new InvalidOperationException("Gsplat renderer settings do not match the variant profile.");
+        }
+
         private static void CreateViabilityScene(
             GsplatAsset splatAsset,
             RepresentationSpec representation,
             ReferencePoseRecord referencePose,
             LocomotionProfile locomotionProfile,
-            bool enableReferenceCapture)
+            RendererSettings rendererSettings,
+            bool enableReferenceCapture,
+            bool enableMonoscopicReferenceCapture)
         {
             Scene scene = EditorSceneManager.OpenScene(SourceSceneAssetPath, OpenSceneMode.Single);
             DestroyRootIfPresent(scene, "Plane");
@@ -618,11 +967,15 @@ namespace SplatVRLab.Editor
             GsplatRenderer renderer = splatObject.GetComponent<GsplatRenderer>() ??
                                       splatObject.AddComponent<GsplatRenderer>();
             renderer.GsplatAsset = splatAsset;
-            renderer.SHDegree = Mathf.Clamp(3, 0, splatAsset.SHBands);
-            renderer.Brightness = 1f;
-            renderer.SplatDownscaleFactor = 0f;
-            renderer.GammaToLinear = true;
-            renderer.AsyncUpload = false;
+            renderer.SHDegree = Mathf.Clamp(rendererSettings.sh_degree, 0, splatAsset.SHBands);
+            renderer.Brightness = rendererSettings.brightness;
+            renderer.SplatDownscaleFactor = rendererSettings.splat_downscale_factor;
+            renderer.GammaToLinear = rendererSettings.gamma_to_linear;
+            renderer.AsyncUpload = rendererSettings.async_upload;
+            renderer.SortMode = ResolveSortMode(rendererSettings.sort_mode);
+            renderer.SortRefreshRate = rendererSettings.sort_refresh_rate;
+            renderer.CutoutsRefreshRate = rendererSettings.cutouts_refresh_rate;
+            renderer.RenderOrder = rendererSettings.render_order;
 
             XROrigin origin = xrRoot.GetComponent<XROrigin>() ??
                               throw new InvalidOperationException("XR Origin component is missing.");
@@ -643,10 +996,16 @@ namespace SplatVRLab.Editor
                     referencePose.unity.canonical_horizontal_forward[1],
                     referencePose.unity.canonical_horizontal_forward[2]).normalized;
             aligner.ExactReferenceCameraRotation = placement.ReferenceCameraRotation;
+            aligner.Mode = locomotionProfile?.xr_alignment_mode == "full_pose_once"
+                ? XrReferencePoseAligner.AlignmentMode.FullPoseOnce
+                : XrReferencePoseAligner.AlignmentMode.YawOnly;
             aligner.TrackingWaitSeconds = 30f;
 
             ConfigureReferenceEvaluationCapture(
-                scene, origin, representation, referencePose, placement, locomotionProfile, enableReferenceCapture);
+                scene, origin, aligner, representation, referencePose, placement, locomotionProfile, enableReferenceCapture);
+            ConfigureMonoscopicReferenceOutputCapture(
+                representation, referencePose, placement, locomotionProfile,
+                enableMonoscopicReferenceCapture);
 
             GameObject metricsObject = GameObject.Find("ExperimentMetrics") ??
                                        new GameObject("ExperimentMetrics");
@@ -658,6 +1017,16 @@ namespace SplatVRLab.Editor
             metrics.RepresentationVariantId = representation.VariantId;
             metrics.RepresentationGaussianCount = (int)representation.SplatCount;
             metrics.RepresentationPlySha256 = representation.Sha256;
+            metrics.RepresentationImportCompression = splatAsset.Compression.ToString();
+            metrics.RendererGammaToLinear = renderer.GammaToLinear;
+            metrics.RendererShDegree = renderer.SHDegree;
+            metrics.RendererBrightness = renderer.Brightness;
+            metrics.RendererSplatDownscaleFactor = renderer.SplatDownscaleFactor;
+            metrics.RendererAsyncUpload = renderer.AsyncUpload;
+            metrics.RendererSortMode = renderer.SortMode.ToString();
+            metrics.RendererSortRefreshRate = (int)renderer.SortRefreshRate;
+            metrics.RendererCutoutsRefreshRate = (int)renderer.CutoutsRefreshRate;
+            metrics.RendererRenderOrder = (int)renderer.RenderOrder;
             metrics.ReferencePoseId = referencePose.reference_pose_id;
             metrics.ReferenceFrame = referencePose.selection.frame_file_path;
             metrics.ScalePolicy = referencePose.scale.policy;
@@ -718,6 +1087,7 @@ namespace SplatVRLab.Editor
         private static void ConfigureReferenceEvaluationCapture(
             Scene scene,
             XROrigin origin,
+            XrReferencePoseAligner aligner,
             RepresentationSpec representation,
             ReferencePoseRecord referencePose,
             ReferencePosePlacement placement,
@@ -739,6 +1109,7 @@ namespace SplatVRLab.Editor
             TrackedPoseCaptureMarker marker = markerObject.GetComponent<TrackedPoseCaptureMarker>() ??
                                               markerObject.AddComponent<TrackedPoseCaptureMarker>();
             marker.Origin = origin;
+            marker.Aligner = aligner;
             marker.VariantId = locomotionProfile.variant_id;
             marker.RepresentationVariantId = representation.VariantId;
             marker.RepresentationGaussianCount = (int)representation.SplatCount;
@@ -746,7 +1117,58 @@ namespace SplatVRLab.Editor
             marker.ReferenceFrame = referencePose.selection.frame_file_path;
             marker.TargetPosition = placement.ReferenceCameraPosition;
             marker.TargetRotation = placement.ReferenceCameraRotation;
+            marker.AlignmentMode = aligner.Mode.ToString();
             marker.DelaySeconds = 12f;
+        }
+
+        private static void ConfigureMonoscopicReferenceOutputCapture(
+            RepresentationSpec representation,
+            ReferencePoseRecord referencePose,
+            ReferencePosePlacement placement,
+            LocomotionProfile locomotionProfile,
+            bool enabled)
+        {
+            const string captureName = "MonoscopicReferenceOutputCamera";
+            GameObject existing = GameObject.Find(captureName);
+            if (!enabled)
+            {
+                if (existing)
+                    UnityEngine.Object.DestroyImmediate(existing);
+                return;
+            }
+
+            GameObject captureObject = existing ?? new GameObject(captureName);
+            Camera captureCamera = captureObject.GetComponent<Camera>();
+            if (!captureCamera)
+                captureCamera = captureObject.AddComponent<Camera>();
+            captureCamera.enabled = false;
+            captureCamera.clearFlags = CameraClearFlags.SolidColor;
+            captureCamera.backgroundColor = Color.black;
+            captureCamera.allowHDR = false;
+            captureCamera.allowMSAA = true;
+            captureCamera.nearClipPlane = 0.01f;
+            captureCamera.farClipPlane = 1000f;
+
+            ReferencePoseEvaluationCapture capture =
+                captureObject.GetComponent<ReferencePoseEvaluationCapture>();
+            if (!capture)
+                capture = captureObject.AddComponent<ReferencePoseEvaluationCapture>();
+            capture.EvaluationCamera = captureCamera;
+            capture.ReferenceCameraPosition = placement.ReferenceCameraPosition;
+            capture.ReferenceCameraRotation = placement.ReferenceCameraRotation;
+            capture.Width = referencePose.camera.width;
+            capture.Height = referencePose.camera.height;
+            capture.FocalLengthY = referencePose.camera.fl_y;
+            capture.DelaySeconds = 15f;
+            capture.CaptureId = "ns_poster_test_frame_00001_monoscopic_quest_output_v01";
+            capture.VariantId = locomotionProfile.variant_id;
+            capture.RepresentationVariantId = representation.VariantId;
+            capture.RepresentationGaussianCount = (int)representation.SplatCount;
+            capture.RepresentationPlySha256 = representation.Sha256;
+            capture.ReferencePoseId = referencePose.reference_pose_id;
+            capture.ReferenceFrame = referencePose.selection.frame_file_path;
+            capture.IntrinsicsState = referencePose.camera.intrinsics_state +
+                "; monoscopic_offscreen_output_diagnostic_no_pixel_metrics";
         }
 
         private static void ConfigureStationaryRig(Scene scene)
@@ -986,7 +1408,14 @@ namespace SplatVRLab.Editor
             ReferencePosePlacement placement = NerfstudioReferencePose.ComputePlacement(referencePose);
             TrackedPoseCaptureMarker marker =
                 UnityEngine.Object.FindAnyObjectByType<TrackedPoseCaptureMarker>();
-            if (!marker || !marker.Origin || marker.VariantId != profile.variant_id ||
+            XrReferencePoseAligner.AlignmentMode expectedAlignmentMode =
+                profile.xr_alignment_mode == "full_pose_once"
+                    ? XrReferencePoseAligner.AlignmentMode.FullPoseOnce
+                    : XrReferencePoseAligner.AlignmentMode.YawOnly;
+            if (!marker || !marker.Origin || !marker.Aligner ||
+                marker.Aligner.Mode != expectedAlignmentMode ||
+                marker.AlignmentMode != expectedAlignmentMode.ToString() ||
+                marker.VariantId != profile.variant_id ||
                 marker.RepresentationVariantId != representation.VariantId ||
                 marker.RepresentationGaussianCount != (int)representation.SplatCount ||
                 marker.ReferencePoseId != referencePose.reference_pose_id ||
@@ -994,6 +1423,28 @@ namespace SplatVRLab.Editor
                 Vector3.Distance(marker.TargetPosition, placement.ReferenceCameraPosition) > 1e-5f ||
                 Quaternion.Angle(marker.TargetRotation, placement.ReferenceCameraRotation) > 0.01f)
                 throw new InvalidOperationException("Tracked-pose capture marker is missing or inconsistent.");
+        }
+
+        private static void ValidateMonoscopicReferenceOutputCapture(
+            ReferencePoseRecord referencePose,
+            RepresentationSpec representation,
+            LocomotionProfile profile)
+        {
+            ReferencePoseEvaluationCapture capture =
+                UnityEngine.Object.FindAnyObjectByType<ReferencePoseEvaluationCapture>();
+            if (!capture || !capture.EvaluationCamera || capture.EvaluationCamera.enabled ||
+                capture.VariantId != profile.variant_id ||
+                capture.RepresentationVariantId != representation.VariantId ||
+                capture.RepresentationGaussianCount != (int)representation.SplatCount ||
+                capture.RepresentationPlySha256 != representation.Sha256 ||
+                capture.ReferencePoseId != referencePose.reference_pose_id ||
+                capture.ReferenceFrame != referencePose.selection.frame_file_path ||
+                capture.Width != referencePose.camera.width ||
+                capture.Height != referencePose.camera.height ||
+                Mathf.Abs(capture.FocalLengthY - referencePose.camera.fl_y) > 1e-6f ||
+                capture.DelaySeconds < 12f)
+                throw new InvalidOperationException(
+                    "Monoscopic reference-output capture is missing or inconsistent.");
         }
 
         private static void SetLegacyMoveGravity(

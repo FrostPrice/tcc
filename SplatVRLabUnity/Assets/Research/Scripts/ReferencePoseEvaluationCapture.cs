@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Globalization;
 using System.IO;
 using UnityEngine;
@@ -31,6 +32,7 @@ namespace SplatVRLab
             public Quaternion cameraRotation;
             public string captureKind = "monoscopic_reference_pose_diagnostic";
             public string intrinsicsState;
+            public float nonBackgroundFraction;
             public string completedAtUtc;
             public string imageFile;
         }
@@ -64,53 +66,77 @@ namespace SplatVRLab
                 Debug.LogError("[SplatVRLab] REFERENCE_CAPTURE_FAILED: evaluation camera is missing.");
                 return;
             }
-            Invoke(nameof(Capture), DelaySeconds);
+            Invoke(nameof(BeginCapture), DelaySeconds);
         }
 
-        private void Capture()
+        private void BeginCapture()
         {
+            StartCoroutine(CaptureAfterUrpFrames());
+        }
+
+        private IEnumerator CaptureAfterUrpFrames()
+        {
+            RenderTexture target = null;
+            Texture2D image = null;
+            RenderTexture previous = null;
+            Transform cameraTransform = null;
+            Vector3 previousPosition = default;
+            Quaternion previousRotation = default;
+            float previousFieldOfView = 0f;
+            float previousAspect = 0f;
+            bool previousEnabled = false;
+            target = new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32)
+            {
+                name = "SplatVRLabReferencePoseEvaluation",
+            };
+            image = new Texture2D(Width, Height, TextureFormat.RGBA32, false, false);
+            cameraTransform = EvaluationCamera.transform;
+            previousPosition = cameraTransform.position;
+            previousRotation = cameraTransform.rotation;
+            previousFieldOfView = EvaluationCamera.fieldOfView;
+            previousAspect = EvaluationCamera.aspect;
+            previousEnabled = EvaluationCamera.enabled;
+            previous = RenderTexture.active;
+            cameraTransform.SetPositionAndRotation(ReferenceCameraPosition, ReferenceCameraRotation);
+            EvaluationCamera.fieldOfView = Mathf.Rad2Deg * 2f * Mathf.Atan(
+                Height / (2f * FocalLengthY));
+            float captureFieldOfView = EvaluationCamera.fieldOfView;
+            EvaluationCamera.aspect = Width / (float)Height;
+            EvaluationCamera.targetTexture = target;
+            // Camera.Render() bypasses UnitySplats' URP renderer feature on Android.
+            // Let the enabled camera traverse the normal URP camera loop first.
+            EvaluationCamera.enabled = true;
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();
             try
             {
-                var target = new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32)
+                EvaluationCamera.enabled = false;
+                RenderTexture.active = target;
+                image.ReadPixels(new Rect(0, 0, Width, Height), 0, 0);
+                image.Apply(false, false);
+                Color32 background = EvaluationCamera.backgroundColor;
+                int nonBackgroundPixels = 0;
+                foreach (Color32 pixel in image.GetPixels32())
                 {
-                    name = "SplatVRLabReferencePoseEvaluation",
-                };
-                var image = new Texture2D(Width, Height, TextureFormat.RGBA32, false, false);
-                try
-                {
-                    Transform cameraTransform = EvaluationCamera.transform;
-                    Vector3 previousPosition = cameraTransform.position;
-                    Quaternion previousRotation = cameraTransform.rotation;
-                    float previousFieldOfView = EvaluationCamera.fieldOfView;
-                    float previousAspect = EvaluationCamera.aspect;
-                    bool previousEnabled = EvaluationCamera.enabled;
-                    RenderTexture previous = RenderTexture.active;
-                    cameraTransform.SetPositionAndRotation(
-                        ReferenceCameraPosition, ReferenceCameraRotation);
-                    EvaluationCamera.enabled = false;
-                    EvaluationCamera.fieldOfView = Mathf.Rad2Deg * 2f * Mathf.Atan(
-                        Height / (2f * FocalLengthY));
-                    EvaluationCamera.aspect = Width / (float)Height;
-                    EvaluationCamera.targetTexture = target;
-                    EvaluationCamera.Render();
-                    RenderTexture.active = target;
-                    image.ReadPixels(new Rect(0, 0, Width, Height), 0, 0);
-                    image.Apply(false, false);
-                    RenderTexture.active = previous;
-                    EvaluationCamera.targetTexture = null;
-                    EvaluationCamera.fieldOfView = previousFieldOfView;
-                    EvaluationCamera.aspect = previousAspect;
-                    cameraTransform.SetPositionAndRotation(previousPosition, previousRotation);
-                    EvaluationCamera.enabled = previousEnabled;
+                    int difference = Mathf.Abs(pixel.r - background.r) +
+                                     Mathf.Abs(pixel.g - background.g) +
+                                     Mathf.Abs(pixel.b - background.b);
+                    if (difference > 12)
+                        nonBackgroundPixels++;
+                }
+                float nonBackgroundFraction = nonBackgroundPixels / (float)(Width * Height);
+                if (nonBackgroundFraction < 0.001f)
+                    throw new InvalidOperationException(
+                        "Monoscopic offscreen capture contains no meaningful pixels beyond the background.");
 
-                    string directory = Path.Combine(Application.persistentDataPath, "visual_evaluation");
-                    Directory.CreateDirectory(directory);
-                    string timestamp = DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
-                    string prefix = $"{CaptureId}_{VariantId}_{timestamp}";
-                    CaptureImagePath = Path.Combine(directory, $"{prefix}.png");
-                    File.WriteAllBytes(CaptureImagePath, image.EncodeToPNG());
-                    var record = new CaptureRecord
-                    {
+                string directory = Path.Combine(Application.persistentDataPath, "visual_evaluation");
+                Directory.CreateDirectory(directory);
+                string timestamp = DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
+                string prefix = $"{CaptureId}_{VariantId}_{timestamp}";
+                CaptureImagePath = Path.Combine(directory, $"{prefix}.png");
+                File.WriteAllBytes(CaptureImagePath, image.EncodeToPNG());
+                var record = new CaptureRecord
+                {
                     captureId = CaptureId,
                     variantId = VariantId,
                     representationVariantId = RepresentationVariantId,
@@ -120,30 +146,41 @@ namespace SplatVRLab
                     referenceFrame = ReferenceFrame,
                     width = Width,
                     height = Height,
-                    verticalFieldOfViewDegrees = EvaluationCamera.fieldOfView,
+                    verticalFieldOfViewDegrees = captureFieldOfView,
                     cameraPosition = ReferenceCameraPosition,
                     cameraRotation = ReferenceCameraRotation,
                     intrinsicsState = IntrinsicsState,
+                    nonBackgroundFraction = nonBackgroundFraction,
                     completedAtUtc = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture),
                     imageFile = Path.GetFileName(CaptureImagePath),
-                    };
-                    string recordPath = Path.Combine(directory, $"{prefix}.json");
-                    File.WriteAllText(recordPath, JsonUtility.ToJson(record, true));
-                    CaptureCompleted = true;
-                    Debug.Log($"[SplatVRLab] REFERENCE_CAPTURE_OK: image={CaptureImagePath}; metadata={recordPath}; " +
-                              $"pose={ReferencePoseId}; representation={RepresentationVariantId}");
-                }
-                finally
-                {
-                    EvaluationCamera.targetTexture = null;
-                    RenderTexture.active = null;
-                    Destroy(target);
-                    Destroy(image);
-                }
+                };
+                string recordPath = Path.Combine(directory, $"{prefix}.json");
+                File.WriteAllText(recordPath, JsonUtility.ToJson(record, true));
+                CaptureCompleted = true;
+                Debug.Log($"[SplatVRLab] REFERENCE_CAPTURE_OK: image={CaptureImagePath}; metadata={recordPath}; " +
+                          $"pose={ReferencePoseId}; representation={RepresentationVariantId}; " +
+                          $"nonBackgroundFraction={nonBackgroundFraction:F6}");
             }
             catch (Exception exception)
             {
                 Debug.LogError($"[SplatVRLab] REFERENCE_CAPTURE_FAILED: {exception}");
+            }
+            finally
+            {
+                if (EvaluationCamera)
+                {
+                    EvaluationCamera.enabled = previousEnabled;
+                    EvaluationCamera.targetTexture = null;
+                    EvaluationCamera.fieldOfView = previousFieldOfView;
+                    EvaluationCamera.aspect = previousAspect;
+                }
+                if (cameraTransform)
+                    cameraTransform.SetPositionAndRotation(previousPosition, previousRotation);
+                RenderTexture.active = previous;
+                if (target)
+                    Destroy(target);
+                if (image)
+                    Destroy(image);
             }
         }
     }

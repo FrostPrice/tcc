@@ -14,10 +14,12 @@ namespace SplatVRLab
             public string schemaVersion = "1.0";
             public string captureKind = "tracked_xr_stereo_screencap_marker";
             public string variantId, representationVariantId, referencePoseId, referenceFrame, completedAtUtc;
+            public string alignmentMode;
             public int representationGaussianCount;
             public Vector3 targetPosition, observedPosition;
             public Quaternion targetRotation, observedRotation;
             public float positionErrorUnityUnits, rotationErrorDegrees;
+            public bool alignmentCompleted;
         }
 
         public XROrigin Origin;
@@ -26,6 +28,7 @@ namespace SplatVRLab
         public int RepresentationGaussianCount;
         public Vector3 TargetPosition;
         public Quaternion TargetRotation = Quaternion.identity;
+        public string AlignmentMode;
         [Min(0f)] public float DelaySeconds = 12f;
 
         private void Start() => Invoke(nameof(WriteMarker), DelaySeconds);
@@ -45,6 +48,8 @@ namespace SplatVRLab
                 representationGaussianCount = RepresentationGaussianCount,
                 referencePoseId = ReferencePoseId,
                 referenceFrame = ReferenceFrame,
+                alignmentMode = AlignmentMode,
+                alignmentCompleted = Aligner && Aligner.AlignmentCompleted,
                 targetPosition = TargetPosition,
                 observedPosition = camera.position,
                 targetRotation = TargetRotation,
@@ -58,7 +63,11 @@ namespace SplatVRLab
             string timestamp = DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
             string path = Path.Combine(directory, $"tracked_pose_{VariantId}_{timestamp}.json");
             File.WriteAllText(path, JsonUtility.ToJson(record, true));
-            Debug.Log($"[SplatVRLab] TRACKED_POSE_MARKER_OK: {path}; positionError={record.positionErrorUnityUnits:F6}; rotationError={record.rotationErrorDegrees:F4}");
+            Debug.Log(
+                $"[SplatVRLab] TRACKED_POSE_MARKER_OK: {path}; mode={record.alignmentMode}; " +
+                $"alignmentCompleted={record.alignmentCompleted}; " +
+                $"positionError={record.positionErrorUnityUnits:F6}; " +
+                $"rotationError={record.rotationErrorDegrees:F4}");
         }
     }
 }
