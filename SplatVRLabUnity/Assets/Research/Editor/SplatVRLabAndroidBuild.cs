@@ -30,6 +30,8 @@ namespace SplatVRLab.Editor
             "Builds/Android/SplatVRLabUnity-visual-pruned100k-fullpose-dev.apk";
         private const string VisualPruned50kFullPoseOutputRelativePath =
             "Builds/Android/SplatVRLabUnity-visual-pruned50k-fullpose-dev.apk";
+        private const string VisualSplatfactoBigFullPoseOutputRelativePath =
+            "Builds/Android/SplatVRLabUnity-visual-splatfacto-big-fullpose-dev.apk";
         private const string VisualBaselineGammaLinearOffFullPoseOutputRelativePath =
             "Builds/Android/SplatVRLabUnity-visual-baseline-gamma-linear-off-fullpose-dev.apk";
         private const string VisualBaselineSh0FullPoseOutputRelativePath =
@@ -133,6 +135,15 @@ namespace SplatVRLab.Editor
                 VisualPruned50kFullPoseOutputRelativePath,
                 "spark_opacity_topk_50k_visual_full_pose_v01",
                 SplatVRLabSetup.ConfigureVisualPruned50kFullPose);
+        }
+
+        [MenuItem("SplatVRLab/Build Android splatfacto-big visual full-pose APK")]
+        public static void BuildVisualSplatfactoBigFullPoseDevelopmentApk()
+        {
+            BuildDevelopmentApk(
+                VisualSplatfactoBigFullPoseOutputRelativePath,
+                "spark_splatfacto_big_visual_full_pose_v01",
+                SplatVRLabSetup.ConfigureVisualSplatfactoBigFullPose);
         }
 
         [MenuItem("SplatVRLab/Build Android baseline visual gamma-linear-off full-pose APK")]

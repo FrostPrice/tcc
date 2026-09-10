@@ -23,6 +23,8 @@ ocorre no headset e não por Quest Link.
   `Builds/Android/SplatVRLabUnity-pruned-100k-static-dev.apk`.
 - APKs de captura visual de referência: `Builds/Android/SplatVRLabUnity-visual-baseline-dev.apk`
   e `Builds/Android/SplatVRLabUnity-visual-pruned100k-dev.apk`.
+- APK diagnóstico `splatfacto-big`:
+  `Builds/Android/SplatVRLabUnity-visual-splatfacto-big-fullpose-dev.apk`.
 
 ## 1. Preparar o computador e o headset
 
@@ -511,6 +513,39 @@ python3 experiments/unitysplats_viability_v01/scripts/analyze_full_pose_performa
 
 Isso gera `derived/quest_full_pose_performance_with_50k_v01/` e preserva a
 análise original baseline × 100k sem sobrescrevê-la.
+
+## 13.1 Variante `splatfacto-big` de alta complexidade
+
+O menu `SplatVRLab > Build Android splatfacto-big visual full-pose APK` usa o
+PLY exportado pelo Colab em `experiments/colab/exports/`, com 470.962
+Gaussianas e SHA-256
+`70716105acdaa18caa3523b52c69cd8d46ab96650bbf4c6ad42a17868a651505`. O
+configurador copia-o para um asset Unity separado e valida também a pose
+correspondente em `experiments/colab/records/`; não substitui a baseline.
+
+A variante mantém Spark, SH grau 3, `GammaToLinear`, ordenação global e
+`FullPoseOnce` iguais à baseline. Por ter 2,4× mais Gaussianas, ela é um teste
+diagnóstico de custo elevado, não uma configuração presumidamente adequada ao
+Quest.
+
+Após compilar pelo menu, faça primeiro uma única coleta estática:
+
+```bash
+bash SplatVRLabUnity/scripts/collect_quest_metrics_run.sh \
+  --adb "$QUEST_ADB" \
+  --apk SplatVRLabUnity/Builds/Android/SplatVRLabUnity-visual-splatfacto-big-fullpose-dev.apk \
+  --condition static_reference \
+  --run-id quest_visual_v04_splatfacto_big_fullpose_r01 \
+  --require-automated-sequence \
+  --expected-variant spark_splatfacto_big_visual_full_pose_v01 \
+  --expected-representation splatfacto_big_v01 \
+  --require-tracked-pose-marker \
+  --expected-alignment-mode FullPoseOnce
+```
+
+Permaneça imóvel até o fim. Registre se o APK instala, se a cena inicia e os
+artefatos qualitativos; não altere ordenação, poda ou renderer antes desta
+coleta de referência.
 
 ## 14. Diagnóstico de fidelidade do UnitySplats
 

@@ -27,8 +27,12 @@ namespace SplatVRLab.Editor
             "experiments/pruning_v01/exp_ns_poster_opacity_topk_100k_v01.ply";
         private const string Pruned50kPlyRelativeToRepository =
             "experiments/pruning_50k_v01/exp_ns_poster_opacity_topk_50k_v01.ply";
+        private const string SplatfactoBigPlyRelativeToRepository =
+            "experiments/colab/exports/exp_ns_poster_splatfacto_big_v01/splatfacto/splatfacto_big_v01/gaussian_splat/exp_ns_poster_splatfacto_big_v01_splatfacto_big_v01.ply";
         private const string ReferencePoseRelativeToRepository =
             "experiments/unitysplats_viability_v01/reference_pose.json";
+        private const string SplatfactoBigReferencePoseRelativeToRepository =
+            "experiments/colab/records/exp_ns_poster_splatfacto_big_v01/integration/reference_pose.json";
         private const string LocomotionProfileRelativeToRepository =
             "experiments/unitysplats_viability_v01/locomotion_profile.json";
         private const string AutomatedWalkProfileRelativeToRepository =
@@ -47,6 +51,8 @@ namespace SplatVRLab.Editor
             "experiments/unitysplats_viability_v01/visual_pruned100k_full_pose_profile.json";
         private const string VisualPruned50kFullPoseProfileRelativeToRepository =
             "experiments/unitysplats_viability_v01/visual_pruned50k_full_pose_profile.json";
+        private const string VisualSplatfactoBigFullPoseProfileRelativeToRepository =
+            "experiments/unitysplats_viability_v01/visual_splatfacto_big_full_pose_profile.json";
         private const string VisualBaselineGammaLinearOffFullPoseProfileRelativeToRepository =
             "experiments/unitysplats_viability_v01/visual_baseline_gamma_linear_off_full_pose_profile.json";
         private const string VisualBaselineSh0FullPoseProfileRelativeToRepository =
@@ -67,21 +73,28 @@ namespace SplatVRLab.Editor
             "Assets/Research/Data/poster_opacity_topk_100k_v01.ply";
         private const string ImportedPruned50kPlyAssetPath =
             "Assets/Research/Data/poster_opacity_topk_50k_v01.ply";
+        private const string ImportedSplatfactoBigPlyAssetPath =
+            "Assets/Research/Data/poster_splatfacto_big_v01.ply";
         private const string SourceSceneAssetPath = "Assets/Scenes/BasicScene.unity";
         private const string ViabilitySceneAssetPath =
             "Assets/Research/Scenes/GsplatViability.unity";
         private const uint ExpectedSplatCount = 195760;
         private const uint ExpectedPrunedSplatCount = 100000;
         private const uint ExpectedPruned50kSplatCount = 50000;
+        private const uint ExpectedSplatfactoBigSplatCount = 470962;
         private const string ExpectedSceneId = "ns_poster";
         private const string ExpectedExperimentId = "exp_ns_poster_baseline_v01";
         private const string ExpectedVariantId = "baseline_v01";
+        private const string ExpectedSplatfactoBigExperimentId = "exp_ns_poster_splatfacto_big_v01";
+        private const string ExpectedSplatfactoBigVariantId = "splatfacto_big_v01";
         private const string ExpectedSplatSha256 =
             "23e3b3d3cd47e1aa0ad1daf7df96c4bd620af9edaf7996ccb865f5b60b80bebb";
         private const string ExpectedPrunedSplatSha256 =
             "b2af0f8f9bda2ab2cc54db3e34147b6e02ea73cd71eb682ae803739f4f34c1d3";
         private const string ExpectedPruned50kSplatSha256 =
             "f4a5a1f80cd2d448338c22b2b21a777e2151f0171ad42dfd74046623742b26e5";
+        private const string ExpectedSplatfactoBigSplatSha256 =
+            "70716105acdaa18caa3523b52c69cd8d46ab96650bbf4c6ad42a17868a651505";
         private const string ExpectedLocomotionProfileSha256 =
             "7233b2fc9c092052fcf7a70dc8646f55aac068c910834fd686f7beb8ec9f6e41";
         private const string ExpectedAutomatedWalkProfileSha256 =
@@ -100,6 +113,8 @@ namespace SplatVRLab.Editor
             "4194128708cd761815a881bfc5ec2faf983c3555d518a37538945db92252f2d4";
         private const string ExpectedVisualPruned50kFullPoseProfileSha256 =
             "f9381a035e54d6556f998702b26c3b46e92f7acbdaac94884e5566e940b64664";
+        private const string ExpectedVisualSplatfactoBigFullPoseProfileSha256 =
+            "f75fd91a5953edb08343c670fc491cc200b4f0fd5e9b0d5026e6260805bfa79f";
         private const string ExpectedVisualBaselineGammaLinearOffFullPoseProfileSha256 =
             "4eb4a67f8b2d6204f984dc1e438894dc6bfa301b8911eb676016e5cb6fa4b7ee";
         private const string ExpectedVisualBaselineSh0FullPoseProfileSha256 =
@@ -130,6 +145,8 @@ namespace SplatVRLab.Editor
             "spark_opacity_topk_100k_visual_full_pose_v01";
         private const string VisualPruned50kFullPoseVariantId =
             "spark_opacity_topk_50k_visual_full_pose_v01";
+        private const string VisualSplatfactoBigFullPoseVariantId =
+            "spark_splatfacto_big_visual_full_pose_v01";
         private const string VisualBaselineGammaLinearOffFullPoseVariantId =
             "spark_baseline_visual_gamma_linear_off_full_pose_v01";
         private const string VisualBaselineSh0FullPoseVariantId =
@@ -154,6 +171,9 @@ namespace SplatVRLab.Editor
             public string Sha256;
             public uint SplatCount;
             public CompressionMode Compression;
+            public string ReferencePoseRelativePath = ReferencePoseRelativeToRepository;
+            public string ReferenceExperimentId = ExpectedExperimentId;
+            public string ReferenceVariantId = ExpectedVariantId;
         }
 
         private static readonly RepresentationSpec BaselineRepresentation = new()
@@ -184,6 +204,19 @@ namespace SplatVRLab.Editor
             Sha256 = ExpectedPruned50kSplatSha256,
             SplatCount = ExpectedPruned50kSplatCount,
             Compression = CompressionMode.Spark,
+        };
+
+        private static readonly RepresentationSpec SplatfactoBigRepresentation = new()
+        {
+            VariantId = "splatfacto_big_v01",
+            SourceRelativePath = SplatfactoBigPlyRelativeToRepository,
+            ImportedAssetPath = ImportedSplatfactoBigPlyAssetPath,
+            Sha256 = ExpectedSplatfactoBigSplatSha256,
+            SplatCount = ExpectedSplatfactoBigSplatCount,
+            Compression = CompressionMode.Spark,
+            ReferencePoseRelativePath = SplatfactoBigReferencePoseRelativeToRepository,
+            ReferenceExperimentId = ExpectedSplatfactoBigExperimentId,
+            ReferenceVariantId = ExpectedSplatfactoBigVariantId,
         };
 
         private static readonly RepresentationSpec BaselineUncompressedRepresentation = new()
@@ -348,6 +381,15 @@ namespace SplatVRLab.Editor
                 VisualPruned50kFullPoseVariantId), true);
         }
 
+        [MenuItem("SplatVRLab/Configure splatfacto-big visual full-pose variant")]
+        public static void ConfigureVisualSplatfactoBigFullPose()
+        {
+            ConfigureVariant(SplatfactoBigRepresentation, LoadVisualFullPoseProfile(
+                VisualSplatfactoBigFullPoseProfileRelativeToRepository,
+                ExpectedVisualSplatfactoBigFullPoseProfileSha256,
+                VisualSplatfactoBigFullPoseVariantId), true);
+        }
+
         [MenuItem("SplatVRLab/Configure baseline visual gamma-linear-off full-pose variant")]
         public static void ConfigureVisualBaselineGammaLinearOffFullPose()
         {
@@ -425,7 +467,7 @@ namespace SplatVRLab.Editor
             ConfigureProjectSettings();
             EnsureGsplatRendererFeatures();
             GsplatAsset splatAsset = ImportRepresentation(representation);
-            ReferencePoseRecord referencePose = LoadReferencePose();
+            ReferencePoseRecord referencePose = LoadReferencePose(representation);
             CreateViabilityScene(splatAsset, representation, referencePose, locomotionProfile,
                 ResolveRendererSettings(locomotionProfile), enableReferenceCapture,
                 enableMonoscopicReferenceCapture);
@@ -455,15 +497,15 @@ namespace SplatVRLab.Editor
             if (!File.Exists(ViabilitySceneAssetPath))
                 throw new InvalidOperationException($"Missing viability scene: {ViabilitySceneAssetPath}");
 
-            ReferencePoseRecord referencePose = LoadReferencePose();
-            ReferencePosePlacement expectedPlacement =
-                NerfstudioReferencePose.ComputePlacement(referencePose);
             Scene scene = EditorSceneManager.OpenScene(ViabilitySceneAssetPath, OpenSceneMode.Single);
             FrameMetricsRecorder metrics =
                 UnityEngine.Object.FindAnyObjectByType<FrameMetricsRecorder>();
             if (!metrics)
                 throw new InvalidOperationException("The viability scene is missing FrameMetricsRecorder.");
             RepresentationSpec representation = ResolveRepresentation(metrics.RepresentationVariantId);
+            ReferencePoseRecord referencePose = LoadReferencePose(representation);
+            ReferencePosePlacement expectedPlacement =
+                NerfstudioReferencePose.ComputePlacement(referencePose);
             GsplatAsset splatAsset = AssetDatabase.LoadAssetAtPath<GsplatAsset>(representation.ImportedAssetPath);
             if (!splatAsset || splatAsset.SplatCount != representation.SplatCount)
                 throw new InvalidOperationException(
@@ -531,6 +573,11 @@ namespace SplatVRLab.Editor
                     VisualPruned50kFullPoseProfileRelativeToRepository,
                     ExpectedVisualPruned50kFullPoseProfileSha256,
                     VisualPruned50kFullPoseVariantId), referencePose, representation);
+            else if (metrics.VariantId == VisualSplatfactoBigFullPoseVariantId)
+                ValidateVisualReferenceConfiguration(scene, metrics, LoadVisualFullPoseProfile(
+                    VisualSplatfactoBigFullPoseProfileRelativeToRepository,
+                    ExpectedVisualSplatfactoBigFullPoseProfileSha256,
+                    VisualSplatfactoBigFullPoseVariantId), referencePose, representation);
             else if (metrics.VariantId == VisualBaselineGammaLinearOffFullPoseVariantId)
             {
                 LocomotionProfile profile = LoadVisualDiagnosticProfile(
@@ -718,6 +765,8 @@ namespace SplatVRLab.Editor
                 return PrunedRepresentation;
             if (variantId == Pruned50kRepresentation.VariantId)
                 return Pruned50kRepresentation;
+            if (variantId == SplatfactoBigRepresentation.VariantId)
+                return SplatfactoBigRepresentation;
             if (variantId == BaselineUncompressedRepresentation.VariantId)
                 return BaselineUncompressedRepresentation;
             throw new InvalidOperationException($"Unknown splat representation: {variantId}.");
@@ -770,9 +819,12 @@ namespace SplatVRLab.Editor
             return imported;
         }
 
-        internal static ReferencePoseRecord LoadReferencePose()
+        internal static ReferencePoseRecord LoadReferencePose() =>
+            LoadReferencePose(BaselineRepresentation);
+
+        private static ReferencePoseRecord LoadReferencePose(RepresentationSpec representation)
         {
-            string path = ResolveRepositoryPath(ReferencePoseRelativeToRepository);
+            string path = ResolveRepositoryPath(representation.ReferencePoseRelativePath);
             if (!File.Exists(path))
                 throw new FileNotFoundException(
                     "Reference pose is missing. Export or recover it before configuring Unity.", path);
@@ -780,9 +832,9 @@ namespace SplatVRLab.Editor
             return NerfstudioReferencePose.ParseAndValidate(
                 File.ReadAllText(path),
                 ExpectedSceneId,
-                ExpectedExperimentId,
-                ExpectedVariantId,
-                ExpectedSplatSha256);
+                representation.ReferenceExperimentId,
+                representation.ReferenceVariantId,
+                representation.Sha256);
         }
 
         private static LocomotionProfile LoadLocomotionProfile()
