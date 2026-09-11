@@ -1,0 +1,27 @@
+\chapter{Desenvolvimento}
+
+Este capítulo descreve a execução efetiva do protótipo e as decisões tomadas durante sua implementação. Diferentemente do Capítulo 3, que apresenta o projeto planejado, esta seção registra os componentes utilizados, a mudança de rota de integração e os artefatos preservados para reprodução. Os resultados quantitativos e sua interpretação são apresentados exclusivamente no Capítulo 6.
+
+\section{Implementação do pipeline experimental}
+
+O estudo de caso adotado foi o conjunto \textit{poster} disponibilizado pelo Nerfstudio. As etapas de pré-processamento, treinamento, avaliação e exportação foram executadas no Google Colab, com os artefatos persistidos em armazenamento externo e manifestos versionados no repositório. O modelo NeRF foi mantido como referência de fidelidade visual, enquanto as representações 3D-GS foram treinadas ou derivadas a partir da mesma cena para a avaliação de custo e desempenho.
+
+A execução foi organizada de modo incremental. Primeiro, foi preservada uma \textit{baseline} Splatfacto; depois, foram produzidas variantes de regularização de escala, de maior capacidade e de poda determinística por opacidade. As podas de 100 mil e 50 mil gaussianas foram geradas a partir do PLY congelado da \textit{baseline}, mantendo os registros binários completos das gaussianas selecionadas. Cada artefato possui identificador de variante, contagem de gaussianas, tamanho e soma de verificação registrados em seus manifestos.
+
+\section{Mudança da rota de integração}
+
+Durante a implementação inicial, foi investigada uma rota de integração com a Unreal Engine. Essa rota não foi consolidada para execução nativa no headset devido aos riscos de compatibilidade entre versões, plugins experimentais, importação de gaussianas e geração de \textit{builds} Android/Vulkan. A alteração para Unity não é interpretada como comparação de superioridade entre motores gráficos; foi uma decisão metodológica para preservar uma rota nativa, estável e reproduzível dentro do escopo do trabalho.
+
+A integração implementada passou a utilizar Unity 6000.5.8f1, Universal Render Pipeline, OpenXR, Android/Vulkan e UnitySplats. O projeto Unity importa os PLYs das variantes como ativos independentes e mantém uma cena mínima de avaliação, com carregamento do modelo, câmera estereoscópica e configuração controlada de pose. As versões do motor, do pacote, do \textit{build} e os identificadores de representação são preservados nos manifestos e nos registros de \textit{build}.
+
+\section{Execução no Meta Quest 3S e preservação de evidências}
+
+Os APKs foram gerados para Android/Vulkan e instalados no Meta Quest 3S em execução nativa. A coleta utilizou uma condição estacionária de referência, com alinhamento \textit{FullPoseOnce}: após o rastreamento, a pose completa é fixada para reduzir a variação entre repetições. Essa condição mede o custo de renderização estacionária e não constitui avaliação de locomoção, conforto durante movimento ou comportamento térmico prolongado.
+
+Cada execução retida possui metadados do APK, identificador esperado de variante, relatório de medições da aplicação, marcador de pose e, quando disponível, arquivo CSV do OVR Metrics. Capturas e observações visuais são mantidas como evidência qualitativa separada das métricas offline. A execução por desktop via Quest Link não foi usada como substituta da medição \textit{on-device}; permanece apenas como condição diagnóstica possível.
+
+\section{Rastreabilidade e limitações de implementação}
+
+Os manifestos do treinamento, das podas, dos APKs e das execuções permitem relacionar cada resultado a uma cena, uma representação e uma condição de teste. A consolidação derivada não altera os dados brutos e preserva a distinção entre a série comparativa de cinco execuções e diagnósticos isolados. Essa distinção é necessária para que uma observação pontual de maior fidelidade ou uma falha de desempenho não seja apresentada como média comparável.
+
+Persistem limitações técnicas relevantes. As podas determinísticas ainda exigem avaliação offline própria nas mesmas imagens de teste; uma captura da Unity ou do Quest não é substituta válida para PSNR, SSIM e LPIPS. Além disso, a condição de pose fixa não caracteriza estabilidade durante movimento. Essas pendências e os próximos passos de coleta estão registrados no arquivo \texttt{TODO.md} do repositório.

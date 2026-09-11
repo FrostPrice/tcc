@@ -1,0 +1,65 @@
+\chapter{Resultados}
+
+Este capítulo apresenta os resultados obtidos no estudo de caso \textit{ns\_poster}. A descrição do treinamento, da preparação das variantes e da integração em Unity é mantida no Capítulo 4; nesta seção são apresentados somente os dados derivados dos registros experimentais e sua interpretação. As tabelas foram consolidadas a partir de arquivos de evidência e de cinco execuções independentes por variante quando essa série está indicada.
+
+\section{Escopo da avaliação}
+
+As métricas offline foram calculadas sobre as mesmas 13 imagens de teste retidas do conjunto \textit{poster}. A execução \textit{on-device} ocorreu no Meta Quest 3S, em condição de referência estática, com pose completa fixa após o rastreamento. Para evitar comparar observações com forças de evidência diferentes, as variantes \textit{baseline}, \textit{top-k} 100k e \textit{top-k} 50k formam a série comparativa de cinco execuções. A variante \textit{splatfacto-big} é apresentada separadamente como diagnóstico estático de uma execução.
+
+Os valores, identificadores das variantes, somas de verificação e limitações de interpretação estão preservados no arquivo \texttt{summary.json} da consolidação de resultados. Assim, os dados apresentados não substituem as medições brutas nem os registros de execução.
+
+\section{Qualidade offline e complexidade das representações}
+
+O Quadro \ref{qua:resultados_offline} compara as representações treinadas cuja qualidade foi calculada diretamente no mesmo conjunto de imagens retidas. A regularização de escala reduziu o número de gaussianas em relação à \textit{baseline}, mas apresentou redução de PSNR e SSIM e aumento de LPIPS; por isso, não foi levada à avaliação no Quest. A configuração \textit{splatfacto-big} obteve SSIM mais alto e LPIPS mais baixo, embora com PSNR ligeiramente inferior ao da \textit{baseline}; seu custo de representação, entretanto, foi substancialmente maior.
+
+\begin{quadro}[H]
+\centering
+\footnotesize
+\caption{Qualidade offline e complexidade das representações treinadas no estudo de caso \textit{ns\_poster}.}
+\label{qua:resultados_offline}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|p{2.5cm}|C{1.75cm}|C{1.55cm}|C{1.55cm}|C{1.8cm}|C{1.7cm}|X|}
+\hline
+\textbf{Representação} & \textbf{PSNR} & \textbf{SSIM} & \textbf{LPIPS} & \textbf{Gaussianas} & \textbf{PLY (MB)} & \textbf{Tempo de treinamento} \\ \hline
+\textit{baseline} & 32,989 & 0,95363 & 0,10495 & 195.760 & 48,55 & 1.357,7 s \\ \hline
+Regularização de escala & 32,945 & 0,95310 & 0,11010 & 181.163 & 44,93 & 1.281,5 s \\ \hline
+\textit{splatfacto-big} & 32,764 & 0,95407 & 0,08538 & 470.962 & 116,80 & 1.913,5 s \\ \hline
+\end{tabularx}
+\legend{Fonte: elaboração própria a partir de \texttt{representation\_quality.csv}.}
+\end{quadro}
+
+As variantes por poda determinística \textit{top-k} foram derivadas da \textit{baseline}; portanto, não representam novo treinamento. A variante de 100 mil gaussianas possui 24,80 MB, e a de 50 mil gaussianas possui 12,40 MB. Não foram recalculadas métricas offline específicas para essas duas variantes. Consequentemente, a redução de tamanho não pode ser interpretada como preservação quantitativa de PSNR, SSIM ou LPIPS.
+
+\section{Desempenho em execução nativa no Quest}
+
+O Quadro \ref{qua:resultados_quest} apresenta a série comparativa de cinco execuções por variante. O FPS principal é calculado a partir do tempo de quadro registrado pela aplicação; o FPS médio do OVR Metrics é apresentado como contador complementar, e não como medida intercambiável. A diminuição do número de gaussianas reduziu o tempo de quadro e aumentou o FPS nas três variantes da série.
+
+\begin{quadro}[H]
+\centering
+\footnotesize
+\caption{Desempenho no Meta Quest 3S na condição \texttt{static\_reference}, com cinco execuções por variante.}
+\label{qua:resultados_quest}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|p{2.6cm}|C{1.8cm}|C{1.8cm}|C{1.8cm}|C{1.9cm}|X|}
+\hline
+\textbf{Representação} & \textbf{Tempo de quadro (ms)} & \textbf{FPS da aplicação} & \textbf{FPS OVR} & \textbf{GPU app (ms)} & \textbf{Quadros obsoletos} \\ \hline
+\textit{baseline} & 45,05 & 22,20 & 25,14 & 39,84 & 47,93 \\ \hline
+\textit{top-k} 100k & 26,30 & 38,02 & 40,49 & 23,07 & 33,76 \\ \hline
+\textit{top-k} 50k & 17,13 & 58,37 & 59,64 & 15,11 & 13,41 \\ \hline
+\end{tabularx}
+\legend{Fonte: elaboração própria a partir de \texttt{quest\_performance.csv}.}
+\end{quadro}
+
+A \textit{baseline} ficou em 22,20 FPS, valor insuficiente para a referência de fluidez definida no protocolo. A poda para 100 mil gaussianas elevou o resultado para 38,02 FPS. A variante de 50 mil gaussianas atingiu 58,37 FPS e apresentou o menor tempo de quadro da série, mas ainda permaneceu abaixo da referência de 90 FPS. Como a qualidade offline das variantes podadas não foi recalculada e não há observação visual registrada para a variante de 50 mil gaussianas, esse resultado representa uma melhoria de desempenho, não uma seleção definitiva de qualidade para VR.
+
+\section{Diagnóstico de maior capacidade}
+
+A variante \textit{splatfacto-big}, com 470.962 gaussianas e 116,80 MB, foi executada uma vez na mesma condição de pose fixa. O tempo de quadro medido pela aplicação foi 65,62 ms, correspondente a 15,24 FPS. Esse resultado não foi agregado à série de cinco execuções e não possui os contadores OVR disponíveis para comparação. Ainda assim, ele evidencia que o aumento da complexidade da representação não foi adequado à execução \textit{standalone} nesse caso.
+
+Na observação qualitativa do operador, essa variante apresentou fundo com mais detalhes e menor distorção, cor aparentemente correta, menos cintilação e cadeira visualmente correta. Essas observações são restritas à cena \textit{poster}, à pose fixa e a uma execução; não devem ser generalizadas para outras cenas ou interpretadas como métrica perceptual.
+
+\section{Síntese e limitações dos resultados}
+
+Os resultados caracterizam um compromisso claro entre complexidade, qualidade e desempenho. A \textit{baseline} forneceu a referência comparativa; a poda reduziu custo e melhorou o desempenho no Quest; e a configuração de maior capacidade preservou indícios qualitativos de maior fidelidade, mas tornou a execução ainda mais lenta. Assim, no estudo de caso avaliado, nenhuma variante atingiu a referência de 90 FPS definida pelo protocolo, e o resultado de 50 mil gaussianas, embora mais próximo dela, requer avaliação visual offline e no headset antes de qualquer conclusão sobre adequação final.
+
+As limitações centrais são o uso de uma única cena, a condição de pose fixa, a ausência de métricas offline das variantes podadas, a ausência de observação qualitativa registrada para a variante de 50 mil gaussianas e a natureza diagnóstica de uma única execução da \textit{splatfacto-big}. Esses limites são preservados explicitamente para que a análise não extrapole a evidência disponível.
