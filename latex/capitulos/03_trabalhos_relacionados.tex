@@ -42,7 +42,7 @@ forma representativa da string empregada é apresentada a seguir:
 \shorthandoff{"}
 \begin{quote}
 \ttfamily\raggedright
-("Neural Radiance Fields" OR NeRF OR "3D Gaussian Splatting") AND ("virtual reality" OR VR OR "real-time rendering" OR "walkable spaces" OR "Unreal Engine")
+("Neural Radiance Fields" OR NeRF OR "3D Gaussian Splatting") AND ("virtual reality" OR VR OR "real-time rendering" OR "walkable spaces" OR "game engine")
 \end{quote}
 \endgroup
 
@@ -254,7 +254,7 @@ O Quadro \ref{qua:comparativo_estudos} sintetiza, de forma objetiva, as principa
 & Explícita
 & Comparação visual e FPS
 & Cenas integradas à engine
-& Unreal Engine
+& Integração em motor gráfico
 & Não avalia VR \textit{standalone} no Quest \\
 \hline
 
@@ -264,7 +264,7 @@ O Quadro \ref{qua:comparativo_estudos} sintetiza, de forma objetiva, as principa
 & FPS, visual, percepção
 & Cenas para VR
 & Alta aderência a VR
-& Solução específica, sem foco no pipeline NeRF/Unreal/Quest \\
+& Solução específica, sem foco no pipeline NeRF/Unity/Quest \\
 \hline
 
 \end{tabularx}
@@ -275,10 +275,10 @@ A análise sintetizada no Quadro \ref{qua:comparativo_estudos} evidencia, em pri
 No recorte específico da realidade virtual, Xu et al. \cite{xu2023} representam um marco relevante ao demonstrarem que campos neurais podem ser empregados na captura, modelagem e visualização de espaços caminháveis com elevado grau de fidelidade. Entretanto, o estudo também evidencia que essa viabilidade depende de infraestrutura robusta, especialmente em termos de aquisição de dados e processamento multi-GPU. Em outras palavras, o VR-NeRF confirma o potencial científico da abordagem implícita em VR, mas também explicita os obstáculos práticos associados à sua adoção em cenários mais acessíveis.
 
 Por outro lado, os estudos baseados em 3D Gaussian Splatting apontam uma mudança de ênfase em direção a representações explícitas mais compatíveis com
-renderização eficiente. Kerbl et al. \cite{kerbl2023} reposicionam o debate ao mostrar que é possível obter elevada qualidade visual com taxas de renderização substancialmente mais adequadas ao tempo real. Jin et al. \cite{jin2024}, ao aproximarem essa representação do Unreal Engine, reforçam a importância da implantação em motores gráficos reais, enquanto Tu et al. \cite{tu2025} avançam na adaptação desse paradigma às exigências específicas da realidade virtual, como robustez perceptual, mitigação de artefatos e desempenho compatível com uso imersivo.
+renderização eficiente. Kerbl et al. \cite{kerbl2023} reposicionam o debate ao mostrar que é possível obter elevada qualidade visual com taxas de renderização substancialmente mais adequadas ao tempo real. Jin et al. \cite{jin2024}, ao aproximarem essa representação de um motor gráfico, reforçam a importância da implantação em ambientes reais, enquanto Tu et al. \cite{tu2025} avançam na adaptação desse paradigma às exigências específicas da realidade virtual, como robustez perceptual, mitigação de artefatos e desempenho compatível com uso imersivo.
 
 A inclusão das colunas referentes à avaliação, aos cenários utilizados e à aderência a VR ou \textit{engine} permite observar que os estudos não diferem apenas em sua formulação metodológica, mas também na forma como validam suas contribuições. Enquanto alguns trabalhos se apoiam predominantemente em métricas objetivas de qualidade e desempenho, outros incorporam comparações visuais, cenários capturados em ambiente real e avaliações perceptuais. Essa distinção é particularmente relevante porque evidencia que, no contexto da realidade virtual, a análise de resultados não pode se restringir apenas à fidelidade de reconstrução, devendo também considerar estabilidade visual, robustez perceptual, integração com ferramentas reais e viabilidade de execução.
 
 Em conjunto, esses estudos mostram que a literatura evoluiu de modelos fortemente orientados à fidelidade visual para soluções cada vez mais comprometidas com viabilidade prática, integração e desempenho. Contudo, também revelam que ainda persiste uma lacuna entre a excelência técnica dos métodos propostos e sua adoção em um fluxo de trabalho aplicado, capaz de articular reconstrução neural, representação eficiente da cena, motor gráfico e uso em VR \textit{standalone} sob restrições concretas de hardware e execução.
 
-É nesse contexto que se insere o presente trabalho. Em vez de se restringir à análise isolada de uma única técnica, esta pesquisa propõe uma abordagem aplicada, voltada à caracterização de um \textit{pipeline} que envolva reconstrução neural, representação eficiente, integração em Unreal Engine e visualização em Meta Quest 3S. Desse modo, busca-se compreender, de forma experimental, em que medida os avanços observados na literatura podem ser articulados de maneira coerente para atender simultaneamente aos requisitos de qualidade visual, desempenho, estabilidade perceptual e implantação prática em VR \textit{standalone}.
+É nesse contexto que se insere o presente trabalho. Em vez de se restringir à análise isolada de uma única técnica, esta pesquisa propõe uma abordagem aplicada, voltada à caracterização de um \textit{pipeline} que envolva reconstrução neural, representação eficiente, integração em Unity e visualização em Meta Quest 3S. Desse modo, busca-se compreender, de forma experimental, em que medida os avanços observados na literatura podem ser articulados de maneira coerente para atender simultaneamente aos requisitos de qualidade visual, desempenho, estabilidade perceptual e implantação prática em VR \textit{standalone}.

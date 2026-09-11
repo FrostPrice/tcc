@@ -127,7 +127,7 @@ A Figura \ref{fig:3dgs_qualidade_velocidade} sintetiza esse deslocamento ao rela
 
 O treinamento do 3D-GS inclui otimização, densificação e poda de gaussianas. Esse processo permite alocar mais primitivas em regiões com maior detalhe e remover elementos pouco relevantes, mas também introduz um novo conjunto de desafios: número elevado de gaussianas, consumo de memória, largura de banda, custo de ordenação e sensibilidade a artefatos como \textit{floaters}, aliasing e instabilidades de profundidade \cite{kerbl2023,fei2025survey3dgs,fan2024lightgaussian}.
 
-A literatura e o ecossistema de ferramentas indicam que 3D-GS já deixou de ser apenas uma formulação acadêmica isolada. Há métodos voltados a compressão, escalabilidade e integração, como LightGaussian e Scaffold-GS \cite{lu2024scaffoldgs,fan2024lightgaussian}, trabalhos que aproximam a técnica da Unreal Engine \cite{jin2024} e ferramentas comerciais ou comunitárias que apoiam captura, edição, exportação e uso de gaussianas em motores gráficos \cite{epicGaussianSplattingUnreal,kiri3dgs}. Portanto, o foco deste trabalho não é propor uma nova técnica de 3D-GS, mas avaliar a sua adoção em um \textit{pipeline} aplicado de VR \textit{standalone}.
+A literatura e o ecossistema de ferramentas indicam que 3D-GS já deixou de ser apenas uma formulação acadêmica isolada. Há métodos voltados a compressão, escalabilidade e integração, como LightGaussian e Scaffold-GS \cite{lu2024scaffoldgs,fan2024lightgaussian}, estudos de integração da técnica em motores gráficos \cite{jin2024} e ferramentas comerciais ou comunitárias que apoiam captura, edição, exportação e uso de gaussianas \cite{kiri3dgs}. Portanto, o foco deste trabalho não é propor uma nova técnica de 3D-GS, mas avaliar a sua adoção em um \textit{pipeline} aplicado de VR \textit{standalone}.
 
 A Figura \ref{fig:3dgs_pipeline_kerbl} ilustra o fluxo geral do 3D-GS, no qual pontos iniciais estimados por reconstrução multivista são convertidos em gaussianas otimizáveis e posteriormente renderizados por projeção e composição.
 
@@ -412,12 +412,11 @@ O Quadro \ref{qua:comparativo_engines_vr} sintetiza as características gerais d
 \begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
 \hline
 \textbf{Engine / abordagem} & \textbf{Características gerais} & \textbf{Pontos de atenção} \\ \hline
-Unreal Engine & Engine voltada a aplicações gráficas de alta fidelidade, com suporte a XR, renderização em tempo real e registros recentes de integração com 3D-GS. & Maior complexidade de integração, dependência de plugins, versões do motor, shaders e fluxo de \textit{build} para Quest. \\ \hline
 Unity & Engine associada a prototipagem rápida, aplicações interativas e desenvolvimento multiplataforma em XR. & Necessidade de adaptar o pipeline de 3D-GS a formatos, renderizadores e rotinas compatíveis com a engine. \\ \hline
 Godot & Engine aberta, flexível e customizável, com interesse acadêmico para experimentação e controle do pipeline. & Menor disponibilidade de fluxos consolidados para 3D-GS em VR \textit{standalone} e possível aumento do esforço de implementação. \\ \hline
 Visualizador desktop + Quest Link & Execução assistida por desktop com exibição imersiva no headset, útil para comparação com cenários de maior capacidade computacional. & Não representa integralmente a execução \textit{on-device}, pois desloca processamento, memória e carga gráfica para o computador. \\ \hline
 \end{tabularx}
-\fonte{Elaboração própria com base em \cite{xu2023,kerbl2023,jin2024,tu2025,metaquest3s2024,fei2025survey3dgs}.}
+\fonte{Elaboração própria com base em \cite{xu2023,kerbl2023,tu2025,metaquest3s2024,fei2025survey3dgs}.}
 \end{quadro}
 
 A partir dessa síntese, observa-se que cada alternativa oferece possibilidades e limitações distintas para a integração de cenas reconstruídas em VR. Engines generalistas fornecem infraestrutura para interação, câmera estereoscópica, empacotamento e integração com XR, mas podem demandar adaptações específicas para suportar representações como 3D Gaussian Splatting. Visualizadores dedicados, por sua vez, podem simplificar a execução de modelos especializados, mas tendem a reduzir a aderência ao cenário de aplicação \textit{standalone} \cite{xu2023,kerbl2023,tu2025,metaquest3s2024}.

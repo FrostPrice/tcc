@@ -14,7 +14,7 @@ A entrada da solução é composta por imagens RGB de uma cena real estática, c
 
 A etapa baseada em NeRF produz uma referência de qualidade visual para a síntese de novas vistas. Em seguida, a cena é convertida ou reconstruída em uma estrutura 3D-GS, mais aderente a estratégias de rasterização e renderização em tempo real.
 
-Após a conversão, o modelo 3D-GS será integrado a um protótipo mínimo em Unreal Engine com suporte a VR. O protótipo será considerado bem-sucedido quando permitir carregar a cena, visualizá-la em ambiente imersivo e coletar métricas de qualidade visual, desempenho, estabilidade e limitações técnicas.
+Após a conversão, o modelo 3D-GS é integrado a um protótipo mínimo em Unity, com  suporte a VR. O protótipo permite carregar a cena, visualizá-la em ambiente imersivo e coletar métricas de qualidade visual, desempenho, estabilidade e limitações técnicas.
 
 Os principais artefatos esperados são o conjunto de imagens organizado por cena, os modelos NeRF treinados, os modelos 3D-GS otimizados, o protótipo avaliativo em VR, os registros de configuração, os resultados experimentais e a análise das limitações encontradas. Não faz parte da entrega a construção de uma ferramenta completa de captura, edição e publicação de cenas 3D-GS; esse tipo de ferramenta permanece como possibilidade de trabalho futuro.
 
@@ -63,7 +63,7 @@ A solução proposta é organizada em seis etapas sequenciais, desde a captura d
 \node[etapa, right=0.15cm of n4] (gs) {Conversão e otimização para 3D-GS};
 
 \node[numero] (n5) at (8.05,-5.8) {5};
-\node[etapa, right=0.15cm of n5] (ue) {Integração na Unreal Engine};
+\node[etapa, right=0.15cm of n5] (unity) {Integração em Unity};
 
 \node[numero] (n6) at (10.25,-7.25) {6};
 \node[etapa, right=0.15cm of n6] (quest) {Execução e avaliação em VR};
@@ -71,8 +71,8 @@ A solução proposta é organizada em seis etapas sequenciais, desde a captura d
 \draw[seta] (captura) -- (prep);
 \draw[seta] (prep) -- (nerf);
 \draw[seta] (nerf) -- (gs);
-\draw[seta] (gs) -- (ue);
-\draw[seta] (ue) -- (quest);
+\draw[seta] (gs) -- (unity);
+\draw[seta] (unity) -- (quest);
 
 \end{tikzpicture}
 }
@@ -81,7 +81,7 @@ A solução proposta é organizada em seis etapas sequenciais, desde a captura d
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
-A Etapa 1 delimita a cena e produz as imagens RGB. A Etapa 2 organiza os dados e estima ou incorpora poses de câmera. A Etapa 3 treina o modelo NeRF. A Etapa 4 converte ou reconstrói a cena em 3D-GS. A Etapa 5 integra a representação à Unreal Engine, e a Etapa 6 avalia a execução em VR.
+A Etapa 1 delimita a cena e produz as imagens RGB. A Etapa 2 organiza os dados e estima ou incorpora poses de câmera. A Etapa 3 treina o modelo NeRF. A Etapa 4 converte ou reconstrói a cena em 3D-GS. A Etapa 5 integra a representação à Unity, e a Etapa 6 avalia a execução em VR.
 
 \subsection{Arquitetura da solução}
 
@@ -126,7 +126,7 @@ A arquitetura da solução separa as responsabilidades do projeto para facilitar
 
 \node[camada, below=of representacao] (integracao) {
     \textbf{Camada de integração}\\
-    Importação na Unreal Engine, configuração XR e construção da cena VR
+    Importação na Unity, configuração XR e construção da cena VR
 };
 
 \node[camada, below=of integracao] (avaliacao) {
@@ -162,7 +162,7 @@ O Quadro \ref{qua:cenarios_desenvolvimento} explicita os cenários de desenvolvi
 
 Execução nativa no Meta Quest 3S & Cenário-alvo principal & Mede diretamente o comportamento \textit{standalone} sob restrições reais do dispositivo & Pode exigir forte redução da cena ou otimizações adicionais. \\ \hline
 
-Unreal Engine com Quest Link & Contingência e comparação & Permite testar visualização imersiva quando a execução nativa falhar & Desloca parte do processamento para desktop e não substitui a avaliação \textit{on-device}. \\ \hline
+Unity em desktop com Quest Link & Contingência e comparação & Permite testar visualização imersiva quando a execução nativa falhar & Desloca parte do processamento para desktop e não substitui a avaliação \textit{on-device}. \\ \hline
 
 Visualizador dedicado de 3D-GS & Apoio diagnóstico & Ajuda a validar se o modelo 3D-GS está visualmente adequado antes da integração & Não representa o fluxo completo em \textit{engine} nem a execução \textit{standalone}. \\ \hline
 
@@ -230,15 +230,13 @@ O resultado esperado é um modelo capaz de sintetizar novas vistas com fidelidad
 
 A quarta etapa corresponde à conversão ou reconstrução da cena em 3D Gaussian Splatting, buscando um conjunto de gaussianas 3D que represente geometria e aparência de forma explícita. Essa etapa poderá utilizar ferramentas ou fluxos já consolidados de 3D-GS, pois o objetivo do trabalho não é desenvolver um reconstrutor próprio, mas avaliar a adequação da representação gerada ao contexto de VR \textit{standalone}.
 
-Cada cena convertida será analisada quanto ao número de gaussianas, tamanho do arquivo, qualidade visual percebida e viabilidade de renderização em tempo real. Quando necessário, serão aplicadas otimizações como redução de gaussianas, poda, ajuste de níveis de detalhe e simplificação da cena. Ferramentas e iniciativas como os fluxos de Gaussian Splatting na Unreal Engine e plataformas de captura/edição de 3D-GS reforçam que a maturidade ferramental já existe; a lacuna do projeto está em adaptar, integrar e avaliar esse resultado em VR no Meta Quest 3S \cite{epicGaussianSplattingUnreal,kiri3dgs}.
+Cada cena convertida será analisada quanto ao número de gaussianas, tamanho do arquivo, qualidade visual percebida e viabilidade de renderização em tempo real. Quando necessário, serão aplicadas otimizações como redução de gaussianas, poda, ajuste de níveis de detalhe e simplificação da cena. Plataformas de captura, edição e exportação de 3D-GS reforçam a disponibilidade de artefatos para integração; a lacuna do projeto está em adaptar, integrar e avaliar esse resultado em VR no Meta Quest 3S \cite{kiri3dgs}.
 
 Caso o modelo 3D-GS seja visualmente adequado, mas pesado demais para execução no Meta Quest 3S, será necessário ajustar a complexidade da cena ou utilizar estratégias alternativas, como testes em desktop com transmissão para o headset.
 
-\subsection{Integração na Unreal Engine}
+\subsection{Integração em Unity}
 
-Com base na análise conceitual apresentada na Fundamentação Teórica, este trabalho adota a Unreal Engine como motor gráfico principal para a etapa de integração em VR. Trata-se de uma decisão metodológica do projeto, não de uma imposição da técnica de 3D-GS. A escolha se justifica pela existência de iniciativas recentes de integração entre 3D Gaussian Splatting e Unreal Engine, pelo suporte consolidado a aplicações XR, pela documentação específica de desenvolvimento para Meta Quest e pela maior aderência ao objetivo de construir uma experiência imersiva com controle do pipeline gráfico \cite{jin2024,epicGaussianSplattingUnreal,metaUnrealCompatibility2026,metaquest3s2024}.
-
-A adoção da Unreal Engine é tratada como decisão tecnicamente ambiciosa, devido a riscos de compatibilidade de versões, adaptação de plugins, importação de gaussianas e geração de \textit{build} para o Meta Quest 3S. Por isso, a metodologia prevê contingências, como execução assistida por desktop via Quest Link ou avaliação parcial em visualizador dedicado \cite{xu2023,fei2025survey3dgs,fan2024lightgaussian,metaquest3s2024}.
+O protótipo será desenvolvido em Unity para importar e renderizar arquivos \texttt{.ply} de 3D-GS. A aplicação utilizará suporte XR e Android/Vulkan, com versões registradas nos artefatos de \textit{build}. Essa composição permitirá avaliar a representação explícita em execução nativa no Meta Quest 3S, com variantes identificadas, poses controladas e coleta de métricas. A execução por desktop e Quest Link permanecerá uma contingência distinta, pois não substitui a medição no dispositivo \textit{standalone} \cite{metaquest3s2024,qualcommxr2gen2}.
 
 O Quadro \ref{qua:decisao_engine} resume a comparação entre alternativas de integração e explicita a decisão adotada.
 
@@ -252,9 +250,7 @@ O Quadro \ref{qua:decisao_engine} resume a comparação entre alternativas de in
 \hline
 \textbf{Alternativa} & \textbf{Pontos favoráveis} & \textbf{Pontos de atenção} & \textbf{Decisão no projeto} \\ \hline
 
-Unreal Engine & Suporte XR, fluxo para Quest, controle gráfico e referências recentes de 3D-GS & Maior complexidade de versão, plugin e \textit{build} Android/Vulkan & Escolha principal para o protótipo avaliativo. \\ \hline
-
-Unity & Ciclo de prototipagem rápido e ecossistema XR amplo & Integração de 3D-GS dependeria de adaptação equivalente e mudaria o foco do projeto & Alternativa não adotada nesta etapa. \\ \hline
+Unity & Ciclo iterativo de prototipagem, integração OpenXR e geração de \textit{build} Android/Vulkan & Dependência de compatibilidade entre componentes de renderização, \textit{shaders} e versões do motor & Escolha para o protótipo avaliativo nativo. \\ \hline
 
 Godot & Abertura e flexibilidade para experimentação & Menor maturidade de fluxos consolidados para 3D-GS em VR \textit{standalone} & Mantida apenas como possibilidade futura. \\ \hline
 
@@ -264,7 +260,7 @@ Visualizador dedicado & Reduz esforço inicial de integração e ajuda no diagn�
 \legend{Fonte: Elaborado pelo autor.}
 \end{quadro}
 
-A quinta etapa consiste na integração da representação 3D-GS em um ambiente de VR, por meio de plugin específico, formato intermediário compatível ou componente customizado. A aplicação VR deverá conter uma cena mínima funcional com câmera estereoscópica, configuração OpenXR, locomoção simples ou posicionamento fixo controlado e carregamento do modelo reconstruído.
+A quinta etapa consistirá na integração da representação 3D-GS em Unity por meio de componente compatível ou formato intermediário. A aplicação VR conterá uma cena mínima funcional com câmera estereoscópica, configuração OpenXR, posicionamento fixo controlado e carregamento do modelo reconstruído.
 
 O objetivo é validar a visualização da cena reconstruída em contexto imersivo. A integração será considerada bem-sucedida caso o modelo possa ser carregado com estabilidade suficiente para permitir a avaliação.
 
@@ -314,7 +310,7 @@ O fluxo de implementação será conduzido de forma incremental. Inicialmente, s
 \node[bloco, below=of captura] (prep) {Pré-processamento e organização dos dados};
 \node[bloco, below=of prep] (treinar) {Treinamento do modelo NeRF};
 \node[bloco, below=of treinar] (converter) {Conversão e otimização para 3D-GS};
-\node[bloco, below=of converter] (integrar) {Integração na Unreal Engine};
+\node[bloco, below=of converter] (integrar) {Integração em Unity};
 \node[decisao, below=0.65cm of integrar] (funciona) {Execução\\estável?};
 
 \node[bloco, left=1.7cm of funciona] (otimizar) {Aplicar otimizações\\ou simplificar cena};
@@ -438,7 +434,7 @@ Percepção qualitativa & Artefatos e estranhamento & Registrar \textit{floaters
 
 \subsection{Resultados esperados}
 
-Ao final do projeto, espera-se obter artefatos técnicos e experimentais suficientes para analisar a adequação do pipeline ao cenário-alvo: imagens capturadas, modelos NeRF, modelos 3D-GS, protótipo avaliativo em Unreal Engine, registros de configuração, resultados das avaliações e análise das limitações. O Quadro \ref{qua:artefatos_esperados} organiza esses artefatos e explicita que a entrega final é avaliativa, não uma ferramenta completa de produção.
+Ao final do projeto, espera-se obter artefatos técnicos e experimentais suficientes para analisar a adequação do pipeline ao cenário-alvo: imagens capturadas, modelos NeRF, modelos 3D-GS, protótipo avaliativo em Unity, registros de configuração, resultados das avaliações e análise das limitações. O Quadro \ref{qua:artefatos_esperados} organiza esses artefatos e explicita que a entrega final é avaliativa, não uma ferramenta completa de produção.
 
 \begin{quadro}[H]
 \centering
@@ -456,7 +452,7 @@ Modelo NeRF & Representação implícita treinada para cada cena, utilizada como
 
 Modelo 3D-GS & Representação explícita baseada em gaussianas 3D, obtida a partir da conversão ou reconstrução da cena. \\ \hline
 
-Protótipo VR mínimo & Cena em Unreal Engine com suporte a visualização imersiva do modelo reconstruído e coleta de evidências de execução. \\ \hline
+Protótipo VR mínimo & Cena em Unity com suporte a visualização imersiva do modelo reconstruído e coleta de evidências de execução. \\ \hline
 
 Resultados de avaliação & Tabelas, imagens comparativas, registros de desempenho, estabilidade e observações qualitativas de artefatos. \\ \hline
 
@@ -487,7 +483,7 @@ Custo de GPU em nuvem & Média & Alto & Controlar o tempo de uso da GPU em nuvem
 
 Baixo desempenho no Meta Quest 3S & Média & Alto & Reduzir o número de gaussianas, aplicar poda e simplificação, limitar a complexidade da cena ou utilizar execução em desktop com transmissão para o headset como contingência documentada. \\ \hline
 
-Incompatibilidade com plugins de 3D-GS & Média & Médio/Alto & Testar versões alternativas da Unreal Engine, avaliar formatos intermediários ou utilizar visualizador dedicado como rota experimental. \\ \hline
+Incompatibilidade com componentes de 3D-GS & Média & Médio/Alto & Testar alternativas compatíveis, validar importação e \textit{build} Android/Vulkan incrementalmente e utilizar visualizador dedicado apenas como rota diagnóstica. \\ \hline
 
 Taxa de quadros insuficiente para VR & Média & Alto & Registrar a configuração de atualização, tempo de quadro e quedas; tratar resultados próximos de 30 FPS como limitação técnica, não como critério de sucesso. \\ \hline
 
