@@ -17,6 +17,9 @@ Opções:
   --run-id NAME              identificador único da repetição (sem / ou espaços)
   --output-dir PATH          diretório de evidência; padrão: experiments/.../evidence/RUN_ID
   --capture-seconds N        duração externa da sessão; padrão: 45
+  --screenshot-count N       capturas extras do framebuffer durante a sessão; padrão: 0
+  --screenshot-interval-seconds N intervalo entre capturas extras; padrão: 5
+  --screenshot-initial-delay-seconds N atraso mínimo antes da primeira captura; padrão: 30
   --skip-install             não reinstala o APK
   --require-automated-sequence rejeita o relatório se a sequência automática não iniciar
   --expected-variant ID      rejeita o relatório se variantId for diferente
@@ -37,6 +40,9 @@ CONDITION=""
 RUN_ID=""
 OUTPUT_DIR=""
 CAPTURE_SECONDS=45
+SCREENSHOT_COUNT=0
+SCREENSHOT_INTERVAL_SECONDS=5
+SCREENSHOT_INITIAL_DELAY_SECONDS=30
 MAX_REPORT_WAIT_SECONDS=60
 LAUNCH_CHECK_SECONDS=5
 INSTALL_APK=true
@@ -55,6 +61,9 @@ while (($# > 0)); do
         --run-id) RUN_ID="$2"; shift 2 ;;
         --output-dir) OUTPUT_DIR="$2"; shift 2 ;;
         --capture-seconds) CAPTURE_SECONDS="$2"; shift 2 ;;
+        --screenshot-count) SCREENSHOT_COUNT="$2"; shift 2 ;;
+        --screenshot-interval-seconds) SCREENSHOT_INTERVAL_SECONDS="$2"; shift 2 ;;
+        --screenshot-initial-delay-seconds) SCREENSHOT_INITIAL_DELAY_SECONDS="$2"; shift 2 ;;
         --skip-install) INSTALL_APK=false; shift ;;
         --require-automated-sequence) REQUIRE_AUTOMATED_SEQUENCE=true; shift ;;
         --expected-variant) EXPECTED_VARIANT="$2"; shift 2 ;;
@@ -94,6 +103,18 @@ if [[ -n "$EXPECTED_ALIGNMENT_MODE" && ! "$EXPECTED_ALIGNMENT_MODE" =~ ^(YawOnly
 fi
 if [[ ! "$CAPTURE_SECONDS" =~ ^[0-9]+$ ]] || (( CAPTURE_SECONDS < 40 )); then
     echo "--capture-seconds deve ser inteiro de ao menos 40 segundos." >&2
+    exit 2
+fi
+if [[ ! "$SCREENSHOT_COUNT" =~ ^[0-9]+$ ]] || [[ ! "$SCREENSHOT_INTERVAL_SECONDS" =~ ^[0-9]+$ ]] || [[ ! "$SCREENSHOT_INITIAL_DELAY_SECONDS" =~ ^[0-9]+$ ]]; then
+    echo "As opções de screenshot devem ser inteiros não negativos." >&2
+    exit 2
+fi
+if (( SCREENSHOT_COUNT > 0 && SCREENSHOT_INTERVAL_SECONDS < 1 )); then
+    echo "--screenshot-interval-seconds deve ser ao menos 1 quando houver capturas extras." >&2
+    exit 2
+fi
+if (( SCREENSHOT_COUNT > 0 && SCREENSHOT_INITIAL_DELAY_SECONDS < 1 )); then
+    echo "--screenshot-initial-delay-seconds deve ser ao menos 1 quando houver capturas extras." >&2
     exit 2
 fi
 
@@ -160,7 +181,27 @@ if [[ "$EXPECTED_ALIGNMENT_MODE" == "FullPoseOnce" ]]; then
 fi
 printf '%s\n' "$INSTRUCTION" | tee "$OUTPUT_DIR/operator_instruction.txt"
 printf 'A sessão externa dura %s s. A janela interna exata está no JSON do aplicativo.\n' "$CAPTURE_SECONDS"
+SCREENSHOT_SEQUENCE_PID=""
+if (( SCREENSHOT_COUNT > 0 )); then
+    mkdir -p "$OUTPUT_DIR/screenshot_sequence"
+    (
+        sleep "$SCREENSHOT_INITIAL_DELAY_SECONDS"
+        for (( screenshot_index = 1; screenshot_index <= SCREENSHOT_COUNT; screenshot_index++ )); do
+            frame_name="frame_$(printf '%02d' "$screenshot_index").png"
+            timestamp_name="frame_$(printf '%02d' "$screenshot_index").utc.txt"
+            "$ADB" exec-out screencap -p > "$OUTPUT_DIR/screenshot_sequence/$frame_name"
+            date -u +%Y-%m-%dT%H:%M:%SZ > "$OUTPUT_DIR/screenshot_sequence/$timestamp_name"
+            if (( screenshot_index < SCREENSHOT_COUNT )); then
+                sleep "$SCREENSHOT_INTERVAL_SECONDS"
+            fi
+        done
+    ) &
+    SCREENSHOT_SEQUENCE_PID="$!"
+fi
 sleep "$CAPTURE_SECONDS"
+if [[ -n "$SCREENSHOT_SEQUENCE_PID" ]]; then
+    wait "$SCREENSHOT_SEQUENCE_PID"
+fi
 
 REPORT_WAITED_SECONDS=0
 while true; do
@@ -302,8 +343,8 @@ else
 fi
 
 HOST_FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-printf '{\n  "schema_version": "1.0",\n  "run_id": "%s",\n  "condition_id": "%s",\n  "expected_variant_id": "%s",\n  "expected_representation_variant_id": "%s",\n  "expected_alignment_mode": "%s",\n  "require_visual_capture": %s,\n  "require_tracked_pose_marker": %s,\n  "apk_path": "%s",\n  "apk_sha256": "%s",\n  "apk_size_bytes": %s,\n  "host_capture_started_at_utc": "%s",\n  "host_capture_finished_at_utc": "%s",\n  "external_capture_seconds": %s,\n  "report_wait_seconds": %s,\n  "operator_instruction_file": "operator_instruction.txt",\n  "application_measurement_index": "app_measurements_new.txt",\n  "visual_evaluation_index": "visual_evaluation_new.txt",\n  "ovr_metrics_index": "ovr_metrics_new.txt",\n  "ovr_metrics_status_file": "ovr_metrics_status.txt",\n  "notes": "Only application JSON, tracked-pose markers and OVR CSV files created during this run are pulled. screenshot.png is captured by the host after the fixed external session."\n}\n' \
-    "$RUN_ID" "$CONDITION" "$EXPECTED_VARIANT" "$EXPECTED_REPRESENTATION" "$EXPECTED_ALIGNMENT_MODE" "$REQUIRE_VISUAL_CAPTURE" "$REQUIRE_TRACKED_POSE_MARKER" "$APK" "$APK_SHA256" "$APK_BYTES" "$HOST_STARTED_AT" "$HOST_FINISHED_AT" "$CAPTURE_SECONDS" "$REPORT_WAITED_SECONDS" \
+printf '{\n  "schema_version": "1.0",\n  "run_id": "%s",\n  "condition_id": "%s",\n  "expected_variant_id": "%s",\n  "expected_representation_variant_id": "%s",\n  "expected_alignment_mode": "%s",\n  "require_visual_capture": %s,\n  "require_tracked_pose_marker": %s,\n  "apk_path": "%s",\n  "apk_sha256": "%s",\n  "apk_size_bytes": %s,\n  "host_capture_started_at_utc": "%s",\n  "host_capture_finished_at_utc": "%s",\n  "external_capture_seconds": %s,\n  "report_wait_seconds": %s,\n  "screenshot_sequence_count": %s,\n  "screenshot_sequence_interval_seconds": %s,\n  "screenshot_sequence_initial_delay_seconds": %s,\n  "operator_instruction_file": "operator_instruction.txt",\n  "application_measurement_index": "app_measurements_new.txt",\n  "visual_evaluation_index": "visual_evaluation_new.txt",\n  "ovr_metrics_index": "ovr_metrics_new.txt",\n  "ovr_metrics_status_file": "ovr_metrics_status.txt",\n  "notes": "Only application JSON, tracked-pose markers and OVR CSV files created during this run are pulled. screenshot.png is captured by the host after the fixed external session; screenshot_sequence is an optional framebuffer diagnostic, not an offline fidelity metric. The requested external duration is a minimum when a screenshot sequence is enabled; actual completion is recorded by the host timestamps."\n}\n' \
+    "$RUN_ID" "$CONDITION" "$EXPECTED_VARIANT" "$EXPECTED_REPRESENTATION" "$EXPECTED_ALIGNMENT_MODE" "$REQUIRE_VISUAL_CAPTURE" "$REQUIRE_TRACKED_POSE_MARKER" "$APK" "$APK_SHA256" "$APK_BYTES" "$HOST_STARTED_AT" "$HOST_FINISHED_AT" "$CAPTURE_SECONDS" "$REPORT_WAITED_SECONDS" "$SCREENSHOT_COUNT" "$SCREENSHOT_INTERVAL_SECONDS" "$SCREENSHOT_INITIAL_DELAY_SECONDS" \
     > "$OUTPUT_DIR/run_metadata.json"
 
 printf 'Evidências preservadas em: %s\n' "$OUTPUT_DIR"
