@@ -28,8 +28,8 @@ namespace SplatVRLab.Editor
         {
             DiagnosticVariantId = "desktop_horizon_link_baseline_visual_full_pose_v01",
             OutputDirectoryRelativePath =
-                "Builds/Windows/SplatVRLabUnity-horizon-link-baseline-fullpose-dev-v01",
-            ExecutableName = "SplatVRLabUnity-horizon-link-baseline-fullpose-dev-v01.exe",
+                "Builds/Windows/SplatVRLabUnity-horizon-link-baseline-fullpose-dev-v02",
+            ExecutableName = "SplatVRLabUnity-horizon-link-baseline-fullpose-dev-v02.exe",
             Configure = SplatVRLabSetup.ConfigureVisualBaselineFullPose,
         };
 
@@ -37,8 +37,8 @@ namespace SplatVRLab.Editor
         {
             DiagnosticVariantId = "desktop_horizon_link_opacity_topk_100k_visual_full_pose_v01",
             OutputDirectoryRelativePath =
-                "Builds/Windows/SplatVRLabUnity-horizon-link-pruned100k-fullpose-dev-v01",
-            ExecutableName = "SplatVRLabUnity-horizon-link-pruned100k-fullpose-dev-v01.exe",
+                "Builds/Windows/SplatVRLabUnity-horizon-link-pruned100k-fullpose-dev-v02",
+            ExecutableName = "SplatVRLabUnity-horizon-link-pruned100k-fullpose-dev-v02.exe",
             Configure = SplatVRLabSetup.ConfigureVisualPrunedFullPose,
         };
 
@@ -46,8 +46,8 @@ namespace SplatVRLab.Editor
         {
             DiagnosticVariantId = "desktop_horizon_link_opacity_topk_50k_visual_full_pose_v01",
             OutputDirectoryRelativePath =
-                "Builds/Windows/SplatVRLabUnity-horizon-link-pruned50k-fullpose-dev-v01",
-            ExecutableName = "SplatVRLabUnity-horizon-link-pruned50k-fullpose-dev-v01.exe",
+                "Builds/Windows/SplatVRLabUnity-horizon-link-pruned50k-fullpose-dev-v02",
+            ExecutableName = "SplatVRLabUnity-horizon-link-pruned50k-fullpose-dev-v02.exe",
             Configure = SplatVRLabSetup.ConfigureVisualPruned50kFullPose,
         };
 
@@ -55,8 +55,8 @@ namespace SplatVRLab.Editor
         {
             DiagnosticVariantId = "desktop_horizon_link_splatfacto_big_visual_full_pose_v01",
             OutputDirectoryRelativePath =
-                "Builds/Windows/SplatVRLabUnity-horizon-link-splatfacto-big-fullpose-dev-v01",
-            ExecutableName = "SplatVRLabUnity-horizon-link-splatfacto-big-fullpose-dev-v01.exe",
+                "Builds/Windows/SplatVRLabUnity-horizon-link-splatfacto-big-fullpose-dev-v02",
+            ExecutableName = "SplatVRLabUnity-horizon-link-splatfacto-big-fullpose-dev-v02.exe",
             Configure = SplatVRLabSetup.ConfigureVisualSplatfactoBigFullPose,
         };
 

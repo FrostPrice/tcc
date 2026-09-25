@@ -39,6 +39,7 @@ namespace SplatVRLab
 
         [Header("Evaluation camera")]
         public Camera EvaluationCamera;
+        public FrameMetricsRecorder Metrics;
         public Vector3 ReferenceCameraPosition;
         public Quaternion ReferenceCameraRotation = Quaternion.identity;
         [Min(1)] public int Width = 540;
@@ -66,7 +67,21 @@ namespace SplatVRLab
                 Debug.LogError("[SplatVRLab] REFERENCE_CAPTURE_FAILED: evaluation camera is missing.");
                 return;
             }
-            Invoke(nameof(BeginCapture), DelaySeconds);
+            if (Metrics)
+                StartCoroutine(BeginCaptureAfterMeasurement());
+            else
+                Invoke(nameof(BeginCapture), DelaySeconds);
+        }
+
+        private IEnumerator BeginCaptureAfterMeasurement()
+        {
+            while (Metrics &&
+                   (!Metrics.MeasurementWindowStarted ||
+                    Metrics.MeasurementElapsedSeconds < Metrics.MeasurementSeconds))
+                yield return null;
+
+            yield return null;
+            BeginCapture();
         }
 
         private void BeginCapture()

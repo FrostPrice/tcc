@@ -169,6 +169,7 @@ namespace SplatVRLab.Editor
             public string SourceRelativePath;
             public string ImportedAssetPath;
             public string Sha256;
+            public string ReferencePoseSplatSha256 = ExpectedSplatSha256;
             public uint SplatCount;
             public CompressionMode Compression;
             public string ReferencePoseRelativePath = ReferencePoseRelativeToRepository;
@@ -215,6 +216,7 @@ namespace SplatVRLab.Editor
             SplatCount = ExpectedSplatfactoBigSplatCount,
             Compression = CompressionMode.Spark,
             ReferencePoseRelativePath = SplatfactoBigReferencePoseRelativeToRepository,
+            ReferencePoseSplatSha256 = ExpectedSplatfactoBigSplatSha256,
             ReferenceExperimentId = ExpectedSplatfactoBigExperimentId,
             ReferenceVariantId = ExpectedSplatfactoBigVariantId,
         };
@@ -360,7 +362,9 @@ namespace SplatVRLab.Editor
             ConfigureVariant(BaselineRepresentation, LoadVisualFullPoseProfile(
                 VisualBaselineFullPoseProfileRelativeToRepository,
                 ExpectedVisualBaselineFullPoseProfileSha256,
-                VisualBaselineFullPoseVariantId), true);
+                VisualBaselineFullPoseVariantId),
+                enableReferenceCapture: true, enableMonoscopicReferenceCapture: true,
+                captureAfterMeasurement: true);
         }
 
         [MenuItem("SplatVRLab/Configure pruned-100k visual full-pose variant")]
@@ -369,7 +373,9 @@ namespace SplatVRLab.Editor
             ConfigureVariant(PrunedRepresentation, LoadVisualFullPoseProfile(
                 VisualPrunedFullPoseProfileRelativeToRepository,
                 ExpectedVisualPrunedFullPoseProfileSha256,
-                VisualPrunedFullPoseVariantId), true);
+                VisualPrunedFullPoseVariantId),
+                enableReferenceCapture: true, enableMonoscopicReferenceCapture: true,
+                captureAfterMeasurement: true);
         }
 
         [MenuItem("SplatVRLab/Configure pruned-50k visual full-pose variant")]
@@ -378,7 +384,9 @@ namespace SplatVRLab.Editor
             ConfigureVariant(Pruned50kRepresentation, LoadVisualFullPoseProfile(
                 VisualPruned50kFullPoseProfileRelativeToRepository,
                 ExpectedVisualPruned50kFullPoseProfileSha256,
-                VisualPruned50kFullPoseVariantId), true);
+                VisualPruned50kFullPoseVariantId),
+                enableReferenceCapture: true, enableMonoscopicReferenceCapture: true,
+                captureAfterMeasurement: true);
         }
 
         [MenuItem("SplatVRLab/Configure splatfacto-big visual full-pose variant")]
@@ -387,7 +395,9 @@ namespace SplatVRLab.Editor
             ConfigureVariant(SplatfactoBigRepresentation, LoadVisualFullPoseProfile(
                 VisualSplatfactoBigFullPoseProfileRelativeToRepository,
                 ExpectedVisualSplatfactoBigFullPoseProfileSha256,
-                VisualSplatfactoBigFullPoseVariantId), true);
+                VisualSplatfactoBigFullPoseVariantId),
+                enableReferenceCapture: true, enableMonoscopicReferenceCapture: true,
+                captureAfterMeasurement: true);
         }
 
         [MenuItem("SplatVRLab/Configure baseline visual gamma-linear-off full-pose variant")]
@@ -462,7 +472,8 @@ namespace SplatVRLab.Editor
             RepresentationSpec representation,
             LocomotionProfile locomotionProfile,
             bool enableReferenceCapture = false,
-            bool enableMonoscopicReferenceCapture = false)
+            bool enableMonoscopicReferenceCapture = false,
+            bool captureAfterMeasurement = false)
         {
             ConfigureProjectSettings();
             EnsureGsplatRendererFeatures();
@@ -470,7 +481,7 @@ namespace SplatVRLab.Editor
             ReferencePoseRecord referencePose = LoadReferencePose(representation);
             CreateViabilityScene(splatAsset, representation, referencePose, locomotionProfile,
                 ResolveRendererSettings(locomotionProfile), enableReferenceCapture,
-                enableMonoscopicReferenceCapture);
+                enableMonoscopicReferenceCapture, captureAfterMeasurement);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Validate();
@@ -834,7 +845,7 @@ namespace SplatVRLab.Editor
                 ExpectedSceneId,
                 representation.ReferenceExperimentId,
                 representation.ReferenceVariantId,
-                representation.Sha256);
+                representation.ReferencePoseSplatSha256);
         }
 
         private static LocomotionProfile LoadLocomotionProfile()
@@ -997,7 +1008,8 @@ namespace SplatVRLab.Editor
             LocomotionProfile locomotionProfile,
             RendererSettings rendererSettings,
             bool enableReferenceCapture,
-            bool enableMonoscopicReferenceCapture)
+            bool enableMonoscopicReferenceCapture,
+            bool captureAfterMeasurement)
         {
             Scene scene = EditorSceneManager.OpenScene(SourceSceneAssetPath, OpenSceneMode.Single);
             DestroyRootIfPresent(scene, "Plane");
@@ -1101,6 +1113,14 @@ namespace SplatVRLab.Editor
             metrics.AutomatedSequenceId = locomotionProfile?.automation?.sequence_id ?? "none";
             metrics.WarmupFrames = 180;
             metrics.MeasurementSeconds = 30f;
+
+            if (captureAfterMeasurement)
+            {
+                ReferencePoseEvaluationCapture capture =
+                    UnityEngine.Object.FindAnyObjectByType<ReferencePoseEvaluationCapture>() ??
+                    throw new InvalidOperationException("Monoscopic reference-output capture is missing.");
+                capture.Metrics = metrics;
+            }
 
             AutomatedLocomotionSequence automated =
                 xrRoot.GetComponent<AutomatedLocomotionSequence>();
@@ -1475,6 +1495,19 @@ namespace SplatVRLab.Editor
                 Vector3.Distance(marker.TargetPosition, placement.ReferenceCameraPosition) > 1e-5f ||
                 Quaternion.Angle(marker.TargetRotation, placement.ReferenceCameraRotation) > 0.01f)
                 throw new InvalidOperationException("Tracked-pose capture marker is missing or inconsistent.");
+
+            if (profile.variant_id == VisualBaselineFullPoseVariantId ||
+                profile.variant_id == VisualPrunedFullPoseVariantId ||
+                profile.variant_id == VisualPruned50kFullPoseVariantId ||
+                profile.variant_id == VisualSplatfactoBigFullPoseVariantId)
+            {
+                ValidateMonoscopicReferenceOutputCapture(referencePose, representation, profile);
+                ReferencePoseEvaluationCapture capture =
+                    UnityEngine.Object.FindAnyObjectByType<ReferencePoseEvaluationCapture>();
+                if (capture.Metrics != metrics)
+                    throw new InvalidOperationException(
+                        "Monoscopic reference-output capture must follow the measurement window.");
+            }
         }
 
         private static void ValidateMonoscopicReferenceOutputCapture(
