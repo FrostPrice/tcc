@@ -8,7 +8,7 @@ Para tornar a força de cada afirmação explícita, valores numéricos e config
 
 As métricas offline foram calculadas sobre as mesmas 13 imagens de teste retidas do conjunto \textit{poster}. A execução \textit{on-device} ocorreu no Meta Quest 3S, em condição de referência estática, com pose completa fixa após o rastreamento. Para evitar comparar observações com forças de evidência diferentes, as variantes \textit{baseline}, \textit{top-k} 100k e \textit{top-k} 50k formam a série comparativa de cinco execuções. A variante \textit{splatfacto-big} é apresentada separadamente como diagnóstico estático de uma execução.
 
-Para consolidar os resultados, mantive as medições originais separadas das tabelas e dos gráficos, conferindo a correspondência entre as representações avaliadas e as configurações de cada execução.
+Para consolidar os resultados, as medições originais foram mantidas separadas das tabelas e dos gráficos, e foi conferida a correspondência entre as representações avaliadas e as configurações de cada execução.
 
 \subsection{Qualidade offline e complexidade das representações}
 
@@ -78,11 +78,13 @@ As capturas estéreo da Figura \ref{fig:quest_capturas_estereo} oferecem evidên
 
 A variante \textit{splatfacto-big}, com 470.962 gaussianas e 116,80 MB, foi executada uma vez na mesma condição de pose fixa. O tempo de quadro medido pela aplicação foi 65,62 ms, correspondente a 15,24 FPS. Esse resultado não foi agregado à série de cinco execuções e não possui os contadores OVR disponíveis para comparação. No recorte dessa única execução, o FPS derivado ficou abaixo da referência de desempenho do protocolo; ele não permite estimar variabilidade entre execuções nem generalizar o efeito do aumento de complexidade.
 
-Durante a observação qualitativa no headset, identifiquei nessa variante fundo com mais detalhes e menor distorção, cor aparentemente correta, menos cintilação e cadeira visualmente correta. Trata-se de observação restrita à cena \textit{poster}, à pose fixa e a uma execução; não constitui métrica perceptual nem permite concluir que a variante é superior em outras poses, cenas ou dispositivos.
+Durante a observação qualitativa no headset, foram identificados nessa variante fundo com mais detalhes e menor distorção, cor aparentemente correta, menos cintilação e cadeira visualmente correta. Trata-se de observação restrita à cena \textit{poster}, à pose fixa e a uma execução; não constitui métrica perceptual nem permite concluir que a variante é superior em outras poses, cenas ou dispositivos.
 
 \subsection{Contingência diagnóstica por PCVR}
 
 Como contingência distinta da execução \textit{standalone}, foram realizadas execuções em Windows com transmissão para o Meta Quest 3S via Meta Horizon Link. O \textit{build} utilizou Direct3D12 e IL2CPP, com taxa de atualização reportada de 72 Hz. O Quadro \ref{qua:resultados_pcvr} apresenta uma única execução tecnicamente válida por variante; portanto, os valores são descritivos e não constituem repetição independente nem são comparados estatisticamente com a série Android.
+
+Para essa avaliação, foi utilizado um computador com processador AMD Ryzen 7 5700G, oito núcleos e 16 processadores lógicos, GPU NVIDIA GeForce RTX 3060 e Windows 11 Pro de 64 bits. Foram mantidas a cena, as representações e a condição de pose fixa utilizadas na avaliação nativa. No PCVR, o computador renderizou a aplicação, enquanto o Meta Quest 3S recebeu as imagens transmitidas e forneceu o rastreamento. Essa configuração permitiu observar o comportamento das mesmas representações em uma plataforma de processamento distinta.
 
 \begin{quadro}[H]
 \centering
@@ -104,6 +106,70 @@ Como contingência distinta da execução \textit{standalone}, foram realizadas 
 Como fato medido no computador, a poda para 50 mil gaussianas foi a única variante cujo intervalo médio se aproximou do orçamento de 13,889 ms para 72 Hz. Entretanto, somente 52,15\% dos quadros registrados ficaram dentro desse orçamento, e tanto o percentil 95 quanto o máximo o excederam. Na inspeção das capturas estéreo, a cadeira permaneceu reconhecível, enquanto fragmentação e perda de detalhe no piso e no fundo foram mais aparentes com a poda; a variante \textit{splatfacto-big} aparentou maior continuidade visual que as podas, porém obteve o maior tempo de quadro. Essa leitura visual é descritiva e não mede conforto ou latência do streaming.
 
 Esses dados não medem o desempenho do Quest: os tempos e os contadores de processo pertencem ao computador que renderizou a aplicação, e o caminho inclui codificação, transmissão e decodificação de vídeo. Também não houve CSV novo do OVR Metrics nas sessões por Link. Assim, a contingência demonstra o comportamento da representação em hardware de desktop e auxilia o diagnóstico do compromisso entre custo e qualidade, mas não altera a conclusão da avaliação nativa no Meta Quest 3S.
+
+O Quadro \ref{qua:recursos_pcvr} complementa os intervalos da aplicação com os tempos de GPU informados pela Unity e os contadores de memória associados ao processo da aplicação no Windows. As médias de memória foram obtidas das amostras disponíveis durante a coleta externa, cuja janela pode incluir inicialização e captura visual além da janela interna de medição. O conjunto residente corresponde ao contador \textit{Working Set}; o uso dedicado de GPU corresponde ao contador \textit{Dedicated Usage} associado ao processo. Esses contadores não representam a memória do headset nem incluem necessariamente todos os processos envolvidos na transmissão.
+
+\begin{quadro}[H]
+\centering
+\footnotesize
+\caption{Tempos de GPU e contadores de memória do processo de renderização no computador.}
+\label{qua:recursos_pcvr}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|p{3.0cm}|X|X|X|}
+\hline
+\textbf{Representação} & \textbf{GPU Unity média (ms)} & \textbf{Conjunto residente médio (MiB)} & \textbf{Uso dedicado de GPU médio (MiB)} \\ \hline
+\textit{baseline} & 28,601 & 722,04 & 970,54 \\ \hline
+\textit{top-k} 100k & 15,752 & 747,47 & 970,76 \\ \hline
+\textit{top-k} 50k & 10,568 & 713,20 & 957,11 \\ \hline
+\textit{splatfacto-big} & 37,203 & 786,55 & 1.021,43 \\ \hline
+\end{tabularx}
+\legend{Fonte: Elaborado pelo autor.}
+\end{quadro}
+
+A redução do número de gaussianas foi acompanhada por menores tempos médios de GPU nas três variantes principais. Entretanto, os contadores de memória do processo não acompanharam proporcionalmente a redução do PLY. Os dados disponíveis não isolam a contribuição do modelo, dos recursos da Unity e dos demais recursos gráficos; por isso, não permitem atribuir todo o uso de memória às gaussianas.
+
+\subsubsection{Comparação descritiva entre execução nativa e PCVR}
+
+O Quadro \ref{qua:comparacao_nativo_pcvr} e as Figuras \ref{fig:comparacao_tempo_pcvr} e \ref{fig:comparacao_taxa_pcvr} apresentam as mesmas representações nas duas rotas. Para a comparação, foram utilizados o intervalo entre quadros registrado pela aplicação e sua taxa derivada, calculada como mil dividido pelo intervalo médio em milissegundos. Os contadores OVR da execução nativa não foram usados como substitutos desses valores.
+
+\begin{quadro}[H]
+\centering
+\footnotesize
+\caption{Comparação descritiva do intervalo médio entre quadros nas duas rotas.}
+\label{qua:comparacao_nativo_pcvr}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|p{3.0cm}|X|X|X|}
+\hline
+\textbf{Representação} & \textbf{Quest nativo (ms)} & \textbf{PCVR (ms)} & \textbf{Redução descritiva (\%)} \\ \hline
+\textit{baseline} & 45,053 & 28,903 & 35,85 \\ \hline
+\textit{top-k} 100k & 26,301 & 21,541 & 18,10 \\ \hline
+\textit{top-k} 50k & 17,133 & 13,887 & 18,94 \\ \hline
+\textit{splatfacto-big} & 65,625 & 55,449 & 15,51 \\ \hline
+\end{tabularx}
+\legend{Fonte: Elaborado pelo autor.}
+\end{quadro}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figuras/resultados/quest_pcvr_frame_time_v01.png}
+\caption{Intervalo médio entre quadros da aplicação no Quest nativo e no PCVR.}
+\label{fig:comparacao_tempo_pcvr}
+\legend{Fonte: Elaborado pelo autor.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figuras/resultados/quest_pcvr_frame_rate_v01.png}
+\caption{Taxa derivada do intervalo médio entre quadros no Quest nativo e no PCVR.}
+\label{fig:comparacao_taxa_pcvr}
+\legend{Fonte: Elaborado pelo autor.}
+\end{figure}
+
+Na \textit{baseline}, a taxa derivada passou de 22,20 quadros/s na execução nativa para 34,60 quadros/s no PCVR. Para a poda 100k, os valores foram 38,02 e 46,42 quadros/s; para a poda 50k, 58,37 e 72,01 quadros/s. A variante de maior capacidade passou de 15,24 para 18,03 quadros/s. Embora o PCVR tenha apresentado menores intervalos médios em todas as configurações, a ordenação das variantes por custo permaneceu a mesma: a poda 50k foi a mais rápida e a configuração de maior capacidade foi a mais lenta.
+
+O resultado médio de 72,01 quadros/s da poda 50k deve ser interpretado considerando a atualização reportada de 72 Hz nessa sessão. O percentil 95 de 14,508 ms e o máximo de 25,224 ms ultrapassaram o orçamento de 13,889 ms. Portanto, a proximidade da média com a atualização do visor não demonstrou regularidade de todos os quadros. Além disso, os intervalos medidos pela aplicação não quantificam a latência completa entre movimento da cabeça e apresentação da imagem, nem distinguem quadros apresentados pelo compositor de eventuais quadros reprojetados.
+
+A comparação é descritiva: a série Android principal teve cinco execuções por variante, enquanto o PCVR teve uma; a variante de maior capacidade teve um diagnóstico em cada rota. As diferenças também envolvem sistema operacional, API gráfica, hardware e transmissão. Assim, os percentuais apresentados expressam diferenças entre as condições observadas, sem isolar um efeito causal da GPU ou do streaming. A maior capacidade do computador não eliminou a perda de fidelidade das representações podadas nem estabeleceu a adequação da execução nativa no headset.
 
 \subsection{Síntese e limitações dos resultados}
 
