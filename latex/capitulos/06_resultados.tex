@@ -1,21 +1,23 @@
 \section{Resultados}
 
-Esta seção apresenta os resultados obtidos no estudo de caso \textit{ns\_poster}. A descrição do treinamento, da preparação das variantes e da integração em Unity é mantida na seção de Implementação; aqui são apresentados somente os dados derivados dos registros experimentais e sua interpretação. As tabelas foram consolidadas a partir de arquivos de evidência e de cinco execuções independentes por variante quando essa série está indicada.
+Esta seção apresenta os resultados obtidos no estudo de caso \textit{poster}. A descrição do treinamento, da preparação das variantes e da integração em Unity é mantida na seção de Implementação; aqui são apresentados os dados derivados dos registros experimentais, sua interpretação delimitada e as limitações correspondentes. As tabelas foram consolidadas a partir de arquivos de evidência e de cinco execuções independentes por variante quando essa série está indicada.
+
+Para tornar a força de cada afirmação explícita, valores numéricos e configurações são tratados como fatos medidos; descrições de imagens e anotações realizadas durante o uso do headset são tratados como observações qualitativas; e as relações entre custo, fidelidade e adequação para VR são apresentadas como interpretações restritas ao protocolo. Nenhuma dessas categorias é usada para extrapolar o resultado para cenas, poses ou dispositivos não avaliados.
 
 \subsection{Escopo da avaliação}
 
 As métricas offline foram calculadas sobre as mesmas 13 imagens de teste retidas do conjunto \textit{poster}. A execução \textit{on-device} ocorreu no Meta Quest 3S, em condição de referência estática, com pose completa fixa após o rastreamento. Para evitar comparar observações com forças de evidência diferentes, as variantes \textit{baseline}, \textit{top-k} 100k e \textit{top-k} 50k formam a série comparativa de cinco execuções. A variante \textit{splatfacto-big} é apresentada separadamente como diagnóstico estático de uma execução.
 
-Os valores, identificadores das variantes, somas de verificação e limitações de interpretação estão preservados no arquivo \texttt{summary.json} da consolidação de resultados. Assim, os dados apresentados não substituem as medições brutas nem os registros de execução.
+Para consolidar os resultados, mantive as medições originais separadas das tabelas e dos gráficos, conferindo a correspondência entre as representações avaliadas e as configurações de cada execução.
 
 \subsection{Qualidade offline e complexidade das representações}
 
-O Quadro \ref{qua:resultados_offline} compara as representações no mesmo conjunto de imagens retidas. A regularização de escala reduziu o número de gaussianas em relação à \textit{baseline}, mas apresentou redução de PSNR e SSIM e aumento de LPIPS; por isso, não foi levada à avaliação no Quest. A configuração \textit{splatfacto-big} obteve SSIM mais alto e LPIPS mais baixo, embora com PSNR ligeiramente inferior ao da \textit{baseline}; seu custo de representação, entretanto, foi substancialmente maior.
+O Quadro \ref{qua:resultados_offline} apresenta as métricas das representações no mesmo conjunto de imagens retidas. Como fatos medidos, a regularização de escala teve menos gaussianas que a \textit{baseline}, menor PSNR e SSIM e maior LPIPS. A configuração \textit{splatfacto-big} teve SSIM mais alto e LPIPS mais baixo, embora PSNR ligeiramente inferior ao da \textit{baseline}, e seu arquivo PLY foi maior.
 
 \begin{quadro}[H]
 \centering
 \footnotesize
-\caption{Qualidade offline e complexidade das representações no estudo de caso \textit{ns\_poster}.}
+\caption{Qualidade offline e complexidade das representações no estudo de caso \textit{poster}.}
 \label{qua:resultados_offline}
 \renewcommand{\arraystretch}{1.2}
 \begin{tabularx}{\textwidth}{|p{2.5cm}|C{1.75cm}|C{1.55cm}|C{1.55cm}|C{1.8cm}|C{1.7cm}|X|}
@@ -27,19 +29,19 @@ O Quadro \ref{qua:resultados_offline} compara as representações no mesmo conju
 Regularização de escala & 32,945 & 0,95310 & 0,11010 & 181.163 & 44,93 & 1.281,5 s \\ \hline
 \textit{splatfacto-big} & 32,764 & 0,95407 & 0,08538 & 470.962 & 116,80 & 1.913,5 s \\ \hline
 \end{tabularx}
-\legend{Fonte: elaboração própria a partir de \texttt{representation\_quality.csv}.}
+\legend{Fonte: Elaborado pelo autor.}
 \end{quadro}
 
-As variantes por poda determinística \textit{top-k} foram derivadas da \textit{baseline}; portanto, não representam novo treinamento. Para avaliá-las, a configuração \textit{splatfacto} da \textit{baseline} foi carregada e seus parâmetros gaussianos foram substituídos pelos PLYs podados, preservando as mesmas 13 poses, imagens e resolução de teste. A reavaliação da \textit{baseline} reproduziu as médias registradas anteriormente. A poda para 100 mil gaussianas reduziu o PSNR para 22,716, o SSIM para 0,80851 e elevou o LPIPS para 0,31945; a poda para 50 mil gaussianas acentuou essa perda, com PSNR 17,514, SSIM 0,60303 e LPIPS 0,51890. Logo, a redução de tamanho e o ganho de desempenho não preservaram a fidelidade offline neste critério de seleção por opacidade.
+As variantes por poda determinística \textit{top-k} foram derivadas da \textit{baseline}; portanto, não representam novo treinamento. Para avaliá-las, a configuração \textit{splatfacto} da \textit{baseline} foi carregada e seus parâmetros gaussianos foram substituídos pelos PLYs podados, preservando as mesmas 13 poses, imagens e resolução de teste. A reavaliação da \textit{baseline} reproduziu as médias registradas anteriormente. Como fatos medidos, a poda para 100 mil gaussianas resultou em PSNR 22,716, SSIM 0,80851 e LPIPS 0,31945; a poda para 50 mil gaussianas resultou em PSNR 17,514, SSIM 0,60303 e LPIPS 0,51890. A interpretação limitada é que, nesse conjunto de teste e nesse critério de seleção por opacidade, a redução do PLY não preservou as métricas offline da \textit{baseline}. A regularização de escala não foi levada ao Quest porque seus resultados offline não justificaram ampliar a série de execução no dispositivo.
 
 \subsection{Desempenho em execução nativa no Quest}
 
-O Quadro \ref{qua:resultados_quest} apresenta a série comparativa de cinco execuções por variante. O FPS principal é calculado a partir do tempo de quadro registrado pela aplicação; o FPS médio do OVR Metrics é apresentado como contador complementar, e não como medida intercambiável. A diminuição do número de gaussianas reduziu o tempo de quadro e aumentou o FPS nas três variantes da série.
+O Quadro \ref{qua:resultados_quest} apresenta a série comparativa de cinco execuções por variante. O FPS principal é calculado a partir do tempo de quadro registrado pela aplicação; o FPS médio do OVR Metrics é apresentado como contador complementar, e não como medida intercambiável. Na série retida, as variantes com menos gaussianas apresentaram menores tempos médios de quadro e maiores FPS derivados.
 
 \begin{quadro}[H]
 \centering
 \footnotesize
-\caption{Desempenho no Meta Quest 3S na condição \texttt{static\_reference}, com cinco execuções por variante.}
+\caption{Desempenho no Meta Quest 3S em condição de referência estática, com cinco execuções por variante.}
 \label{qua:resultados_quest}
 \renewcommand{\arraystretch}{1.2}
 \begin{tabularx}{\textwidth}{|p{2.6cm}|C{1.8cm}|C{1.8cm}|C{1.8cm}|C{1.9cm}|X|}
@@ -49,19 +51,62 @@ O Quadro \ref{qua:resultados_quest} apresenta a série comparativa de cinco exec
 \textit{top-k} 100k & 26,30 & 38,02 & 40,49 & 23,07 & 33,76 \\ \hline
 \textit{top-k} 50k & 17,13 & 58,37 & 59,64 & 15,11 & 13,41 \\ \hline
 \end{tabularx}
-\legend{Fonte: elaboração própria a partir de \texttt{quest\_performance.csv}.}
+\legend{Fonte: Elaborado pelo autor.}
 \end{quadro}
 
-A \textit{baseline} ficou em 22,20 FPS, valor insuficiente para a referência de fluidez definida no protocolo. A poda para 100 mil gaussianas elevou o resultado para 38,02 FPS. A variante de 50 mil gaussianas atingiu 58,37 FPS e apresentou o menor tempo de quadro da série, mas ainda permaneceu abaixo da referência de 90 FPS. As métricas offline e as observações qualitativas indicam que esse ganho foi acompanhado de perda visual substancial, sobretudo na variante 50k; portanto, ele representa uma melhoria de desempenho, não uma seleção definitiva de qualidade para VR.
+Como fatos medidos, a \textit{baseline} registrou 22,20 FPS, a poda 100k registrou 38,02 FPS e a poda 50k registrou 58,37 FPS, com o menor tempo médio de quadro da série. Nenhuma média atingiu a referência de 90 FPS definida no protocolo. Em interpretação restrita a essas três variantes e à pose fixa, a poda 50k oferece o menor custo de renderização da série, mas não constitui uma seleção definitiva para VR: seus valores de PSNR e SSIM foram os menores da série, enquanto o LPIPS foi o maior e as capturas qualitativas mostraram mais fragmentação. A condição estacionária não permite inferir fluidez, conforto ou estabilidade durante movimento de cabeça.
+
+\begin{figure}[H]
+\centering
+\fbox{\includegraphics[width=0.92\textwidth]{figuras/resultados/quest_tradeoff_v02.png}}
+\caption{Relação descritiva entre número de gaussianas e FPS derivado do tempo de quadro na execução nativa.}
+\label{fig:quest_tradeoff}
+\legend{Fonte: Elaborado pelo autor.}
+\end{figure}
+
+As capturas estéreo da Figura \ref{fig:quest_capturas_estereo} oferecem evidência qualitativa complementar sob a mesma condição de referência. Na inspeção das três imagens, a estrutura global da cadeira permaneceu reconhecível, enquanto a fragmentação e a perda de detalhes no piso e no fundo foram mais aparentes nas versões podadas. Essa é uma observação das imagens selecionadas, e não uma métrica de fidelidade. Por serem screenshots espaçados de uma pose fixa, elas não medem cintilação quadro a quadro, conforto ou qualidade óptica do visor.
+
+\begin{figure}[H]
+\centering
+\fbox{\includegraphics[height=0.78\textheight,keepaspectratio]{figuras/resultados/quest_stereo_comparison_v01.png}}
+\caption{Capturas estéreo da execução nativa no Quest, na mesma cena e pose fixa: \textit{baseline}, poda 100k e poda 50k, de cima para baixo.}
+\label{fig:quest_capturas_estereo}
+\legend{Fonte: Elaborado pelo autor.}
+\end{figure}
 
 \subsection{Diagnóstico de maior capacidade}
 
-A variante \textit{splatfacto-big}, com 470.962 gaussianas e 116,80 MB, foi executada uma vez na mesma condição de pose fixa. O tempo de quadro medido pela aplicação foi 65,62 ms, correspondente a 15,24 FPS. Esse resultado não foi agregado à série de cinco execuções e não possui os contadores OVR disponíveis para comparação. Ainda assim, ele evidencia que o aumento da complexidade da representação não foi adequado à execução \textit{standalone} nesse caso.
+A variante \textit{splatfacto-big}, com 470.962 gaussianas e 116,80 MB, foi executada uma vez na mesma condição de pose fixa. O tempo de quadro medido pela aplicação foi 65,62 ms, correspondente a 15,24 FPS. Esse resultado não foi agregado à série de cinco execuções e não possui os contadores OVR disponíveis para comparação. No recorte dessa única execução, o FPS derivado ficou abaixo da referência de desempenho do protocolo; ele não permite estimar variabilidade entre execuções nem generalizar o efeito do aumento de complexidade.
 
-Na observação qualitativa do operador, essa variante apresentou fundo com mais detalhes e menor distorção, cor aparentemente correta, menos cintilação e cadeira visualmente correta. Essas observações são restritas à cena \textit{poster}, à pose fixa e a uma execução; não devem ser generalizadas para outras cenas ou interpretadas como métrica perceptual.
+Durante a observação qualitativa no headset, identifiquei nessa variante fundo com mais detalhes e menor distorção, cor aparentemente correta, menos cintilação e cadeira visualmente correta. Trata-se de observação restrita à cena \textit{poster}, à pose fixa e a uma execução; não constitui métrica perceptual nem permite concluir que a variante é superior em outras poses, cenas ou dispositivos.
+
+\subsection{Contingência diagnóstica por PCVR}
+
+Como contingência distinta da execução \textit{standalone}, foram realizadas execuções em Windows com transmissão para o Meta Quest 3S via Meta Horizon Link. O \textit{build} utilizou Direct3D12 e IL2CPP, com taxa de atualização reportada de 72 Hz. O Quadro \ref{qua:resultados_pcvr} apresenta uma única execução tecnicamente válida por variante; portanto, os valores são descritivos e não constituem repetição independente nem são comparados estatisticamente com a série Android.
+
+\begin{quadro}[H]
+\centering
+\footnotesize
+\caption{Diagnóstico PCVR via Meta Horizon Link em pose fixa.}
+\label{qua:resultados_pcvr}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|p{3.0cm}|C{1.7cm}|C{1.9cm}|C{1.9cm}|C{1.8cm}|X|}
+\hline
+\textbf{Representação} & \textbf{Gaussianas} & \textbf{Tempo médio (ms)} & \textbf{p95 (ms)} & \textbf{Hz estimado} & \textbf{Quadros $\leq$ orçamento de 72 Hz} \\ \hline
+\textit{baseline} & 195.760 & 28,903 & 31,193 & 34,60 & 0,00\% \\ \hline
+\textit{top-k} 100k & 100.000 & 21,541 & 28,717 & 46,42 & 0,00\% \\ \hline
+\textit{top-k} 50k & 50.000 & 13,887 & 14,508 & 72,01 & 52,15\% \\ \hline
+\textit{splatfacto-big} & 470.962 & 55,449 & 56,922 & 18,03 & 0,00\% \\ \hline
+\end{tabularx}
+\legend{Fonte: Elaborado pelo autor.}
+\end{quadro}
+
+Como fato medido no computador, a poda para 50 mil gaussianas foi a única variante cujo intervalo médio se aproximou do orçamento de 13,889 ms para 72 Hz. Entretanto, somente 52,15\% dos quadros registrados ficaram dentro desse orçamento, e tanto o percentil 95 quanto o máximo o excederam. Na inspeção das capturas estéreo, a cadeira permaneceu reconhecível, enquanto fragmentação e perda de detalhe no piso e no fundo foram mais aparentes com a poda; a variante \textit{splatfacto-big} aparentou maior continuidade visual que as podas, porém obteve o maior tempo de quadro. Essa leitura visual é descritiva e não mede conforto ou latência do streaming.
+
+Esses dados não medem o desempenho do Quest: os tempos e os contadores de processo pertencem ao computador que renderizou a aplicação, e o caminho inclui codificação, transmissão e decodificação de vídeo. Também não houve CSV novo do OVR Metrics nas sessões por Link. Assim, a contingência demonstra o comportamento da representação em hardware de desktop e auxilia o diagnóstico do compromisso entre custo e qualidade, mas não altera a conclusão da avaliação nativa no Meta Quest 3S.
 
 \subsection{Síntese e limitações dos resultados}
 
-Os resultados caracterizam um compromisso claro entre complexidade, qualidade e desempenho. A \textit{baseline} forneceu a referência comparativa; a poda reduziu custo e melhorou o desempenho no Quest, mas degradou fortemente as métricas offline; e a configuração de maior capacidade preservou indícios qualitativos de maior fidelidade, mas tornou a execução ainda mais lenta. Assim, no estudo de caso avaliado, nenhuma variante atingiu a referência de 90 FPS definida pelo protocolo. A 50k foi a mais próxima do alvo de desempenho, mas também apresentou a menor fidelidade offline da série.
+No estudo de caso avaliado, os fatos medidos mostram uma associação entre menos gaussianas, menor tempo de quadro e degradação das métricas offline nas variantes \textit{top-k}. A \textit{baseline} forneceu a referência comparativa; a 50k foi a mais próxima da referência de desempenho entre as variantes da série, mas também teve os menores PSNR e SSIM e o maior LPIPS. A configuração de maior capacidade forneceu indícios qualitativos favoráveis em uma observação, porém teve o maior tempo de quadro no diagnóstico nativo. A interpretação é a existência de um compromisso entre complexidade, desempenho e fidelidade para esse protocolo; ela não demonstra que toda poda produzirá o mesmo efeito em outra cena ou implementação.
 
-As limitações centrais são o uso de uma única cena, a condição formal de pose fixa e a natureza diagnóstica de uma única execução da \textit{splatfacto-big}. A avaliação visual estruturada das podas e da \textit{baseline} é qualitativa; os relatos de travamento e desconforto durante movimento de cabeça são complementares à condição estacionária e podem ter sido influenciados pela execução sequencial das variantes. Esses limites são preservados explicitamente para que a análise não extrapole a evidência disponível.
+As limitações centrais são o uso de uma única cena, a condição formal de pose fixa e a natureza diagnóstica de uma única execução da \textit{splatfacto-big}. A avaliação visual estruturada das podas e da \textit{baseline} é qualitativa; os relatos de travamento e desconforto durante movimento de cabeça são complementares à condição estacionária e podem ter sido influenciados pela execução sequencial das variantes. A contingência PCVR acrescenta somente uma execução por variante, renderizada no computador e transmitida ao headset; ela não reduz essas limitações nem é evidência de viabilidade \textit{standalone}. Esses limites são preservados explicitamente para que a análise não extrapole a evidência disponível.
