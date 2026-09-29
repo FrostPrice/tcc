@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560">
+<rect width="1000" height="560" fill="white"/>
+<style>text{font-family:DejaVu Sans,sans-serif;fill:#222}</style>
+<text x="500" y="32" text-anchor="middle" font-size="21">Intervalo médio entre quadros da aplicação</text>
+<path d="M85 415.0 H960" stroke="#ddd"/>
+<text x="72" y="420.0" text-anchor="end" font-size="16">0</text>
+<path d="M85 352.0 H960" stroke="#ddd"/>
+<text x="72" y="357.0" text-anchor="end" font-size="16">15</text>
+<path d="M85 289.0 H960" stroke="#ddd"/>
+<text x="72" y="294.0" text-anchor="end" font-size="16">30</text>
+<path d="M85 226.0 H960" stroke="#ddd"/>
+<text x="72" y="231.0" text-anchor="end" font-size="16">45</text>
+<path d="M85 163.0 H960" stroke="#ddd"/>
+<text x="72" y="168.0" text-anchor="end" font-size="16">60</text>
+<path d="M85 100.0 H960" stroke="#ddd"/>
+<text x="72" y="105.0" text-anchor="end" font-size="16">75</text>
+<rect x="132" y="225.77652893066409" width="54" height="189.22347106933591" fill="#356fa3"/>
+<text x="159" y="215.77652893066409" text-anchor="middle" font-size="16">45.05</text>
+<rect x="194" y="293.60616061149994" width="54" height="121.39383938850006" fill="#b56528"/>
+<text x="221" y="283.60616061149994" text-anchor="middle" font-size="16">28.90</text>
+<text x="190" y="445" text-anchor="middle" font-size="16">Baseline</text>
+<rect x="352" y="304.5364479827881" width="54" height="110.46355201721192" fill="#356fa3"/>
+<text x="379" y="294.5364479827881" text-anchor="middle" font-size="16">26.30</text>
+<rect x="414" y="324.5291995264178" width="54" height="90.4708004735822" fill="#b56528"/>
+<text x="441" y="314.5291995264178" text-anchor="middle" font-size="16">21.54</text>
+<text x="410" y="445" text-anchor="middle" font-size="16">Poda 100k</text>
+<rect x="572" y="343.04121978759764" width="54" height="71.95878021240236" fill="#356fa3"/>
+<text x="599" y="333.04121978759764" text-anchor="middle" font-size="16">17.13</text>
+<rect x="634" y="356.6727468061646" width="54" height="58.327253193835425" fill="#b56528"/>
+<text x="661" y="346.6727468061646" text-anchor="middle" font-size="16">13.89</text>
+<text x="630" y="445" text-anchor="middle" font-size="16">Poda 50k</text>
+<rect x="792" y="139.37586517333983" width="54" height="275.62413482666017" fill="#356fa3"/>
+<text x="819" y="129.37586517333983" text-anchor="middle" font-size="16">65.62</text>
+<rect x="854" y="182.11501523260702" width="54" height="232.88498476739298" fill="#b56528"/>
+<text x="881" y="172.11501523260702" text-anchor="middle" font-size="16">55.45</text>
+<text x="850" y="445" text-anchor="middle" font-size="16">Big (diagnóstico)</text>
+<text transform="translate(24 260) rotate(-90)" text-anchor="middle" font-size="17">Tempo (ms)</text>
+<rect x="250" y="475" width="20" height="20" fill="#356fa3"/>
+<text x="280" y="492" font-size="16">Quest nativo</text>
+<rect x="540" y="475" width="20" height="20" fill="#b56528"/>
+<text x="570" y="492" font-size="16">PCVR / Horizon Link</text>
+<text x="500" y="535" text-anchor="middle" font-size="14">Nativo: 5 execuções por variante principal; PCVR: 1. Big: 1 em cada rota.</text>
+</svg>
