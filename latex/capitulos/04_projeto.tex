@@ -1,10 +1,10 @@
 \chapter[Desenvolvimento]{Desenvolvimento}
 
-Este capítulo consolida o projeto da solução proposta, descrevendo o \textit{pipeline} de reconstrução e visualização imersiva, a arquitetura planejada, as etapas de implementação, o protocolo de avaliação experimental e o planejamento de continuidade para o TCC III. A organização do capítulo transforma os fundamentos discutidos anteriormente em um plano técnico executável para analisar a integração entre NeRF, \textit{3D Gaussian Splatting} e VR \textit{standalone}.
+Este capítulo reúne o projeto da solução, sua implementação e os resultados. A seção de Projeto descreve o \textit{pipeline} planejado e o protocolo de avaliação; as seções seguintes apresentam a execução efetiva e as evidências obtidas.
 
 \section{Projeto}
 
-Esta seção apresenta a visão geral da solução, as etapas do \textit{pipeline}, as decisões técnicas, os riscos previstos e os critérios de avaliação. O objetivo é delimitar como os dados capturados serão transformados em uma representação 3D-GS integrada a um ambiente de VR.
+Esta seção apresenta a visão geral da solução, as etapas do \textit{pipeline}, as decisões técnicas e os critérios de avaliação. O objetivo é delimitar como os dados capturados serão transformados em uma representação 3D-GS integrada a um ambiente de VR.
 
 \subsection{Visão geral da solução proposta}
 
@@ -464,66 +464,3 @@ Trabalhos futuros & Indicação de evoluções possíveis, como ferramenta integ
 
 \legend{Fonte: Elaborado pelo autor.}
 \end{quadro}
-
-\subsection{Análise de riscos}
-
-A execução do projeto envolve riscos relacionados ao custo de recursos computacionais, ao desempenho em VR e à integração de ferramentas experimentais. Como o trabalho depende de componentes recentes, especialmente em 3D Gaussian Splatting e motores gráficos, o Quadro \ref{qua:riscos_projeto} apresenta os principais riscos e estratégias de contingência.
-
-\begin{quadro}[H]
-\centering
-\footnotesize
-\caption{Principais riscos técnicos e estratégias de contingência.}
-\label{qua:riscos_projeto}
-\renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{|p{3.0cm}|p{2.5cm}|p{1.8cm}|X|}
-\hline
-\textbf{Risco} & \textbf{Probabilidade} & \textbf{Impacto} & \textbf{Estratégia de contingência} \\ \hline
-
-Custo de GPU em nuvem & Média & Alto & Controlar o tempo de uso da GPU em nuvem, limitar execuções exploratórias e reduzir a complexidade das cenas quando necessário. \\ \hline
-
-Baixo desempenho no Meta Quest 3S & Média & Alto & Reduzir o número de gaussianas, aplicar poda e simplificação, limitar a complexidade da cena ou utilizar execução em desktop com transmissão para o headset como contingência documentada. \\ \hline
-
-Incompatibilidade com componentes de 3D-GS & Média & Médio/Alto & Testar alternativas compatíveis, validar importação e \textit{build} Android/Vulkan incrementalmente e utilizar visualizador dedicado apenas como rota diagnóstica. \\ \hline
-
-Taxa de quadros insuficiente para VR & Média & Alto & Registrar a configuração de atualização, tempo de quadro e quedas; tratar resultados próximos de 30 FPS como limitação técnica, não como critério de sucesso. \\ \hline
-
-Perda elevada de qualidade após otimização & Média & Médio & Comparar diferentes níveis de compressão, preservar uma versão de maior fidelidade para análise e documentar o impacto das otimizações. \\ \hline
-
-\end{tabularx}
-
-\legend{Fonte: Elaborado pelo autor.}
-\end{quadro}
-
-\section{Planejamento do TCC III}
-
-O planejamento do TCC III organiza a continuidade do projeto em cinco meses, articulando consolidação técnica do pipeline, integração em VR, execução dos experimentos e escrita final. A etapa de maior risco técnico concentra-se na integração e nos testes funcionais no Meta Quest 3S.
-
-\begin{quadro}[H]
-\centering
-\scriptsize
-\caption{Cronograma de execução do TCC III.}
-\label{qua:cronograma_tcc_iii}
-\renewcommand{\arraystretch}{1.35}
-\setlength{\tabcolsep}{3pt}
-\begin{tabularx}{\textwidth}{|X|C{1.25cm}|C{1.25cm}|C{1.25cm}|C{1.25cm}|C{1.25cm}|}
-\hline
-\textbf{Atividade} & \shortstack{\textbf{Jul}\\\textbf{2026}} & \shortstack{\textbf{Ago}\\\textbf{2026}} & \shortstack{\textbf{Set}\\\textbf{2026}} & \shortstack{\textbf{Out}\\\textbf{2026}} & \shortstack{\textbf{Nov}\\\textbf{2026}} \\ \hline
-
-Consolidação do pipeline, cenas e modelos base & XXXX & & & & \\ \hline
-
-Ajustes finais de integração em VR e testes funcionais no Quest 3S & & XXXX & & & \\ \hline
-
-Execução dos experimentos e coleta de dados & & & XXXX & & \\ \hline
-
-Análise dos resultados, limitações e trabalhos futuros & & & & XXXX & \\ \hline
-
-Escrita final, revisão e preparação da entrega & & & & & XX \\ \hline
-
-\end{tabularx}
-
-\legend{Fonte: Elaborado pelo autor.}
-\end{quadro}
-
-Em julho, a prioridade será consolidar o pipeline já planejado, selecionar as cenas de teste e garantir que os modelos base possam ser gerados de forma reprodutível. Em agosto, o foco se desloca para a integração em VR, com ajustes de importação, configuração do ambiente XR e testes funcionais no headset. Setembro será dedicado à execução dos experimentos e à coleta de métricas de qualidade visual, desempenho e estabilidade.
-
-Em outubro, os dados coletados serão analisados de forma conjunta, permitindo identificar limitações, comparar configurações e registrar propostas de trabalhos futuros. Novembro será reservado para escrita final, revisão textual, organização dos quadros e figuras, conferência das referências e preparação da entrega final.

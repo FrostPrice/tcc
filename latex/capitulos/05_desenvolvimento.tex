@@ -37,11 +37,15 @@ A Figura \ref{fig:arquitetura_desenvolvida} resume a arquitetura utilizada no es
 
 Os arquivos derivados organizam os dados para consulta e geração de tabelas, mas não substituem os manifestos nem as medições brutas. Por essa razão, uma captura da Unity ou uma medida de GPU do desktop não é reutilizada como métrica offline nem como medição de memória do Quest.
 
+Na arquitetura, o conjunto de imagens e poses constitui a entrada comum aos treinamentos. O NeRF e o Splatfacto são modelos treinados separadamente sobre essa entrada; o arquivo exportado do NeRF não alimenta o Splatfacto. A saída 3D-GS, em formato PLY, é o ponto de ligação com o protótipo XR. A avaliação offline utiliza imagens de teste retidas e não depende da renderização da Unity. Já os medidores da aplicação e do dispositivo são associados ao identificador da representação carregada no \textit{build}. Essa divisão evita atribuir ao modelo diferenças que pertencem ao renderizador ou à plataforma.
+
 \subsection{Implementação do pipeline experimental}
 
 O estudo de caso adotado foi o conjunto \textit{poster} disponibilizado pelo Nerfstudio. As etapas de pré-processamento, treinamento, avaliação e exportação foram executadas no Google Colab, com os modelos e registros de configuração preservados em armazenamento externo. O modelo NeRF foi mantido como referência de fidelidade visual, enquanto as representações 3D-GS foram treinadas ou derivadas a partir da mesma cena para a avaliação de custo e desempenho.
 
 A execução foi organizada de modo incremental. Primeiro, foi preservada uma \textit{baseline} Splatfacto; depois, foram produzidas variantes de regularização de escala, de maior capacidade e de poda determinística por opacidade. As podas de 100 mil e 50 mil gaussianas foram geradas a partir do PLY congelado da \textit{baseline}, mantendo os registros binários completos das gaussianas selecionadas. Cada artefato possui identificador de variante, contagem de gaussianas, tamanho e soma de verificação registrados em seus manifestos.
+
+Como o conjunto \textit{poster} já contém imagens organizadas e poses de câmera, o estudo não dependeu de uma nova captura nem de uma nova execução de COLMAP para esse caso. O processamento no Colab separou configurações editáveis, treinamento, avaliação e exportação; os resultados custosos foram persistidos fora do ambiente temporário. A variante de maior capacidade foi treinada separadamente, ao passo que as podas foram produzidas depois da exportação. Essa distinção foi mantida tanto nos registros de proveniência quanto na análise: diminuir a quantidade de registros do PLY não equivale a reotimizar as gaussianas restantes.
 
 \subsection{Poda determinística por opacidade}
 
@@ -69,6 +73,8 @@ procedure GenerateOpacityTopK(sourcePly, k)
 end procedure
 \end{lstlisting}
 
+O algoritmo foi apresentado como pseudocódigo, com entrada, critério de ordenação, desempate e saída explícitos, sem reproduzir a implementação inteira. A leitura do cabeçalho verifica o formato binário, o número de vértices e a posição do campo de opacidade; a validação de tamanho protege contra registros truncados. Após a escrita, a quantidade de registros, o tamanho do arquivo e as somas SHA-256 são conferidos. Assim, a operação preserva os atributos de cada gaussiana selecionada e altera apenas o subconjunto representado.
+
 As podas não foram tratadas como modelos treinados novamente. Na avaliação offline, a configuração da \textit{baseline} foi carregada e seus parâmetros gaussianos foram substituídos pelo conteúdo dos PLYs derivados nas mesmas poses e imagens retidas. Assim, a alteração da representação e a proveniência de cada arquivo permaneceram explícitas.
 
 \subsection{Mudança da rota de integração}
@@ -77,17 +83,23 @@ Durante a implementação inicial, foi investigada uma rota de integração com 
 
 A integração implementada passou a utilizar Unity 6000.5.8f1, Universal Render Pipeline, OpenXR, Android/Vulkan e UnitySplats. O projeto Unity importa os PLYs das variantes como ativos independentes e mantém uma cena mínima de avaliação, com carregamento do modelo, câmera estereoscópica e configuração controlada de pose. As versões do motor, do pacote, do \textit{build} e os identificadores de representação são preservados nos manifestos e nos registros de \textit{build}.
 
+Na implementação, a cena de avaliação foi mantida sem elementos interativos que pudessem introduzir cargas variáveis. Cada \textit{build} associa uma representação a uma configuração identificável, em vez de substituir silenciosamente o ativo anterior. A instrumentação registra a janela efetiva de medição e a identificação do modelo, permitindo rejeitar uma execução quando o \textit{build}, a variante ou o alinhamento observados não correspondem ao protocolo. Capturas do framebuffer foram mantidas separadas dos registros numéricos porque sua aparência depende também da composição estereoscópica e do modo de captura.
+
 \subsection{Execução no Meta Quest 3S e preservação de evidências}
 
 Os APKs foram gerados para Android/Vulkan e instalados no Meta Quest 3S em execução nativa. A coleta utilizou uma condição estacionária de referência, com alinhamento \textit{FullPoseOnce}: após o rastreamento, a pose completa é fixada para reduzir a variação entre repetições. Essa condição mede o custo de renderização estacionária e não constitui avaliação de locomoção, conforto durante movimento ou comportamento térmico prolongado.
 
 Cada execução retida possui metadados do APK, identificador esperado de variante, relatório de medições da aplicação, marcador de pose e, quando disponível, arquivo CSV do OVR Metrics. Capturas e observações visuais são mantidas como evidência qualitativa separada das métricas offline. A execução por desktop via Meta Horizon Link foi também realizada como contingência diagnóstica em Windows, com \textit{build} Direct3D12 e IL2CPP; seus registros permanecem separados da série Android e são apresentados apenas como resultado complementar.
 
+O procedimento de teste seguiu a mesma sequência para cada variante: instalação e abertura do aplicativo, espera pelo rastreamento inicial, fixação da pose, coleta na janela interna da aplicação e preservação dos contadores externos e das capturas. As três representações da série principal tiveram cinco execuções independentes na condição estacionária. A variante de maior capacidade teve uma execução diagnóstica, sem ser incluída nas médias da série. Para a análise de qualidade offline, foram usadas as mesmas 13 imagens retidas, poses e resolução em todas as variantes. A inspeção visual foi registrada por critérios de fundo, cadeira, artefatos, cor, estereoscopia e fluidez percebida, sem converter essas anotações em uma escala quantitativa de conforto.
+
 \subsection{Testes preliminares e contingências}
 
 Os testes preliminares ajudaram a definir a configuração comparativa final, mas não foram agregados à série principal. Foram realizados diagnósticos de modo monoscópico, ordenação por \textit{renderer}, alinhamento de pose e maior capacidade da representação. Nesses testes, foram registrados artefatos de fundo, cintilação e limitações de desempenho que motivaram a padronização posterior da condição \textit{FullPoseOnce} e das repetições comparáveis. Essas observações orientaram decisões de implementação, mas não foram tratadas como medidas comparáveis da série final.
 
 A execução nativa no Quest permaneceu o cenário-alvo. A renderização em desktop com transmissão para o headset foi mantida como contingência diagnóstica, separada metodologicamente da série Android. A tentativa Linux com WiVRn foi preservada como falha: embora o pareamento do headset tenha sido concluído, o jogador Unity não carregou o componente OpenXR, não recebeu rastreamento do HMD e não estabeleceu uma sessão VR válida. Logo, ela não gerou resultado comparável nem substituiu a avaliação \textit{standalone}.
+
+Para continuar a investigação sem modificar o mecanismo de renderização do protótipo, a contingência foi executada em Windows com Meta Horizon Link. O computador renderizou a cena e transmitiu as imagens ao mesmo headset, que forneceu pose e exibição estereoscópica. Foram mantidos os mesmos PLYs e a condição de referência estática, mas foram produzidos \textit{builds} próprios para Direct3D12 e IL2CPP. O procedimento preservou uma execução tecnicamente válida por representação, com tempos de quadro da aplicação e contadores do processo no computador. A mudança de sistema operacional, API gráfica, hardware e presença de transmissão impede interpretar a diferença entre rotas como efeito isolado de um único componente. Contadores do processo no Windows não foram usados como medidas de memória do Quest.
 
 \subsection{Rastreabilidade e limitações de implementação}
 
