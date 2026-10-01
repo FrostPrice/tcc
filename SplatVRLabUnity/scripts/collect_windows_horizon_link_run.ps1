@@ -40,6 +40,8 @@ param(
     [switch] $RequireTrackedPoseMarker,
     [ValidateSet('', 'YawOnly', 'FullPoseOnce')]
     [string] $ExpectedAlignmentMode = '',
+    [ValidateSet('', 'left20', 'right20')]
+    [string] $ViewpointId = '',
     [switch] $LeavePlayerRunning
 )
 
@@ -259,6 +261,11 @@ function Stop-PlayerProcess([System.Diagnostics.Process] $Player, [string] $Evid
 if ($ExpectedAlignmentMode -and -not $RequireTrackedPoseMarker) {
     throw '-ExpectedAlignmentMode exige -RequireTrackedPoseMarker.'
 }
+if ($ViewpointId -and ($Condition -ne 'static_reference' -or
+    $ExpectedAlignmentMode -ne 'FullPoseOnce' -or $HeadsetScreenshotCount -ne 1 -or
+    -not $RequireTrackedPoseMarker)) {
+    throw '-ViewpointId exige static_reference, FullPoseOnce, marcador rastreado e uma captura do headset.'
+}
 if ($DesktopScreenshotCount -gt 0 -and $DesktopScreenshotInitialDelaySeconds -ge $CaptureSeconds) {
     throw '-DesktopScreenshotInitialDelaySeconds deve ser menor que -CaptureSeconds quando houver capturas.'
 }
@@ -359,7 +366,15 @@ else {
 }
 
 Write-Host "Iniciando player Windows: $Executable"
-Write-Host "Permaneça parado na pose inicial, sem tocar nos controles, até o término da captura."
+if ($ViewpointId) {
+    $direction = if ($ViewpointId -eq 'left20') { 'à esquerda' } else { 'à direita' }
+    $operatorInstruction = "Comece olhando em frente e imóvel até o alinhamento XR (cerca de 2 s). Só depois gire a cabeça aproximadamente 20 graus $direction e mantenha a pose até a captura. Se girar antes, FullPoseOnce absorve o ângulo. Esta execução lateral não integra as médias da pose fixa."
+}
+else {
+    $operatorInstruction = 'Permaneça parado na pose inicial, sem tocar nos controles, até o término da captura.'
+}
+Write-Host $operatorInstruction
+$operatorInstruction | Set-Content -LiteralPath (Join-Path $OutputDir 'operator_instruction.txt')
 $quotedPlayerLog = '"{0}"' -f $playerLog
 $process = Start-Process -FilePath $Executable -ArgumentList @('-logFile', $quotedPlayerLog) `
     -WorkingDirectory (Split-Path -Parent $Executable) -PassThru
@@ -618,6 +633,7 @@ $runMetadata = [ordered]@{
     run_id = $RunId
     execution_scope = 'desktop_streaming_diagnostic'
     condition_id = $Condition
+    viewpoint_id = $ViewpointId
     expected_variant_id = $ExpectedVariant
     expected_representation_variant_id = $ExpectedRepresentation
     expected_alignment_mode = $ExpectedAlignmentMode
@@ -643,6 +659,7 @@ $runMetadata = [ordered]@{
     application_measurement_index = 'app_measurements_new.txt'
     visual_evaluation_index = 'visual_evaluation_new.txt'
     validation_status_file = 'validation_status.txt'
+    operator_instruction_file = 'operator_instruction.txt'
     notes = 'app_measurements e process_metrics medem o player Unity no PC Windows. screenshot.png, screenshot_sequence e logcat vêm do Quest via ADB durante o Horizon Link. OVR Metrics Tool foi excluído do protocolo Windows via Link por não produzir CSV nas tentativas observadas; as evidências anteriores permanecem preservadas. Capturas ADB do framebuffer não são métricas de fidelidade. O coletor não mede latência, codec ou bitrate do Link. Não agregar esta série à execução Android nativa.'
 }
 $runMetadata | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $OutputDir 'run_metadata.json')

@@ -1,5 +1,7 @@
 # Guia de build e coleta Windows via Meta Horizon Link
 
+Para as **quatro órbitas pareadas e quatro repetições estacionárias adicionais por variante**, siga o [guia específico](GUIA_ORBITA_E_REPETICOES_WINDOWS.md). Os comandos abaixo documentam o protocolo PCVR original de uma sessão por representação.
+
 Este procedimento gera e coleta a baseline, as variantes pruned 100k e 50k e, por último, o splatfacto-big. Execute os comandos no **PowerShell do Windows**. As medições são do player Windows transmitido pelo Link; não são medições Android nativas do Quest.
 
 **Protocolo atual:** o CSV do OVR Metrics Tool não integra a validação do EXE via Horizon Link. Nas quatro execuções observadas, a gravação estava ativada e nenhum CSV novo foi produzido. Este é um problema observado nesta configuração e também relatado na comunidade da Meta para Air Link; não é uma confirmação oficial de incompatibilidade universal com Link por cabo. Preserve os `validation_status.txt` originais, que registram a exigência antiga. O [relatório derivado PC-VR](../experiments/unitysplats_viability_v01/derived/desktop_horizon_link_pcvr_validation_v01/validation.json) revalidou as quatro capturas tecnicamente sem exigir OVR; a qualidade visual ainda precisa de avaliação humana. A série Windows via Link permanece separada da série Android nativa.

@@ -155,6 +155,12 @@ namespace SplatVRLab
         public bool MeasurementWindowStarted => _measurementStarted;
         public float MeasurementElapsedSeconds => _measurementElapsed;
 
+        public void CompleteExternalSequence(string completionReason)
+        {
+            if (!_reportWritten && _measurementStarted && _applicationFrameIntervals.Count > 0)
+                WriteReport(completionReason);
+        }
+
         private void Start()
         {
             _startedAtUtc = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);

@@ -367,6 +367,34 @@ namespace SplatVRLab.Editor
                 captureAfterMeasurement: true);
         }
 
+        [MenuItem("SplatVRLab/Chair orbit/Repair baseline reference capture")]
+        public static void RepairBaselineReferenceCapture()
+        {
+            Scene scene = EditorSceneManager.OpenScene(ViabilitySceneAssetPath, OpenSceneMode.Single);
+            FrameMetricsRecorder metrics =
+                UnityEngine.Object.FindAnyObjectByType<FrameMetricsRecorder>();
+            if (!metrics || metrics.VariantId != VisualBaselineFullPoseVariantId ||
+                metrics.RepresentationVariantId != BaselineRepresentation.VariantId)
+                throw new InvalidOperationException(
+                    "Open the baseline full-pose viability scene before repairing its capture camera.");
+
+            ReferencePoseRecord referencePose = LoadReferencePose(BaselineRepresentation);
+            ReferencePosePlacement placement = NerfstudioReferencePose.ComputePlacement(referencePose);
+            LocomotionProfile profile = LoadVisualFullPoseProfile(
+                VisualBaselineFullPoseProfileRelativeToRepository,
+                ExpectedVisualBaselineFullPoseProfileSha256,
+                VisualBaselineFullPoseVariantId);
+            ConfigureMonoscopicReferenceOutputCapture(
+                BaselineRepresentation, referencePose, placement, profile, enabled: true);
+            ReferencePoseEvaluationCapture capture =
+                UnityEngine.Object.FindAnyObjectByType<ReferencePoseEvaluationCapture>() ??
+                throw new InvalidOperationException("Reference capture camera was not created.");
+            capture.Metrics = metrics;
+            EditorSceneManager.SaveScene(scene);
+            Validate();
+            Debug.Log("[SplatVRLab] BASELINE_REFERENCE_CAPTURE_REPAIRED");
+        }
+
         [MenuItem("SplatVRLab/Configure pruned-100k visual full-pose variant")]
         public static void ConfigureVisualPrunedFullPose()
         {

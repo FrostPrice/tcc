@@ -144,10 +144,10 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 324491329}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84202ae884e34d82bb9134d65fec3117, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SplatVRLab.ReferencePoseEvaluationCapture
   EvaluationCamera: {fileID: 324491331}
   Metrics: {fileID: 1559659701}
@@ -387,7 +387,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e0cb9aa70a22847b5925ee5f067c10a9, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &441087508 stripped
 GameObject:
@@ -425,7 +425,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 441087508}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 43ac86849be79c5eb94861a2369ffb2c, type: 3}
   m_Name: 
@@ -437,6 +437,62 @@ MonoBehaviour:
   TranslationSpeedUnityUnitsPerSecond: 0
   SnapTurnDegrees: 0
   SnapTurnIntervalSeconds: 0
+--- !u!1 &739326610
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 739326612}
+  - component: {fileID: 739326611}
+  m_Layer: 0
+  m_Name: NativeChairOrbitSequence
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &739326611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 739326610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bde30bc0ef3bad4e39fce52a392e8690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SplatVRLab.NativeChairOrbitSequence
+  Origin: {fileID: 441087507}
+  Aligner: {fileID: 441087509}
+  Metrics: {fileID: 1559659701}
+  PivotMarker: {fileID: 1596646935}
+  TrajectoryId: chair_orbit_full_circle_r125_v01
+  VariantId: spark_opacity_topk_100k_orbit_full_circle_v01
+  RepresentationVariantId: opacity_topk_100k_v01
+  FrameCount: 144
+  StepDegrees: 2.5
+  RadiusScale: 1.25
+  SettleSeconds: 0.4
+  AcknowledgementTimeoutSeconds: 60
+--- !u!4 &739326612
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 739326610}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &756192406
 GameObject:
   m_ObjectHideFlags: 0
@@ -514,10 +570,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SplatVRLab.FrameMetricsRecorder
   ExperimentId: unitysplats_viability_v01
   SceneId: poster_baseline
-  VariantId: spark_baseline_visual_full_pose_v01
-  RepresentationVariantId: baseline_v01
-  RepresentationGaussianCount: 195760
-  RepresentationPlySha256: 23e3b3d3cd47e1aa0ad1daf7df96c4bd620af9edaf7996ccb865f5b60b80bebb
+  VariantId: spark_opacity_topk_100k_orbit_full_circle_v01
+  RepresentationVariantId: opacity_topk_100k_v01
+  RepresentationGaussianCount: 100000
+  RepresentationPlySha256: b2af0f8f9bda2ab2cc54db3e34147b6e02ea73cd71eb682ae803739f4f34c1d3
   RepresentationImportCompression: Spark
   RendererGammaToLinear: 1
   RendererShDegree: 3
@@ -533,20 +589,20 @@ MonoBehaviour:
   ScalePolicy: canonical_non_metric
   MetricScaleCalibrated: 0
   MetersPerNerfstudioUnit: 1
-  LocomotionEnabled: 1
-  LocomotionProfileId: quest_visual_baseline_full_pose_v01
-  LocomotionMode: none
-  MovementInput: none
+  LocomotionEnabled: 0
+  LocomotionProfileId: automated_visual_orbit_not_locomotion
+  LocomotionMode: orbit_visual_capture
+  MovementInput: automated_xr_origin_pose
   MoveSpeedUnityUnitsPerSecond: 0
   TurnMode: none
   TurnInput: none
   SnapTurnDegrees: 0
   GravityEnabled: 0
   CollisionPolicy: no_scene_colliders_free_horizontal_motion
-  ConditionId: static_reference
-  AutomatedSequenceId: stationary_automated_instrumentation_v01
+  ConditionId: orbit_full_circle_capture
+  AutomatedSequenceId: chair_orbit_full_circle_r125_v01
   WarmupFrames: 180
-  MeasurementSeconds: 30
+  MeasurementSeconds: 1800
 --- !u!4 &1559659702
 Transform:
   m_ObjectHideFlags: 0
@@ -589,7 +645,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b4dd95e58b5c4a54ae0432fa7967a301, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SplatVRLab.ChairOrbitPivotMarker
   CalibrationConfirmed: 1
   CalibrationNotes: Estimativa visual da regiao entre assento e encosto; projecao
@@ -623,7 +679,7 @@ GameObject:
   - component: {fileID: 1911100977}
   - component: {fileID: 1911100976}
   m_Layer: 0
-  m_Name: Poster_baseline_v01_Gsplat
+  m_Name: Poster_opacity_topk_100k_v01_Gsplat
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -641,7 +697,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce0eaa90dbf24670a230447dc3ec09f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Gsplat::Gsplat.GsplatRenderer
-  GsplatAsset: {fileID: 4599839170941234424, guid: af5511aa8fe3476529daee668a4adb7a, type: 3}
+  GsplatAsset: {fileID: 4599839170941234424, guid: 32fe60530068130309b4b77941e48616, type: 3}
   SHDegree: 3
   RenderOrder: 0
   Brightness: 1
@@ -694,7 +750,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1988823343}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b724e9ba560a4da6980f0cd639990727, type: 3}
   m_Name: 
@@ -826,3 +882,4 @@ SceneRoots:
   - {fileID: 1559659702}
   - {fileID: 324491332}
   - {fileID: 1596646936}
+  - {fileID: 739326612}
