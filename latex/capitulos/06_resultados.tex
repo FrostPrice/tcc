@@ -86,6 +86,55 @@ Uma segunda captura da \textit{baseline}, obtida em outra execução, mostra peq
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
+\subsection{Vistas adicionais na execução nativa}
+
+As quatro trajetórias orbitais nativas terminaram com 144 de 144 poses confirmadas, abrangendo de 0 a 357,5 graus. Todos os PNGs foram preservados, e os alvos de câmera registrados coincidiram entre as representações em cada índice. A Figura \ref{fig:quest_orbita_0} mostra a vista de 0 grau e a Figura \ref{fig:quest_orbita_180} a vista oposta, sempre na mesma ordem de variantes. Essa regra de seleção por ângulo, definida antes da interpretação das imagens, permite observar mudanças de enquadramento sem escolher apenas vistas visualmente favoráveis.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.47\textwidth]{figuras/resultados/quest_orbit_baseline_pose_0000_print_v01.jpg}\hfill
+\includegraphics[width=0.47\textwidth]{figuras/resultados/quest_orbit_pruned100k_pose_0000_print_v01.jpg}\\[2mm]
+\includegraphics[width=0.47\textwidth]{figuras/resultados/quest_orbit_pruned50k_pose_0000_print_v01.jpg}\hfill
+\includegraphics[width=0.47\textwidth]{figuras/resultados/quest_orbit_splatfacto_big_pose_0000_print_v01.jpg}
+\caption{Capturas nativas no mesmo ponto orbital de 0 grau: \textit{baseline} e 100k acima; 50k e \textit{splatfacto-big} abaixo.}
+\label{fig:quest_orbita_0}
+\legend{Fonte: Elaborado pelo autor.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.47\textwidth]{figuras/resultados/quest_orbit_baseline_pose_0072_print_v01.jpg}\hfill
+\includegraphics[width=0.47\textwidth]{figuras/resultados/quest_orbit_pruned100k_pose_0072_print_v01.jpg}\\[2mm]
+\includegraphics[width=0.47\textwidth]{figuras/resultados/quest_orbit_pruned50k_pose_0072_print_v01.jpg}\hfill
+\includegraphics[width=0.47\textwidth]{figuras/resultados/quest_orbit_splatfacto_big_pose_0072_print_v01.jpg}
+\caption{Capturas nativas no ponto orbital de 180 graus, na mesma ordem da Figura \ref{fig:quest_orbita_0}.}
+\label{fig:quest_orbita_180}
+\legend{Fonte: Elaborado pelo autor.}
+\end{figure}
+
+Nas duas vistas e na inspeção uniforme do restante da volta, a cadeira permaneceu reconhecível nas quatro representações. A poda 100k apresentou mais manchas e descontinuidades no piso e no fundo que a \textit{baseline}; na 50k, a fragmentação dessas regiões e de alguns contornos da cadeira tornou-se mais pronunciada. A \textit{splatfacto-big} preservou relativamente melhor a continuidade do piso e dos objetos de fundo, embora persistissem deformações nas periferias e regiões superiores. A tonalidade alaranjada apareceu nas capturas de todas as variantes, sem que esse conjunto constitua aferição colorimétrica. Esses achados são observações das imagens capturadas, não métricas fotométricas ou prova de qualidade binocular percebida.
+
+As versões incluídas nas figuras foram redimensionadas para apresentação, sem recorte; as capturas integrais permaneceram preservadas para consulta e não foram substituídas por essas cópias.
+
+O Quadro \ref{qua:diagnostico_orbita_nativa} apresenta os intervalos de quadro registrados pela aplicação durante cada sessão orbital. Todas as médias excederam os 13,89 ms correspondentes a 72 Hz. Entretanto, as sessões incluíram espera por confirmação, captura ADB e transições entre pontos de vista; por isso, seus intervalos não foram agregados às cinco repetições estacionárias nem usados para estimar fluidez durante movimento natural da cabeça. Os vídeos foram montados com os 144 PNGs a oito quadros por segundo apenas para consulta visual, sem representar o tempo real da execução.
+
+\begin{quadro}[H]
+\centering
+\footnotesize
+\caption{Diagnóstico complementar das sessões orbitais nativas, uma por representação.}
+\label{qua:diagnostico_orbita_nativa}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|X|X|X|}
+\hline
+\textbf{Representação} & \textbf{Intervalo médio (ms)} & \textbf{p95 (ms)} & \textbf{Poses confirmadas} \\ \hline
+\textit{baseline} & 40,04 & 43,93 & 144/144 \\ \hline
+\textit{top-k} 100k & 24,26 & 26,66 & 144/144 \\ \hline
+\textit{top-k} 50k & 15,90 & 17,82 & 144/144 \\ \hline
+\textit{splatfacto-big} & 64,30 & 71,88 & 144/144 \\ \hline
+\end{tabularx}
+\legend{Fonte: Elaborado pelo autor.}
+\end{quadro}
+
 \subsection{Diagnóstico de maior capacidade}
 
 A variante \textit{splatfacto-big}, com 470.962 gaussianas e 116,80 MB, foi executada uma vez na mesma condição de pose fixa. O tempo de quadro medido pela aplicação foi 65,62 ms, correspondente a 15,24 FPS. Esse resultado não foi agregado à série de cinco execuções e não possui os contadores OVR disponíveis para comparação. No recorte dessa única execução, o FPS derivado ficou abaixo da referência de desempenho do protocolo; ele não permite estimar variabilidade entre execuções nem generalizar o efeito do aumento de complexidade.
@@ -204,6 +253,8 @@ A Figura \ref{fig:comparacao_tempo_pcvr} evidencia que o ganho absoluto de tempo
 O resultado médio de 72,01 quadros/s da poda 50k deve ser interpretado considerando a atualização reportada de 72 Hz nessa sessão. O percentil 95 de 14,508 ms e o máximo de 25,224 ms ultrapassaram o orçamento de 13,889 ms. Portanto, a proximidade da média com a atualização do visor não demonstrou regularidade de todos os quadros. Além disso, os intervalos medidos pela aplicação não quantificam a latência completa entre movimento da cabeça e apresentação da imagem, nem distinguem quadros apresentados pelo compositor de eventuais quadros reprojetados.
 
 A comparação é descritiva: a série Android principal teve cinco execuções por variante, enquanto o PCVR teve uma; a variante de maior capacidade teve um diagnóstico em cada rota. As diferenças também envolvem sistema operacional, API gráfica, hardware e transmissão. Assim, os percentuais apresentados expressam diferenças entre as condições observadas, sem isolar um efeito causal da GPU ou do streaming. A maior capacidade do computador não eliminou a perda de fidelidade das representações podadas nem estabeleceu a adequação da execução nativa no headset.
+
+As órbitas adicionais foram coletadas apenas na rota nativa. Como não houve trajetória orbital pareada no PCVR, as capturas de ângulos diferentes não sustentam uma comparação visual multivista entre as duas plataformas. As capturas PCVR disponíveis permanecem restritas à condição de pose fixa já descrita.
 
 \subsection{Síntese e limitações dos resultados}
 
