@@ -471,8 +471,8 @@ MonoBehaviour:
   Metrics: {fileID: 1559659701}
   PivotMarker: {fileID: 1596646935}
   TrajectoryId: chair_orbit_full_circle_r125_v01
-  VariantId: desktop_horizon_link_baseline_orbit_full_circle_v01
-  RepresentationVariantId: baseline_v01
+  VariantId: desktop_horizon_link_opacity_topk_50k_orbit_full_circle_v01
+  RepresentationVariantId: opacity_topk_50k_v01
   FrameCount: 144
   StepDegrees: 2.5
   RadiusScale: 1.25
@@ -571,10 +571,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SplatVRLab.FrameMetricsRecorder
   ExperimentId: unitysplats_viability_v01
   SceneId: poster_baseline
-  VariantId: desktop_horizon_link_baseline_orbit_full_circle_v01
-  RepresentationVariantId: baseline_v01
-  RepresentationGaussianCount: 195760
-  RepresentationPlySha256: 23e3b3d3cd47e1aa0ad1daf7df96c4bd620af9edaf7996ccb865f5b60b80bebb
+  VariantId: desktop_horizon_link_opacity_topk_50k_orbit_full_circle_v01
+  RepresentationVariantId: opacity_topk_50k_v01
+  RepresentationGaussianCount: 50000
+  RepresentationPlySha256: f4a5a1f80cd2d448338c22b2b21a777e2151f0171ad42dfd74046623742b26e5
   RepresentationImportCompression: Spark
   RendererGammaToLinear: 1
   RendererShDegree: 3
@@ -680,7 +680,7 @@ GameObject:
   - component: {fileID: 1911100977}
   - component: {fileID: 1911100976}
   m_Layer: 0
-  m_Name: Poster_baseline_v01_Gsplat
+  m_Name: Poster_opacity_topk_50k_v01_Gsplat
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -698,7 +698,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce0eaa90dbf24670a230447dc3ec09f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Gsplat::Gsplat.GsplatRenderer
-  GsplatAsset: {fileID: 4599839170941234424, guid: af5511aa8fe3476529daee668a4adb7a, type: 3}
+  GsplatAsset: {fileID: 4599839170941234424, guid: 8d74f2d3c6b948b65ba8044d976da078, type: 3}
   SHDegree: 3
   RenderOrder: 0
   Brightness: 1
@@ -711,7 +711,7 @@ MonoBehaviour:
   SortMode: 0
   SortRefreshRate: 1
   CutoutsRefreshRate: 1
-  m_assetGuid: af5511aa8fe3476529daee668a4adb7a
+  m_assetGuid: 8d74f2d3c6b948b65ba8044d976da078
 --- !u!4 &1911100977
 Transform:
   m_ObjectHideFlags: 0

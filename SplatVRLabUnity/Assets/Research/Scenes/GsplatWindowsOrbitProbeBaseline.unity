@@ -470,15 +470,15 @@ MonoBehaviour:
   Aligner: {fileID: 441087509}
   Metrics: {fileID: 1559659701}
   PivotMarker: {fileID: 1596646935}
-  TrajectoryId: chair_orbit_full_circle_r125_v01
-  VariantId: desktop_horizon_link_baseline_orbit_full_circle_v01
+  TrajectoryId: chair_orbit_pcvr_three_pose_probe_v01
+  VariantId: desktop_horizon_link_baseline_orbit_three_pose_probe_v01
   RepresentationVariantId: baseline_v01
-  FrameCount: 144
-  StepDegrees: 2.5
+  FrameCount: 3
+  StepDegrees: 90
   RadiusScale: 1.25
-  SettleSeconds: 0.4
+  SettleSeconds: 1.5
   AcknowledgementTimeoutSeconds: 60
-  DiagnosticThreePose: 0
+  DiagnosticThreePose: 1
 --- !u!4 &739326612
 Transform:
   m_ObjectHideFlags: 0
@@ -571,7 +571,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SplatVRLab.FrameMetricsRecorder
   ExperimentId: unitysplats_viability_v01
   SceneId: poster_baseline
-  VariantId: desktop_horizon_link_baseline_orbit_full_circle_v01
+  VariantId: desktop_horizon_link_baseline_orbit_three_pose_probe_v01
   RepresentationVariantId: baseline_v01
   RepresentationGaussianCount: 195760
   RepresentationPlySha256: 23e3b3d3cd47e1aa0ad1daf7df96c4bd620af9edaf7996ccb865f5b60b80bebb
@@ -600,10 +600,10 @@ MonoBehaviour:
   SnapTurnDegrees: 0
   GravityEnabled: 0
   CollisionPolicy: no_scene_colliders_free_horizontal_motion
-  ConditionId: orbit_full_circle_capture
-  AutomatedSequenceId: chair_orbit_full_circle_r125_v01
+  ConditionId: orbit_pcvr_three_pose_probe
+  AutomatedSequenceId: chair_orbit_pcvr_three_pose_probe_v01
   WarmupFrames: 180
-  MeasurementSeconds: 1800
+  MeasurementSeconds: 180
 --- !u!4 &1559659702
 Transform:
   m_ObjectHideFlags: 0

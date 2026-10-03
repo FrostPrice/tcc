@@ -9,6 +9,7 @@ param(
     [string] $AdbSerial,
     [string] $OutputDir,
     [string] $PersistentDataPath = (Join-Path $env:USERPROFILE 'AppData\LocalLow\UNIVALI\SplatVRLab'),
+    [switch] $ThreePoseProbe,
     [switch] $LeavePlayerRunning
 )
 
@@ -36,6 +37,18 @@ $expectedVariant = $variants[$Variant].variant
 $expectedRepresentation = $variants[$Variant].representation
 $trajectoryId = 'chair_orbit_full_circle_r125_v01'
 $frameCount = 144
+$stepDegrees = 2.5
+$expectedCompletionReason = 'native_orbit_capture_completed'
+$expectedConditionId = 'orbit_full_circle_capture'
+if ($ThreePoseProbe) {
+    if ($Variant -ne 'baseline') { throw 'A sonda de três poses existe somente para baseline.' }
+    $expectedVariant = 'desktop_horizon_link_baseline_orbit_three_pose_probe_v01'
+    $trajectoryId = 'chair_orbit_pcvr_three_pose_probe_v01'
+    $frameCount = 3
+    $stepDegrees = 90.0
+    $expectedCompletionReason = 'pcvr_orbit_probe_completed'
+    $expectedConditionId = 'orbit_pcvr_three_pose_probe'
+}
 $adbPrefix = @()
 if ($AdbSerial) { $adbPrefix = @('-s', $AdbSerial) }
 
@@ -101,6 +114,34 @@ function Wait-File([string] $Path, [int] $TimeoutSeconds,
     throw "Timeout esperando $Path"
 }
 
+function Get-MeanRgbDifference([string] $First, [string] $Second) {
+    Add-Type -AssemblyName System.Drawing
+    $a = [System.Drawing.Bitmap]::new($First)
+    $b = [System.Drawing.Bitmap]::new($Second)
+    try {
+        if ($a.Width -ne $b.Width -or $a.Height -ne $b.Height) {
+            throw 'Capturas ADB têm dimensões diferentes.'
+        }
+        $sum = 0.0
+        for ($y = 0; $y -lt 32; $y++) {
+            $py = [int](($y + 0.5) * $a.Height / 32)
+            for ($x = 0; $x -lt 64; $x++) {
+                $px = [int](($x + 0.5) * $a.Width / 64)
+                $ca = $a.GetPixel($px, $py)
+                $cb = $b.GetPixel($px, $py)
+                $sum += [Math]::Abs($ca.R - $cb.R) +
+                    [Math]::Abs($ca.G - $cb.G) +
+                    [Math]::Abs($ca.B - $cb.B)
+            }
+        }
+        return $sum / (64 * 32 * 3)
+    }
+    finally {
+        $a.Dispose()
+        $b.Dispose()
+    }
+}
+
 $Executable = [IO.Path]::GetFullPath($Executable)
 $AdbExe = [IO.Path]::GetFullPath($AdbExe)
 if (-not (Test-Path -LiteralPath $Executable -PathType Leaf)) {
@@ -149,7 +190,7 @@ $acknowledged = 0
 $processSamples = New-Object System.Collections.Generic.List[object]
 try {
     Write-Host 'Confirme que o Quest está conectado pelo Meta Horizon Link e que o Meta Quest Link é o runtime OpenXR ativo.'
-    Write-Host 'Mantenha o headset rastreado e imóvel; a cena avançará em 144 passos de 2,5°.'
+    Write-Host "Mantenha o headset rastreado e imóvel; a cena avançará em $frameCount passos de $stepDegrees graus."
     $quotedLog = '"{0}"' -f $playerLog
     $process = Start-Process -FilePath $Executable -ArgumentList @('-logFile', $quotedLog) `
         -WorkingDirectory (Split-Path -Parent $Executable) -PassThru
@@ -180,7 +221,7 @@ try {
             $record.trajectoryId -ne $trajectoryId -or
             $record.variantId -ne $expectedVariant -or
             $record.representationVariantId -ne $expectedRepresentation -or
-            [Math]::Abs([double]$record.angleDegrees - ($index * 2.5)) -gt 0.01) {
+            [Math]::Abs([double]$record.angleDegrees - ($index * $stepDegrees)) -gt 0.01) {
             throw "Marcador $stem não corresponde à trajetória e variante esperadas."
         }
         Copy-Item -LiteralPath (Get-ExtendedLengthPath $ready) `
@@ -189,6 +230,13 @@ try {
         Save-AdbScreenshot $screenshot
         [DateTime]::UtcNow.ToString('O') |
             Set-Content -LiteralPath (Join-Path $OutputDir "screenshots\$stem.utc.txt")
+        if ($ThreePoseProbe) {
+            # Keep the same pose long enough to distinguish Link latency from a frozen stream.
+            Start-Sleep -Seconds 5
+            Save-AdbScreenshot (Join-Path $OutputDir "screenshots\${stem}_late.png")
+            [DateTime]::UtcNow.ToString('O') |
+                Set-Content -LiteralPath (Join-Path $OutputDir "screenshots\${stem}_late.utc.txt")
+        }
         $process.Refresh()
         if (-not $process.HasExited) {
             $processSamples.Add([ordered]@{
@@ -201,18 +249,18 @@ try {
         }
         'screenshot_captured' | Set-Content -LiteralPath (Join-Path $runDirectory "$stem.ack")
         $acknowledged++
-        Write-Host ('Pose {0:D3}/144: {1:F1}°' -f ($index + 1), [double]$record.angleDegrees)
+        Write-Host ('Pose {0:D3}/{1:D3}: {2:F1}°' -f ($index + 1), $frameCount, [double]$record.angleDegrees)
     }
 
     $completionPath = Join-Path $runDirectory 'completion.json'
     Wait-File $completionPath 30 $process
     $completion = Get-Content -LiteralPath $completionPath -Raw | ConvertFrom-Json
     Copy-Item -LiteralPath $completionPath -Destination (Join-Path $OutputDir 'completion.json')
-    if ($completion.status -ne 'complete' -or $completion.acknowledgedFrames -ne 144 -or
-        $completion.expectedFrames -ne 144 -or
+    if ($completion.status -ne 'complete' -or $completion.acknowledgedFrames -ne $frameCount -or
+        $completion.expectedFrames -ne $frameCount -or
         $completion.variantId -ne $expectedVariant -or
         $completion.representationVariantId -ne $expectedRepresentation) {
-        throw 'O player não confirmou as 144 poses.'
+        throw "O player não confirmou as $frameCount poses."
     }
 
     # The completion marker can precede the metrics flush by a few seconds.
@@ -232,8 +280,8 @@ try {
                     ConvertFrom-Json
                 if ($candidate.variantId -eq $expectedVariant -and
                     $candidate.representationVariantId -eq $expectedRepresentation -and
-                    $candidate.conditionId -eq 'orbit_full_circle_capture' -and
-                    $candidate.completionReason -eq 'native_orbit_capture_completed') {
+                    $candidate.conditionId -eq $expectedConditionId -and
+                    $candidate.completionReason -eq $expectedCompletionReason) {
                     $metricName = $newMetrics[0]
                     break
                 }
@@ -250,6 +298,44 @@ try {
     Copy-Item -LiteralPath (Get-ExtendedLengthPath (Join-Path $metricsDir $metricName)) `
         -Destination (Get-ExtendedLengthPath (Join-Path $OutputDir $metricName))
 
+    if ($ThreePoseProbe) {
+        $pose0 = Get-Content -LiteralPath (Join-Path $OutputDir 'poses\pose_0000.json') -Raw | ConvertFrom-Json
+        $pose1 = Get-Content -LiteralPath (Join-Path $OutputDir 'poses\pose_0001.json') -Raw | ConvertFrom-Json
+        $pose2 = Get-Content -LiteralPath (Join-Path $OutputDir 'poses\pose_0002.json') -Raw | ConvertFrom-Json
+        $diff01 = Get-MeanRgbDifference `
+            (Join-Path $OutputDir 'screenshots\pose_0000.png') `
+            (Join-Path $OutputDir 'screenshots\pose_0001.png')
+        $diff02 = Get-MeanRgbDifference `
+            (Join-Path $OutputDir 'screenshots\pose_0000.png') `
+            (Join-Path $OutputDir 'screenshots\pose_0002.png')
+        $lateDiff01 = Get-MeanRgbDifference `
+            (Join-Path $OutputDir 'screenshots\pose_0000_late.png') `
+            (Join-Path $OutputDir 'screenshots\pose_0001_late.png')
+        $lateDiff02 = Get-MeanRgbDifference `
+            (Join-Path $OutputDir 'screenshots\pose_0000_late.png') `
+            (Join-Path $OutputDir 'screenshots\pose_0002_late.png')
+        $result = [ordered]@{
+            schema_version = '1.0'
+            method = 'mean absolute RGB difference on a 64x32 uniform sample of the ADB framebuffer'
+            minimum_required_difference = 15.0
+            pose_0_vs_90_mean_rgb_difference = $diff01
+            pose_0_vs_180_mean_rgb_difference = $diff02
+            late_pose_0_vs_90_mean_rgb_difference = $lateDiff01
+            late_pose_0_vs_180_mean_rgb_difference = $lateDiff02
+            pose_position_errors_unity_units = @($pose0.positionErrorUnityUnits,
+                $pose1.positionErrorUnityUnits, $pose2.positionErrorUnityUnits)
+            pose_rotation_errors_degrees = @($pose0.rotationErrorDegrees,
+                $pose1.rotationErrorDegrees, $pose2.rotationErrorDegrees)
+            initial_change_confirmed = ($diff01 -ge 15.0 -and $diff02 -ge 15.0)
+            late_change_confirmed = ($lateDiff01 -ge 15.0 -and $lateDiff02 -ge 15.0)
+        }
+        $result | ConvertTo-Json -Depth 5 |
+            Set-Content -LiteralPath (Join-Path $OutputDir 'visual_change.json')
+        if (-not $result.late_change_confirmed) {
+            throw 'Mesmo após 5 s em cada pose, as capturas ADB não mudaram o suficiente entre 0°, 90° e 180°. Preserve esta tentativa; não execute 144 poses.'
+        }
+    }
+
     [ordered]@{
         schema_version = '1.0'
         capture_kind = 'horizon_link_headset_framebuffer_orbit'
@@ -258,9 +344,10 @@ try {
         representation_variant_id = $expectedRepresentation
         acknowledged_frames = $acknowledged
         expected_frames = $frameCount
+        three_pose_probe = [bool]$ThreePoseProbe
         interpretation_limit = 'PC renderizado via Horizon Link; não é execução standalone nem medição binocular direta.'
     } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $OutputDir 'capture_manifest.json')
-    Write-Host "144 capturas PCVR preservadas em: $OutputDir"
+    Write-Host "$frameCount capturas PCVR preservadas em: $OutputDir"
 }
 catch {
     $_.Exception.ToString() | Set-Content -LiteralPath (Join-Path $OutputDir 'capture_error.txt')

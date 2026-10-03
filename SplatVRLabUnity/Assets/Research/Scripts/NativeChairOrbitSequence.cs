@@ -62,15 +62,19 @@ namespace SplatVRLab
         public float RadiusScale = 1.25f;
         public float SettleSeconds = 0.4f;
         public float AcknowledgementTimeoutSeconds = 60f;
+        public bool DiagnosticThreePose;
 
         private string _runDirectory;
         private int _acknowledgedFrames;
 
         private IEnumerator Start()
         {
+            bool trajectoryValid = DiagnosticThreePose
+                ? FrameCount == 3 && Mathf.Approximately(StepDegrees, 90f) &&
+                  TrajectoryId == "chair_orbit_pcvr_three_pose_probe_v01"
+                : FrameCount == 144 && Mathf.Approximately(StepDegrees, 2.5f);
             if (!Origin || !Origin.Camera || !Aligner || !Metrics || !PivotMarker ||
-                !PivotMarker.CalibrationConfirmed || FrameCount != 144 ||
-                !Mathf.Approximately(StepDegrees, 2.5f) ||
+                !PivotMarker.CalibrationConfirmed || !trajectoryValid ||
                 !Mathf.Approximately(RadiusScale, 1.25f) ||
                 Aligner.Mode != XrReferencePoseAligner.AlignmentMode.FullPoseOnce ||
                 Metrics.VariantId != VariantId ||
@@ -177,7 +181,10 @@ namespace SplatVRLab
             WriteAtomic(Path.Combine(_runDirectory, "completion.json"),
                 JsonUtility.ToJson(result, true));
             Metrics.CompleteExternalSequence(status == "complete"
-                ? "native_orbit_capture_completed" : "native_orbit_capture_failed");
+                ? (DiagnosticThreePose ? "pcvr_orbit_probe_completed" :
+                    "native_orbit_capture_completed")
+                : (DiagnosticThreePose ? "pcvr_orbit_probe_failed" :
+                    "native_orbit_capture_failed"));
             Debug.Log($"[SplatVRLab] ORBIT_RUN_{status.ToUpperInvariant()}: " +
                 _acknowledgedFrames + "/" + FrameCount + "; " + error);
         }

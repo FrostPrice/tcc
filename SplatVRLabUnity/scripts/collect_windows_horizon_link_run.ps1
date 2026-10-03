@@ -77,7 +77,7 @@ function Get-ExtendedLengthPath([string] $Path) {
 }
 
 function Copy-SelectedFiles([string] $SourceDirectory, [string[]] $Names, [string] $DestinationDirectory) {
-    if ($Names.Count -eq 0) {
+    if ($null -eq $Names -or $Names.Count -eq 0) {
         return
     }
 
@@ -227,33 +227,50 @@ function Get-JsonRecords([string] $Directory, [string[]] $Names) {
 }
 
 function Stop-PlayerProcess([System.Diagnostics.Process] $Player, [string] $EvidenceDirectory) {
-    if ($LeavePlayerRunning -or -not $Player) {
+    if (-not $Player) {
+        return
+    }
+    $statusPath = Join-Path $EvidenceDirectory 'player_shutdown_status.txt'
+    if ($LeavePlayerRunning) {
+        "Player PID $($Player.Id) deixado em execução por -LeavePlayerRunning." |
+            Set-Content -LiteralPath $statusPath
+        return
+    }
+    if ((Test-Path -LiteralPath $statusPath) -and $Player.HasExited) {
         return
     }
 
     try {
         $Player.Refresh()
         if ($Player.HasExited) {
+            "Player PID $($Player.Id) já havia terminado; ExitCode=$($Player.ExitCode)." |
+                Set-Content -LiteralPath $statusPath
             return
         }
 
         if ($Player.CloseMainWindow() -and $Player.WaitForExit(10000)) {
+            "Player PID $($Player.Id) encerrou após CloseMainWindow; ExitCode=$($Player.ExitCode)." |
+                Set-Content -LiteralPath $statusPath
             return
         }
 
         $Player.Refresh()
         if ($Player.HasExited) {
+            "Player PID $($Player.Id) encerrou antes do encerramento forçado; ExitCode=$($Player.ExitCode)." |
+                Set-Content -LiteralPath $statusPath
             return
         }
 
         Stop-Process -Id $Player.Id -Force -ErrorAction Stop
-        $Player.WaitForExit(5000) | Out-Null
-        'O player não respondeu ao fechamento normal e foi encerrado para liberar a sessão OpenXR.' |
-            Set-Content -LiteralPath (Join-Path $EvidenceDirectory 'player_shutdown_status.txt')
+        if (-not $Player.WaitForExit(5000)) {
+            throw "Player PID $($Player.Id) ainda ativo após Stop-Process -Force."
+        }
+        "Player PID $($Player.Id) exigiu Stop-Process -Force; ExitCode=$($Player.ExitCode)." |
+            Set-Content -LiteralPath $statusPath
     }
     catch {
         $message = "Não foi possível confirmar o encerramento do player: $($_.Exception.Message)"
-        $message | Set-Content -LiteralPath (Join-Path $EvidenceDirectory 'player_shutdown_status.txt')
+        $message | Set-Content -LiteralPath $statusPath
         Write-Warning $message
     }
 }
@@ -295,6 +312,11 @@ if (-not $OutputDir) {
 $OutputDir = [IO.Path]::GetFullPath($OutputDir)
 if (Test-Path -LiteralPath $OutputDir) {
     throw "O diretório de evidência já existe e não será sobrescrito: $OutputDir"
+}
+$existingPlayers = @(Get-Process -Name 'SplatVRLabUnity*' -ErrorAction SilentlyContinue)
+if ($existingPlayers.Count -gt 0) {
+    $existingPids = ($existingPlayers | ForEach-Object { $_.Id }) -join ', '
+    throw "Player Unity remanescente detectado (PID: $existingPids). Encerre somente o processo identificado antes de nova coleta."
 }
 
 $measurementDirectory = Join-Path $PersistentDataPath 'measurements'
@@ -619,6 +641,13 @@ if ($AdbExe) {
 }
 
 Stop-PlayerProcess $process $OutputDir
+if (-not $LeavePlayerRunning) {
+    $process.Refresh()
+    if (-not $process.HasExited) {
+        $validRun = $false
+        $validationMessages.Add("O player PID $($process.Id) permaneceu ativo após a tentativa de encerramento.")
+    }
+}
 
 if (-not (Test-Path -LiteralPath $playerLog -PathType Leaf)) {
     'player.log não foi produzido pelo executável.' |
@@ -665,7 +694,7 @@ $runMetadata = [ordered]@{
 $runMetadata | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $OutputDir 'run_metadata.json')
 
 if ($validationMessages.Count -eq 0) {
-    'Execução válida segundo as verificações solicitadas.' |
+    'Verificações automáticas passaram. A validade PC/VR depende da revisão visual das capturas ADB e da confirmação do operador no headset.' |
         Set-Content -LiteralPath (Join-Path $OutputDir 'validation_status.txt')
 }
 else {

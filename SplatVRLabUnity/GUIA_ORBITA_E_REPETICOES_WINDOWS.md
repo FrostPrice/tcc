@@ -2,6 +2,10 @@
 
 Este guia usa o Meta Horizon Link no Windows. As órbitas geram vistas pareadas com o Quest nativo; as sessões `static_reference` geram quatro novas repetições por representação, além da primeira sessão PCVR já validada. **Uma órbita não conta como repetição estacionária.** PCVR é contingência diagnóstica, não execução Android standalone.
 
+**Atualização:** a Parte B abaixo descreve o protocolo anterior e seus IDs `r02`–`r05` já colidem com tentativas canário. A série estacionária 5×4 sem reinício do OVR foi concluída; veja [milestone 0128](../milestones/0128_validacao_serie_pcvr_5x4_sem_reset.md). As quatro órbitas PC/VR foram coletadas com 144/144 poses e mudança visual nas capturas; veja [milestone 0132](../milestones/0132_validacao_quatro_orbitas_pcvr_windows.md). A Parte A abaixo é o planejamento anterior, com IDs `r01` já utilizados; para reproduzir uma variante, use o [guia atualizado de coleta individual](GUIA_COLETA_ORBITAS_RESTANTES_WINDOWS.md).
+
+Historicamente, a investigação da órbita PC/VR começou pelo [diagnóstico baseline de três poses](GUIA_DIAGNOSTICO_ORBITA_WINDOWS_3_POSES.md). Após a confirmação de mudança no headset e nas capturas ADB, as quatro órbitas de 144 poses foram coletadas e validadas; a Parte A abaixo permanece apenas como registro do protocolo anterior.
+
 ## Preparação
 
 No PowerShell, ajuste somente `$TccRoot` para a pasta do projeto no Windows. Feche a Unity antes de executar builds em batch. Ative o Meta Horizon Link no Quest e confirme que o headset permanece rastreado. Interrompa o procedimento se houver desconforto.
@@ -68,7 +72,7 @@ Invoke-OrbitCapture splatfacto_big
 
 Se alguma falhar, **não** execute novamente com o mesmo ID: preserve a pasta parcial e use `r02` para a tentativa seguinte. Não apague uma coleta completa para repetir. Copie os quatro diretórios de evidência para o projeto principal no Linux sem substituir diretórios existentes.
 
-## Parte B — quatro novas sessões estacionárias por variante
+## Parte B — protocolo anterior, substituído pelo guia de reinício do OVR
 
 Já existem uma sessão PCVR válida para cada representação: baseline `r05`; 100k, 50k e `splatfacto-big` `r01`. As novas sessões serão baseline `r06`–`r09` e as demais `r02`–`r05`. Execute-as separadamente das órbitas, com o headset imóvel, Link ativo e os mesmos parâmetros da primeira sessão: `static_reference`, 75 s, `FullPoseOnce`, cinco capturas ADB após 30 s com intervalo de 5 s, captura visual e marcador de pose obrigatórios. Use os EXEs estacionários `v02` já validados; não use os EXEs de órbita.
 
@@ -143,6 +147,8 @@ Invoke-StaticCapture splatfacto_big 4
 ```
 
 Em caso de falha, preserve a tentativa e escolha um `RunId` novo de forma explícita; a função acima usa IDs fixos e recusa sobrescrita. Faça pausas entre sessões e interrompa o uso se houver desconforto. Não altere resolução, taxa de atualização, bitrate/codec do Link ou configuração da Unity entre as variantes sem iniciar uma série nova e documentar a mudança.
+
+Antes de cada sessão estacionária, o coletor recusa iniciar se encontrar um processo `SplatVRLabUnity*` remanescente. Ao terminar, confira `player_shutdown_status.txt` na pasta da sessão. Se o encerramento tiver exigido `Stop-Process -Force` ou não tiver sido confirmado, verifique o estado do Link no headset antes da próxima tentativa. Mesmo com encerramento normal do player, `validation_status.txt` cobre apenas as checagens automáticas; confirme que as capturas ADB e a observação no headset mostram a variante correta.
 
 ## Interpretação
 

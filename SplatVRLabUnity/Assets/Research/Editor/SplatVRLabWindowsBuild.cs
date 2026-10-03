@@ -27,6 +27,14 @@ namespace SplatVRLab.Editor
             "Builds/Windows/SplatVRLabUnity-horizon-link-orbit-baseline-fullcircle-dev-v01";
         private const string WindowsOrbitExecutable =
             "SplatVRLabUnity-horizon-link-orbit-baseline-fullcircle-dev-v01.exe";
+        private const string WindowsOrbitProbeScene =
+            "Assets/Research/Scenes/GsplatWindowsOrbitProbeBaseline.unity";
+        private const string WindowsOrbitProbeVariant =
+            "desktop_horizon_link_baseline_orbit_three_pose_probe_v01";
+        private const string WindowsOrbitProbeOutputDirectory =
+            "Builds/Windows/SplatVRLabUnity-horizon-link-orbit-baseline-threepose-probe-dev-v01";
+        private const string WindowsOrbitProbeExecutable =
+            "SplatVRLabUnity-horizon-link-orbit-baseline-threepose-probe-dev-v01.exe";
 
         private sealed class OrbitBuildSpec
         {
@@ -229,6 +237,103 @@ namespace SplatVRLab.Editor
                 JsonUtility.ToJson(record, true) + Environment.NewLine);
             Debug.Log("[SplatVRLab] WINDOWS_ORBIT_BUILD_OK: " + executablePath +
                 "; variant=" + WindowsOrbitVariant + "; sha256=" +
+                record.executableSha256 + "; warnings=" + report.summary.totalWarnings);
+        }
+
+        [MenuItem("SplatVRLab/Chair orbit/Build Windows Horizon Link baseline three-pose probe EXE")]
+        public static void BuildHorizonLinkBaselineThreePoseProbe()
+        {
+            if (!BuildPipeline.IsBuildTargetSupported(
+                    BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows64))
+                throw new InvalidOperationException("Windows Build Support (IL2CPP) is not installed.");
+
+            string projectRoot = Directory.GetParent(Application.dataPath)?.FullName
+                ?? throw new InvalidOperationException("Cannot resolve project root.");
+            string outputDirectory = Path.Combine(projectRoot, WindowsOrbitProbeOutputDirectory);
+            if (Directory.Exists(outputDirectory) &&
+                Directory.EnumerateFileSystemEntries(outputDirectory).Any())
+                throw new InvalidOperationException(
+                    "Windows orbit probe output already exists and will not be overwritten: " +
+                    outputDirectory);
+
+            PrepareHorizonLinkBaselineFullCircleOrbitScene();
+            if (!File.Exists(WindowsOrbitProbeScene) &&
+                !AssetDatabase.CopyAsset(WindowsOrbitScene, WindowsOrbitProbeScene))
+                throw new InvalidOperationException("Could not copy the Windows orbit baseline scene.");
+
+            var scene = EditorSceneManager.OpenScene(WindowsOrbitProbeScene);
+            FrameMetricsRecorder metrics = UnityEngine.Object.FindAnyObjectByType<FrameMetricsRecorder>();
+            NativeChairOrbitSequence orbit = UnityEngine.Object.FindAnyObjectByType<NativeChairOrbitSequence>();
+            XrReferencePoseAligner aligner = UnityEngine.Object.FindAnyObjectByType<XrReferencePoseAligner>();
+            ChairOrbitPivotMarker pivot = UnityEngine.Object.FindAnyObjectByType<ChairOrbitPivotMarker>();
+            if (!metrics || !orbit || !aligner || !pivot || !pivot.CalibrationConfirmed ||
+                metrics.RepresentationVariantId != "baseline_v01" ||
+                orbit.RepresentationVariantId != "baseline_v01" ||
+                aligner.Mode != XrReferencePoseAligner.AlignmentMode.FullPoseOnce)
+                throw new InvalidOperationException("Three-pose probe scene lacks baseline orbit calibration.");
+
+            metrics.VariantId = WindowsOrbitProbeVariant;
+            metrics.ConditionId = "orbit_pcvr_three_pose_probe";
+            metrics.AutomatedSequenceId = "chair_orbit_pcvr_three_pose_probe_v01";
+            metrics.MeasurementSeconds = 180f;
+            orbit.VariantId = WindowsOrbitProbeVariant;
+            orbit.TrajectoryId = "chair_orbit_pcvr_three_pose_probe_v01";
+            orbit.FrameCount = 3;
+            orbit.StepDegrees = 90f;
+            orbit.RadiusScale = 1.25f;
+            orbit.SettleSeconds = 1.5f;
+            orbit.DiagnosticThreePose = true;
+            EditorSceneManager.MarkSceneDirty(scene);
+            if (!EditorSceneManager.SaveScene(scene, WindowsOrbitProbeScene))
+                throw new InvalidOperationException("Three-pose probe scene could not be saved.");
+            string saved = File.ReadAllText(WindowsOrbitProbeScene);
+            if (!saved.Contains("VariantId: " + WindowsOrbitProbeVariant) ||
+                !saved.Contains("TrajectoryId: chair_orbit_pcvr_three_pose_probe_v01") ||
+                !saved.Contains("DiagnosticThreePose: 1"))
+                throw new InvalidOperationException("Saved three-pose probe scene lacks its provenance.");
+
+            if (!EditorUserBuildSettings.SwitchActiveBuildTarget(
+                    BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows64))
+                throw new InvalidOperationException("Unity could not switch to Windows x86_64.");
+            PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64,
+                new[] { GraphicsDeviceType.Direct3D12 });
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone,
+                ScriptingImplementation.IL2CPP);
+
+            Directory.CreateDirectory(outputDirectory);
+            string executablePath = Path.Combine(outputDirectory, WindowsOrbitProbeExecutable);
+            BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            {
+                scenes = new[] { WindowsOrbitProbeScene },
+                locationPathName = executablePath,
+                target = BuildTarget.StandaloneWindows64,
+                options = BuildOptions.Development,
+            });
+            if (report.summary.result != BuildResult.Succeeded)
+                throw new InvalidOperationException("Windows orbit probe build failed: " +
+                    report.summary.result + "; errors=" + report.summary.totalErrors);
+
+            var executable = new FileInfo(executablePath);
+            var record = new BuildRecord
+            {
+                variantId = WindowsOrbitProbeVariant,
+                buildTarget = BuildTarget.StandaloneWindows64.ToString(),
+                graphicsApi = GraphicsDeviceType.Direct3D12.ToString(),
+                scriptingBackend = PlayerSettings.GetScriptingBackend(
+                    NamedBuildTarget.Standalone).ToString(),
+                unityVersion = Application.unityVersion,
+                executable = Path.GetRelativePath(projectRoot, executablePath),
+                executableBytes = executable.Length,
+                executableSha256 = Sha256(executablePath),
+                reportTotalBytes = checked((long)report.summary.totalSize),
+                durationSeconds = report.summary.totalTime.TotalSeconds,
+                warnings = report.summary.totalWarnings,
+                createdAtUtc = DateTime.UtcNow.ToString("O"),
+            };
+            File.WriteAllText(Path.Combine(outputDirectory, "build_record.json"),
+                JsonUtility.ToJson(record, true) + Environment.NewLine);
+            Debug.Log("[SplatVRLab] WINDOWS_ORBIT_PROBE_BUILD_OK: " + executablePath +
+                "; variant=" + WindowsOrbitProbeVariant + "; sha256=" +
                 record.executableSha256 + "; warnings=" + report.summary.totalWarnings);
         }
 
