@@ -1,26 +1,26 @@
 \chapter[Desenvolvimento]{Desenvolvimento}
 
-Este capítulo reúne o projeto da solução, sua implementação e os resultados. A seção de Projeto descreve o \textit{pipeline} planejado e o protocolo de avaliação; as seções seguintes apresentam a execução efetiva e as evidências obtidas.
+Este capítulo reuniu o projeto da solução, sua implementação e os resultados. A seção de Projeto descreveu o \textit{pipeline} planejado e o protocolo de avaliação; as seções seguintes apresentaram a execução efetiva e as evidências obtidas.
 
 \section{Projeto}
 
-Esta seção apresenta a visão geral da solução, as etapas do \textit{pipeline}, as decisões técnicas e os critérios de avaliação. O objetivo é delimitar como os dados capturados serão transformados em uma representação 3D-GS integrada a um ambiente de VR.
+Esta seção apresentou a visão geral da solução, as etapas do \textit{pipeline}, as decisões técnicas e os critérios de avaliação. Seu objetivo foi delimitar a transformação pretendida de imagens RGB em uma representação 3D-GS integrada a um ambiente de VR, sem antecipar quais etapas seriam executadas no estudo de caso.
 
 \subsection{Visão geral da solução proposta}
 
-O projeto utiliza o NeRF como referência inicial para reconstrução de cenas estáticas e o 3D Gaussian Splatting como representação explícita para visualização interativa. A proposta, portanto, investiga o processo, os resultados e os limites de transformar imagens RGB de uma cena real em uma representação compatível com os requisitos de VR \textit{standalone} no Meta Quest 3S.
+O projeto previu o NeRF como referência inicial para reconstrução de cenas estáticas e o 3D Gaussian Splatting como representação explícita para visualização interativa. A proposta delimitou a investigação do processo, dos resultados e dos limites de transformar imagens RGB de uma cena real em uma representação compatível com os requisitos de VR \textit{standalone} no Meta Quest 3S.
 
-A entrada da solução é composta por imagens RGB de uma cena real estática, com sobreposição suficiente entre pontos de vista. Esse conjunto permite estimar poses de câmera, organizar os dados de treinamento e produzir uma reconstrução inicial. Imagens com baixa cobertura, variação brusca de iluminação ou movimento podem introduzir inconsistências no NeRF e no 3D-GS.
+A entrada prevista da solução consistia em imagens RGB de uma cena real estática, com sobreposição suficiente entre pontos de vista. Esse conjunto permitiria estimar poses de câmera, organizar os dados de treinamento e produzir uma reconstrução inicial. Imagens com baixa cobertura, variação brusca de iluminação ou movimento poderiam introduzir inconsistências no NeRF e no 3D-GS.
 
-A etapa baseada em NeRF produz uma referência de qualidade visual para a síntese de novas vistas. Em seguida, a cena é convertida ou reconstruída em uma estrutura 3D-GS, mais aderente a estratégias de rasterização e renderização em tempo real.
+A etapa baseada em NeRF foi concebida como referência de qualidade visual para a síntese de novas vistas. Em seguida, previa-se reconstruir a mesma cena como 3D-GS, mais aderente a estratégias de rasterização e renderização em tempo real; não se pressupôs que o arquivo exportado do NeRF alimentaria o treinamento das gaussianas.
 
-Após a conversão, o modelo 3D-GS é integrado a um protótipo mínimo em Unity, com  suporte a VR. O protótipo permite carregar a cena, visualizá-la em ambiente imersivo e coletar métricas de qualidade visual, desempenho, estabilidade e limitações técnicas.
+Após essa etapa, previa-se integrar o modelo 3D-GS a um protótipo mínimo em Unity, com suporte a VR. O protótipo deveria carregar a cena, permitir sua visualização imersiva e coletar evidências de desempenho, estabilidade e limitações técnicas; as métricas de qualidade de imagem seriam obtidas separadamente na avaliação offline.
 
-Os principais artefatos esperados são o conjunto de imagens organizado por cena, os modelos NeRF treinados, os modelos 3D-GS otimizados, o protótipo avaliativo em VR, os registros de configuração, os resultados experimentais e a análise das limitações encontradas. Não faz parte da entrega a construção de uma ferramenta completa de captura, edição e publicação de cenas 3D-GS; esse tipo de ferramenta permanece como possibilidade de trabalho futuro.
+Os principais artefatos previstos eram o conjunto de imagens organizado por cena, os modelos NeRF treinados, os modelos 3D-GS preparados, o protótipo avaliativo em VR, os registros de configuração, os resultados experimentais e a análise das limitações encontradas. A construção de uma ferramenta completa de captura, edição e publicação de cenas 3D-GS ficou fora da entrega e foi mantida como possibilidade de trabalho futuro.
 
 \subsection{Etapas do pipeline proposto}
 
-A solução proposta é organizada em seis etapas sequenciais, desde a captura das imagens até a análise experimental em VR \textit{standalone}. A Figura \ref{fig:pipeline_geral_projeto} apresenta a ordem das etapas e a transformação gradual dos dados capturados em uma experiência imersiva avaliável.
+A solução proposta foi organizada em seis etapas sequenciais, desde a obtenção das imagens até a análise experimental em VR \textit{standalone}. A Figura \ref{fig:pipeline_geral_projeto} registrou a ordem prevista para transformar os dados de entrada em uma experiência imersiva avaliável.
 
 \begin{figure}[H]
 \centering
@@ -146,9 +146,9 @@ A arquitetura da solução separa as responsabilidades do projeto para facilitar
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
-A camada de dados concentra imagens, poses e metadados. A camada de reconstrução gera a representação neural inicial; a de representação prepara o modelo 3D-GS; a de integração adapta o modelo ao ambiente VR; e a de avaliação registra evidências quantitativas e qualitativas.
+A camada de dados foi concebida para concentrar imagens, poses e metadados. A de reconstrução foi planejada para gerar a representação neural inicial; a de representação, para preparar o modelo 3D-GS; a de integração, para adaptá-lo ao ambiente VR; e a de avaliação, para registrar evidências quantitativas e qualitativas.
 
-O Quadro \ref{qua:cenarios_desenvolvimento} explicita os cenários de desenvolvimento e avaliação considerados no projeto. Essa separação é necessária para distinguir o cenário-alvo, as contingências técnicas e as referências auxiliares de comparação.
+O Quadro \ref{qua:cenarios_desenvolvimento} explicitou os cenários de desenvolvimento e avaliação considerados no projeto. Essa separação foi necessária para distinguir o cenário-alvo, as contingências técnicas e as referências auxiliares de comparação.
 
 \begin{quadro}[H]
 \centering
@@ -164,9 +164,9 @@ Execução nativa no Meta Quest 3S & Cenário-alvo principal & Mede diretamente 
 
 Unity em desktop com Quest Link & Contingência e comparação & Permite testar visualização imersiva quando a execução nativa falhar & Desloca parte do processamento para desktop e não substitui a avaliação \textit{on-device}. \\ \hline
 
-Visualizador dedicado de 3D-GS & Apoio diagnóstico & Ajuda a validar se o modelo 3D-GS está visualmente adequado antes da integração & Não representa o fluxo completo em \textit{engine} nem a execução \textit{standalone}. \\ \hline
+Visualizador dedicado de 3D-GS & Apoio diagnóstico & Ajudaria a validar visualmente o modelo 3D-GS antes da integração & Não representaria o fluxo completo em \textit{engine} nem a execução \textit{standalone}. \\ \hline
 
-Avaliação offline em desktop & Referência de qualidade visual & Facilita geração de vistas e cálculo de PSNR, SSIM e LPIPS & Não mede desempenho imersivo nem restrições do headset. \\ \hline
+Avaliação offline em desktop & Referência de qualidade visual & Facilitaria a geração de vistas e o cálculo de PSNR, SSIM e LPIPS & Não mediria desempenho imersivo nem restrições do headset. \\ \hline
 
 \end{tabularx}
 \legend{Fonte: Elaborado pelo autor.}
@@ -174,9 +174,9 @@ Avaliação offline em desktop & Referência de qualidade visual & Facilita gera
 
 \subsubsection{Captura de imagens RGB}
 
-A primeira etapa do projeto consiste na captura das imagens RGB que serão utilizadas para reconstrução da cena. A captura deverá priorizar ambientes ou objetos estáticos, evitando movimentação de pessoas, alterações de posição dos objetos e mudanças bruscas de iluminação entre as imagens. Essa restrição é necessária porque tanto a estimativa de poses quanto o treinamento das representações assumem que as fotografias descrevem uma mesma cena consistente ao longo do processo de aquisição.
+A primeira etapa do projeto previa a obtenção das imagens RGB para reconstrução da cena. Em uma captura própria, seriam priorizados ambientes ou objetos estáticos, evitando movimentação de pessoas, alterações de posição dos objetos e mudanças bruscas de iluminação entre as imagens. Essa restrição foi considerada necessária porque tanto a estimativa de poses quanto o treinamento das representações pressupunham uma cena consistente ao longo da aquisição. No estudo de caso, foram utilizadas imagens públicas já disponibilizadas com poses.
 
-A cena deverá ser registrada a partir de múltiplos pontos de vista, com variação gradual da posição da câmera e sobreposição visual suficiente entre imagens consecutivas. Prevê-se que a câmera percorra a cena de forma controlada, cobrindo diferentes ângulos e distâncias, para que superfícies, contornos e regiões de interesse apareçam em mais de uma imagem. Essa cobertura favorece a reconstrução multivista e reduz a ocorrência de regiões mal observadas, que poderiam comprometer a estimativa de geometria e aparência.
+O protocolo de captura inicialmente previsto exigia múltiplos pontos de vista, variação gradual da posição da câmera e sobreposição visual entre imagens consecutivas. Previa-se um percurso controlado da câmera, cobrindo diferentes ângulos e distâncias para que superfícies, contornos e regiões de interesse aparecessem em mais de uma imagem. Essa cobertura favoreceria a reconstrução multivista e reduziria regiões mal observadas, que poderiam comprometer a estimativa de geometria e aparência.
 
 A Figura \ref{fig:captura_rgb_poster} ilustra esse princípio a partir de diferentes quadros de uma mesma cena, evidenciando a variação gradual de ponto de vista necessária para que o pipeline disponha de sobreposição visual entre imagens consecutivas.
 
@@ -188,17 +188,17 @@ A Figura \ref{fig:captura_rgb_poster} ilustra esse princípio a partir de difere
     \legend{Fonte: Adaptado do dataset \textit{poster} do Nerfstudio \cite{nerfstudioPosterDataset}.}
 \end{figure}
 
-Durante a captura, deverão ser observados fatores como desfoque, exposição, reflexos, sombras intensas e superfícies com pouca textura. Sempre que possível, serão priorizadas condições de iluminação estáveis, com baixa variação entre as fotografias. Também deverão ser registrados metadados básicos da captura, como quantidade de imagens, resolução, dispositivo utilizado, características da cena e observações sobre iluminação ou dificuldades encontradas. O resultado esperado dessa etapa é um conjunto bruto de imagens suficientemente consistente para alimentar o pré-processamento e a reconstrução multivista.
+Para uma captura própria, previu-se observar desfoque, exposição, reflexos, sombras intensas e superfícies com pouca textura, além de priorizar iluminação estável. O protocolo também previa registrar quantidade de imagens, resolução, dispositivo utilizado, características da cena e dificuldades encontradas. O resultado esperado era um conjunto bruto consistente para alimentar o pré-processamento e a reconstrução multivista; esses procedimentos de aquisição não foram executados para o conjunto público adotado.
 
 \subsubsection{Pré-processamento e organização dos dados}
 
-A segunda etapa corresponde ao pré-processamento e à organização dos dados. Após a captura, as imagens serão separadas em uma estrutura de diretórios por cena, preservando os arquivos originais e criando pastas específicas para imagens processadas, poses de câmera, configurações, resultados intermediários e registros de execução. Essa organização deverá permitir que cada experimento seja reproduzido posteriormente, identificando quais imagens, parâmetros e ferramentas foram utilizados em cada reconstrução.
+A segunda etapa foi planejada para o pré-processamento e a organização dos dados. Previa-se separar imagens originais, imagens processadas, poses de câmera, configurações, resultados intermediários e registros de execução por cena. Essa organização permitiria identificar as imagens, os parâmetros e as ferramentas utilizados em cada reconstrução.
 
-Inicialmente, será realizada uma triagem das imagens capturadas. Fotografias tremidas, duplicadas, desfocadas, excessivamente escuras, superexpostas ou com baixa sobreposição em relação ao restante do conjunto deverão ser removidas ou separadas para análise. Quando necessário, poderão ser aplicados ajustes simples de exposição, padronização de resolução e renomeação sequencial dos arquivos, desde que essas alterações sejam registradas e não descaracterizem a cena original. Essa etapa também poderá incluir a separação de subconjuntos de treinamento e teste, permitindo que a avaliação visual utilize poses ou imagens não empregadas diretamente no treinamento.
+Para dados capturados pelo projeto, previu-se uma triagem de fotografias tremidas, duplicadas, desfocadas, excessivamente escuras, superexpostas ou com baixa sobreposição. Ajustes de exposição, padronização de resolução e renomeação sequencial poderiam ser aplicados, desde que documentados. Também se previu a divisão entre treinamento e teste. No estudo de caso, essa divisão foi aplicada ao conjunto público processado, sem uma nova triagem de fotografias próprias.
 
-Em seguida, serão estimadas ou incorporadas as poses de câmera necessárias ao treinamento, utilizando ferramentas de \textit{Structure-from-Motion} (SfM), como o COLMAP, quando aplicável ao conjunto de imagens. Os arquivos resultantes dessa estimativa deverão ser preservados junto aos logs e configurações de execução, pois erros nessa fase tendem a se propagar para o NeRF e para a representação 3D-GS. Dessa forma, o pré-processamento não atua apenas como uma preparação operacional dos dados, mas como uma etapa de controle de qualidade que influencia diretamente a fidelidade da reconstrução e a viabilidade das fases posteriores.
+Em seguida, previa-se estimar ou incorporar as poses de câmera necessárias ao treinamento, utilizando ferramentas de \textit{Structure-from-Motion} (SfM), como o COLMAP, quando aplicáveis. O plano previa preservar os arquivos de poses, registros e configurações, pois erros nessa fase poderiam se propagar para o NeRF e para o 3D-GS. No conjunto \textit{poster}, as poses foram incorporadas do material já processado; não se executou novamente o COLMAP. Assim, a estimativa de poses permaneceu parte do projeto geral, mas não da execução específica relatada.
 
-A Figura \ref{fig:preprocessamento_colmap} exemplifica a etapa de pré-processamento baseada em SfM, na qual as imagens são associadas a poses de câmera e a uma reconstrução esparsa inicial da cena. Esse resultado intermediário serve como base para organizar os dados antes do treinamento das representações neurais ou gaussianas.
+A Figura \ref{fig:preprocessamento_colmap} exemplificou a etapa de pré-processamento baseada em SfM, na qual imagens são associadas a poses de câmera e a uma reconstrução esparsa inicial da cena. Esse resultado intermediário foi previsto como base para organizar os dados antes do treinamento das representações neurais ou gaussianas.
 
 \begin{figure}[H]
     \centering
@@ -212,9 +212,9 @@ A Figura \ref{fig:preprocessamento_colmap} exemplifica a etapa de pré-processam
 
 A terceira etapa consiste no treinamento de um modelo NeRF para cada cena selecionada, estabelecendo uma linha de base de qualidade visual antes da conversão para uma representação explícita.
 
-O treinamento poderá ser realizado com ferramentas como Nerfstudio ou Instant-NGP, de acordo com a disponibilidade do ambiente computacional e a compatibilidade com os dados capturados. Durante essa etapa, serão registrados os principais parâmetros utilizados, incluindo quantidade de imagens, resolução de treinamento, tempo de treinamento, configuração de hardware, número de iterações e qualidade visual obtida.
+O treinamento foi planejado com ferramentas como Nerfstudio ou Instant-NGP, conforme a disponibilidade computacional e a compatibilidade com os dados. Previu-se registrar quantidade de imagens, resolução, duração, hardware, número de iterações e qualidade visual. Na implementação relatada, a ferramenta efetivamente utilizada foi o Nerfstudio.
 
-A Figura \ref{fig:viewer_nerfstudio} apresenta um exemplo de ambiente de visualização utilizado em fluxos com Nerfstudio. Esse tipo de interface auxilia a inspeção qualitativa do modelo durante o desenvolvimento, permitindo observar a cena reconstruída, a trajetória de câmeras e possíveis inconsistências antes da etapa de conversão ou otimização.
+A Figura \ref{fig:viewer_nerfstudio} apresentou um exemplo de ambiente de visualização utilizado em fluxos com Nerfstudio. Esse tipo de interface foi considerado útil para a inspeção qualitativa do modelo durante o desenvolvimento, permitindo observar a cena reconstruída, a trajetória de câmeras e possíveis inconsistências antes da etapa de otimização.
 
 \begin{figure}[H]
     \centering
@@ -224,19 +224,19 @@ A Figura \ref{fig:viewer_nerfstudio} apresenta um exemplo de ambiente de visuali
     \legend{Fonte: Adaptado do repositório oficial do Nerfstudio \cite{nerfstudioGithub}.}
 \end{figure}
 
-O resultado esperado é um modelo capaz de sintetizar novas vistas com fidelidade suficiente para servir de referência ao modelo 3D-GS.
+O resultado esperado era um modelo capaz de sintetizar novas vistas com fidelidade suficiente para servir de referência visual à avaliação do 3D-GS.
 
 \subsubsection{Conversão e otimização para 3D-GS}
 
-A quarta etapa corresponde à conversão ou reconstrução da cena em 3D Gaussian Splatting, buscando um conjunto de gaussianas 3D que represente geometria e aparência de forma explícita. Essa etapa poderá utilizar ferramentas ou fluxos já consolidados de 3D-GS, pois o objetivo do trabalho não é desenvolver um reconstrutor próprio, mas avaliar a adequação da representação gerada ao contexto de VR \textit{standalone}.
+A quarta etapa foi planejada como reconstrução da mesma cena em 3D Gaussian Splatting, buscando um conjunto de gaussianas que representasse geometria e aparência de forma explícita. Previu-se utilizar ferramentas consolidadas, pois o objetivo não era desenvolver um reconstrutor próprio, mas avaliar a adequação da representação gerada à VR \textit{standalone}.
 
-Cada cena convertida será analisada quanto ao número de gaussianas, tamanho do arquivo, qualidade visual percebida e viabilidade de renderização em tempo real. Quando necessário, serão aplicadas otimizações como redução de gaussianas, poda, ajuste de níveis de detalhe e simplificação da cena. Plataformas de captura, edição e exportação de 3D-GS reforçam a disponibilidade de artefatos para integração; a lacuna do projeto está em adaptar, integrar e avaliar esse resultado em VR no Meta Quest 3S \cite{kiri3dgs}.
+O plano previa analisar a representação quanto ao número de gaussianas, tamanho do arquivo, qualidade visual e viabilidade de renderização. Entre as otimizações possíveis estavam redução de gaussianas, poda, níveis de detalhe e simplificação da cena; apenas as intervenções efetivamente executadas foram descritas na seção de Implementação. Plataformas de captura, edição e exportação de 3D-GS reforçavam a disponibilidade de artefatos para integração, enquanto a lacuna do projeto estava em adaptar e avaliar esse resultado em VR no Meta Quest 3S \cite{kiri3dgs}.
 
-Caso o modelo 3D-GS seja visualmente adequado, mas pesado demais para execução no Meta Quest 3S, será necessário ajustar a complexidade da cena ou utilizar estratégias alternativas, como testes em desktop com transmissão para o headset.
+Caso o modelo 3D-GS se mostrasse visualmente adequado, mas pesado para o Meta Quest 3S, previa-se ajustar sua complexidade ou testar uma contingência com renderização em desktop e transmissão ao headset.
 
 \subsection{Integração em Unity}
 
-O protótipo será desenvolvido em Unity para importar e renderizar arquivos \texttt{.ply} de 3D-GS. A aplicação utilizará suporte XR e Android/Vulkan, com versões registradas nos artefatos de \textit{build}. Essa composição permitirá avaliar a representação explícita em execução nativa no Meta Quest 3S, com variantes identificadas, poses controladas e coleta de métricas. A execução por desktop e Quest Link permanecerá uma contingência distinta, pois não substitui a medição no dispositivo \textit{standalone} \cite{metaquest3s2024,qualcommxr2gen2}.
+O projeto previu desenvolver o protótipo em Unity para importar e renderizar arquivos \texttt{.ply} de 3D-GS. A aplicação deveria utilizar suporte XR e Android/Vulkan, com versões registradas nos artefatos de \textit{build}. Essa composição permitiria avaliar a representação explícita em execução nativa no Meta Quest 3S, com variantes identificadas, poses controladas e coleta de métricas. A execução por desktop e Quest Link foi prevista como contingência distinta, sem substituir a medição no dispositivo \textit{standalone} \cite{metaquest3s2024,qualcommxr2gen2}.
 
 O Quadro \ref{qua:decisao_engine} resume a comparação entre alternativas de integração e explicita a decisão adotada.
 
@@ -254,25 +254,25 @@ Unity & Ciclo iterativo de prototipagem, integração OpenXR e geração de \tex
 
 Godot & Abertura e flexibilidade para experimentação & Menor maturidade de fluxos consolidados para 3D-GS em VR \textit{standalone} & Mantida apenas como possibilidade futura. \\ \hline
 
-Visualizador dedicado & Reduz esforço inicial de integração e ajuda no diagnóstico visual & Não representa uma aplicação em \textit{engine} nem mede o cenário-alvo completo & Usado somente como contingência ou apoio. \\ \hline
+Visualizador dedicado & Reduziria esforço inicial de integração e ajudaria no diagnóstico visual & Não representaria uma aplicação em \textit{engine} nem mediria o cenário-alvo completo & Previsto somente como contingência ou apoio. \\ \hline
 
 \end{tabularx}
 \legend{Fonte: Elaborado pelo autor.}
 \end{quadro}
 
-A quinta etapa consistirá na integração da representação 3D-GS em Unity por meio de componente compatível ou formato intermediário. A aplicação VR conterá uma cena mínima funcional com câmera estereoscópica, configuração OpenXR, posicionamento fixo controlado e carregamento do modelo reconstruído.
+A quinta etapa foi definida como a integração da representação 3D-GS em Unity por meio de componente compatível ou formato intermediário. A aplicação VR deveria conter uma cena mínima com câmera estereoscópica, configuração OpenXR, posicionamento controlado e carregamento do modelo reconstruído.
 
-O objetivo é validar a visualização da cena reconstruída em contexto imersivo. A integração será considerada bem-sucedida caso o modelo possa ser carregado com estabilidade suficiente para permitir a avaliação.
+O objetivo foi validar a visualização da cena reconstruída em contexto imersivo. O critério de integração bem-sucedida previa que o modelo pudesse ser carregado com estabilidade suficiente para permitir a avaliação, independentemente de atingir a meta de desempenho.
 
 \subsection{Execução e avaliação em VR}
 
-A sexta etapa corresponde à execução do protótipo no Meta Quest 3S e à avaliação em contexto imersivo. Nessa etapa, a cena reconstruída será visualizada no headset e submetida à coleta de métricas de qualidade visual, desempenho, estabilidade e percepção qualitativa de artefatos.
+A sexta etapa foi definida como a execução do protótipo no Meta Quest 3S e sua avaliação em contexto imersivo. Previu-se visualizar a cena no headset e coletar medidas de desempenho e estabilidade, além de registrar artefatos qualitativamente; a qualidade de imagem seria avaliada separadamente nas poses offline.
 
-Caso a execução nativa apresente limitações severas, será adotada como contingência a execução em desktop com transmissão para o headset. Essa alternativa não substitui a avaliação do dispositivo-alvo, mas permite registrar os limites encontrados na tentativa de execução \textit{standalone}.
+Para limitações severas da execução nativa, previu-se uma contingência em desktop com transmissão para o headset. Essa alternativa foi definida como condição separada, incapaz de substituir a avaliação do dispositivo-alvo, mas útil para contextualizar os limites encontrados na execução \textit{standalone}.
 
 \subsection{Fluxo de implementação}
 
-O fluxo de implementação será conduzido de forma incremental. Inicialmente, será construída uma versão mínima com uma cena simples; após essa validação, o processo será repetido com uma cena mais complexa. A Figura \ref{fig:fluxo_implementacao_projeto} detalha o fluxo e o ponto de decisão em que a execução é avaliada como estável ou demanda otimizações.
+O fluxo de implementação foi planejado de forma incremental: uma versão mínima deveria validar a integração antes do aumento da complexidade da cena ou do modelo. A Figura \ref{fig:fluxo_implementacao_projeto} registrou o ponto de decisão previsto entre manter a configuração e retornar à otimização. A execução efetiva permaneceu concentrada no estudo de caso \textit{poster}; a segunda cena prevista não foi acrescentada à série final.
 
 \begin{figure}[H]
 \centering
@@ -339,11 +339,11 @@ O fluxo da Figura \ref{fig:fluxo_implementacao_projeto} explicita o caráter ite
 
 \subsection{Protocolo de avaliação experimental}
 
-A avaliação experimental considerará qualidade visual, desempenho computacional, estabilidade e percepção qualitativa. A qualidade visual será analisada pela comparação entre imagens de referência e imagens renderizadas a partir de poses de teste, utilizando PSNR, SSIM e LPIPS.
+A avaliação experimental foi planejada para considerar qualidade visual, desempenho computacional, estabilidade e percepção qualitativa. A qualidade visual seria analisada pela comparação entre imagens de referência e imagens renderizadas nas mesmas poses de teste, com PSNR, SSIM e LPIPS.
 
-O desempenho será avaliado durante a execução em VR por FPS, tempo médio de quadro, estabilidade da taxa de quadros, configuração de atualização do headset e uso de memória. A referência desejável será a proximidade com 90 FPS em execução \textit{standalone}; taxas inferiores serão analisadas como graus de limitação, e 30 FPS será registrado apenas como evidência de insuficiência ou de execução em condição de contingência. Também serão registradas falhas, artefatos visuais perceptíveis, limitações de navegação e sinais de estranhamento perceptual.
+O desempenho seria avaliado durante a execução em VR por tempo médio de quadro, taxa derivada de quadros, estabilidade estacionária, taxa de atualização configurada e contadores disponíveis de memória. O protocolo adotou 90 FPS como referência desejável para execução \textit{standalone}; taxas inferiores seriam analisadas como limitação, e 30 FPS não seriam tratados como resultado satisfatório. Também se previu registrar falhas, artefatos perceptíveis e sinais de estranhamento. A implementação efetiva não mediu uma série controlada de movimento natural da cabeça.
 
-A avaliação será realizada a partir de poses e cenas previamente definidas. Cada cena deverá possuir uma versão de referência associada ao NeRF e uma versão otimizada em 3D-GS. A Figura \ref{fig:fluxo_avaliacao_projeto} apresenta a divisão entre análise de qualidade visual, execução em VR e registro de estabilidade perceptual.
+A avaliação foi planejada com poses de teste previamente definidas e versões NeRF e 3D-GS da mesma cena. A Figura \ref{fig:fluxo_avaliacao_projeto} registrou a separação prevista entre análise offline de qualidade visual, execução em VR e observação perceptual. No estudo de caso, a avaliação offline foi realizada com imagens retidas, enquanto o headset forneceu tempos e capturas próprios.
 
 \begin{figure}[H]
 \centering
@@ -395,9 +395,9 @@ A avaliação será realizada a partir de poses e cenas previamente definidas. C
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
-O fluxo de avaliação separa a análise das imagens renderizadas da análise prática da execução em VR, pois um modelo pode preservar boa fidelidade visual e ainda assim não apresentar desempenho, estabilidade ou conforto perceptual suficientes para uso imersivo.
+O fluxo de avaliação separou a análise das imagens renderizadas da análise prática da execução em VR, pois um modelo poderia preservar boa fidelidade visual e ainda assim não apresentar desempenho, estabilidade ou conforto perceptual suficientes para uso imersivo.
 
-As métricas são organizadas em quatro grupos: qualidade visual, desempenho, estabilidade e percepção qualitativa. O Quadro \ref{qua:metricas_avaliacao} apresenta as métricas consideradas e sua finalidade no protocolo experimental.
+As métricas foram organizadas em quatro grupos: qualidade visual, desempenho, estabilidade e percepção qualitativa. O Quadro \ref{qua:metricas_avaliacao} registrou as métricas consideradas e sua finalidade no protocolo experimental.
 
 \begin{quadro}[H]
 \centering
@@ -434,7 +434,7 @@ Percepção qualitativa & Artefatos e estranhamento & Registrar \textit{floaters
 
 \subsection{Resultados esperados}
 
-Ao final do projeto, espera-se obter artefatos técnicos e experimentais suficientes para analisar a adequação do pipeline ao cenário-alvo: imagens capturadas, modelos NeRF, modelos 3D-GS, protótipo avaliativo em Unity, registros de configuração, resultados das avaliações e análise das limitações. O Quadro \ref{qua:artefatos_esperados} organiza esses artefatos e explicita que a entrega final é avaliativa, não uma ferramenta completa de produção.
+Ao final do projeto, pretendia-se obter artefatos técnicos e experimentais suficientes para analisar a adequação do \textit{pipeline} ao cenário-alvo: imagens de entrada, modelos NeRF e 3D-GS, protótipo avaliativo em Unity, configurações, medições e limitações. O Quadro \ref{qua:artefatos_esperados} organizou os artefatos previstos e explicitou que a entrega seria avaliativa, não uma ferramenta completa de produção. A seção de Implementação distinguiu os artefatos efetivamente produzidos dos itens apenas planejados.
 
 \begin{quadro}[H]
 \centering
