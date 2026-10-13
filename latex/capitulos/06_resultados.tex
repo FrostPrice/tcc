@@ -12,6 +12,59 @@ Para consolidar os resultados, as medições originais foram mantidas separadas 
 
 A apresentação seguiu a ordem do procedimento: primeiro foram examinadas as imagens retidas e a complexidade dos modelos; depois, os tempos de quadro e as capturas na execução nativa; por fim, a contingência renderizada no computador. As imagens ilustraram o que foi observado nas condições registradas. Os gráficos resumiram tendências numéricas e os quadros apresentaram os valores correspondentes; nenhuma captura isolada foi usada como estimativa de variabilidade temporal.
 
+\subsection{Comparação offline entre NeRF e 3D-GS}
+
+Nerfacto (NeRF) e Splatfacto (3D-GS) foram treinados separadamente com as mesmas imagens do conjunto \textit{poster}, a mesma divisão explícita de treino e teste, 30 mil passos e semente 42. O Quadro \ref{qua:comparacao_nerf_3dgs} apresentou os resultados originais do \textit{ns-eval} para as 13 vistas retidas e a duração registrada de cada treinamento. O NeRF constituiu uma referência metodológica de representação implícita; essa designação não pressupôs que obteria métricas superiores às da representação explícita.
+
+\begin{quadro}[H]
+\centering
+\footnotesize
+\caption{Avaliação offline original de NeRF e 3D-GS no estudo de caso \textit{poster}.}
+\label{qua:comparacao_nerf_3dgs}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|p{3.1cm}|C{1.45cm}|C{1.45cm}|C{1.45cm}|X|}
+\hline
+\textbf{Método} & \textbf{PSNR $\uparrow$} & \textbf{SSIM $\uparrow$} & \textbf{LPIPS $\downarrow$} & \textbf{Treinamento (s)} \\ \hline
+Nerfacto (NeRF) & 19,668 & 0,82261 & 0,20656 & 2.752,8 \\ \hline
+Splatfacto (3D-GS) & 32,989 & 0,95363 & 0,10495 & 1.357,7 \\ \hline
+\end{tabularx}
+\legend{Fonte: Elaborado pelo autor.}
+\end{quadro}
+
+Nos resultados registrados, o Splatfacto apresentou PSNR e SSIM maiores e LPIPS menor que o Nerfacto. Assim, neste treinamento e nesta cena, o NeRF não representou um limite superior de fidelidade para o 3D-GS. Essa constatação não demonstrou superioridade geral de um paradigma: as duas avaliações usaram a mesma lista de 13 vistas retidas, porém o \textit{ns-eval} gerou pares de imagem de 540$\times$960 pixels para o Nerfacto e 539$\times$959 para o Splatfacto. As configurações também diferiram no modo de otimização de câmeras durante o treinamento. Essas diferenças e os tratamentos internos de renderização impediram considerar os valores como uma comparação fotométrica estritamente harmonizada. Os tempos de treinamento descreveram essas duas execuções no Colab; não foram tempos de renderização no Quest. Somente as representações 3D-GS foram integradas e medidas no headset, de modo que não houve comparação direta de FPS nativo entre NeRF e 3D-GS.
+
+A reavaliação pareada eliminou a diferença de resolução e de referência de imagem no momento da comparação: os dois modelos receberam a mesma câmera e a mesma referência RGB em cada uma das 13 vistas, com resolução de 539$\times$959 pixels. O Quadro \ref{qua:comparacao_nerf_3dgs_pareada} apresentou médias e desvios-padrão amostrais entre vistas. Esses valores não substituíram os do Quadro \ref{qua:comparacao_nerf_3dgs}, obtidos pelo protocolo original de cada método.
+
+\begin{quadro}[H]
+\centering
+\scriptsize
+\caption{Avaliação offline pareada nas 13 vistas retidas do conjunto \textit{poster}: média $\pm$ desvio-padrão amostral entre vistas.}
+\label{qua:comparacao_nerf_3dgs_pareada}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|p{3.1cm}|C{2.4cm}|C{3.3cm}|X|}
+\hline
+\textbf{Método} & \textbf{PSNR (dB) $\uparrow$} & \textbf{SSIM $\uparrow$} & \textbf{LPIPS $\downarrow$} \\ \hline
+Nerfacto (NeRF) & 18,743 $\pm$ 3,440 & 0,78477 $\pm$ 0,05848 & 0,20918 $\pm$ 0,07597 \\ \hline
+Splatfacto (3D-GS) & 32,989 $\pm$ 3,805 & 0,95277 $\pm$ 0,02510 & 0,10495 $\pm$ 0,06115 \\ \hline
+\end{tabularx}
+\legend{Fonte: Elaborado pelo autor.}
+\end{quadro}
+
+A diferença média pareada (Splatfacto menos Nerfacto) foi de 14,245 dB em PSNR, 0,16800 em SSIM e $-0{,}10422$ em LPIPS. O Splatfacto teve PSNR e SSIM maiores nas 13 vistas e LPIPS menor em 12 delas. A exceção foi a primeira vista: o LPIPS do Nerfacto foi 0,28431, ante 0,29202 do Splatfacto, embora PSNR e SSIM favorecessem o Splatfacto. A Figura \ref{fig:nerf_3dgs_pareada_vista_central} mostrou, sem recorte, a vista central por índice da sequência de teste, escolhida antes da interpretação visual. Nela, o quadro e os elementos ao fundo apareceram mais próximos da referência no render Splatfacto; o Nerfacto preservou a composição geral, com menor definição em detalhes locais. Essa inspeção de uma vista ilustrou, mas não substituiu, os valores das 13 imagens.
+
+\begin{figure}[H]
+\centering
+\fbox{\includegraphics[width=0.29\textwidth]{figuras/resultados/nerf_3dgs_paired_reference_v02.png}}\hfill
+\fbox{\includegraphics[width=0.29\textwidth]{figuras/resultados/nerf_3dgs_paired_nerfacto_v02.png}}\hfill
+\fbox{\includegraphics[width=0.29\textwidth]{figuras/resultados/nerf_3dgs_paired_splatfacto_v02.png}}\\[1mm]
+\footnotesize Referência \hfill Nerfacto \hfill Splatfacto
+\caption[Comparação visual pareada entre NeRF e 3D-GS.]{Vista central da avaliação pareada, correspondente à imagem retida \textit{frame\_00107}: referência, Nerfacto e Splatfacto, da esquerda para a direita.}
+\label{fig:nerf_3dgs_pareada_vista_central}
+\legend{Fonte: Elaborado pelo autor.}
+\end{figure}
+
+A avaliação pareada tornou comparáveis câmera, referência, resolução, recorte e implementação das métricas no momento do teste, mas não apagou a diferença de otimização de câmeras durante os treinamentos originais. As 13 vistas também pertenciam a uma única cena e não constituíram 13 cenas independentes. Portanto, a vantagem observada foi atribuída a essas duas configurações treinadas no conjunto \textit{poster}, sem inferir superioridade universal de 3D-GS nem desempenho do NeRF em VR.
+
 \subsection{Qualidade offline e complexidade das representações}
 
 O Quadro \ref{qua:resultados_offline} reuniu as métricas das representações no mesmo conjunto de imagens retidas. Como fatos medidos, a regularização de escala teve menos gaussianas que a \textit{baseline}, menor PSNR e SSIM e maior LPIPS. A configuração \textit{splatfacto-big} teve SSIM mais alto e LPIPS mais baixo, embora PSNR ligeiramente inferior ao da \textit{baseline}, e seu arquivo PLY foi maior.
