@@ -84,9 +84,10 @@ A Figura \ref{fig:nerf_esquema} condensou os componentes centrais do método. O 
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.92\textwidth]{figuras/mildenhall2020_fig2.png}}
-    \caption{Representação esquemática do NeRF, com entrada 5D composta por posição e direção de observação, mapeamento por MLP para cor e densidade e integração volumétrica ao longo dos raios. Fonte: \cite{mildenhall2020}.}
+    \caption{Representação esquemática do NeRF, com entrada 5D composta por posição e direção de observação, mapeamento por MLP para cor e densidade e integração volumétrica ao longo dos raios.}
     \label{fig:nerf_esquema}
+    \fbox{\includegraphics[width=0.92\textwidth]{figuras/mildenhall2020_fig2.png}}
+    \legend{Fonte: \cite{mildenhall2020}.}
 \end{figure}
 
 Essa formulação foi decisiva porque rompeu com abordagens anteriores baseadas em discretizações rígidas, voxels densos ou estruturas explícitas de custo elevado, oferecendo uma representação compacta e contínua, capaz de modelar efeitos dependentes da direção de observação e detalhes geométricos complexos. O artigo demonstrou que, a partir de um conjunto relativamente esparso de imagens com poses conhecidas, era possível sintetizar novas vistas com alto grau de fotorrealismo e consistência multivista.
@@ -101,9 +102,10 @@ A Figura \ref{fig:instantngp_encoding} foi relevante porque demonstrou empiricam
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.95\textwidth]{figuras/muller_fig2.png}}
-    \caption{Comparação entre diferentes estratégias de codificação no Instant-NGP. A figura evidencia o compromisso entre número de parâmetros, tempo de treinamento e qualidade visual, destacando o desempenho da codificação por tabela hash multirresolução. Fonte: \cite{muller2022}.}
+    \caption{Comparação entre diferentes estratégias de codificação no Instant-NGP. A figura evidencia o compromisso entre número de parâmetros, tempo de treinamento e qualidade visual, destacando o desempenho da codificação por tabela hash multirresolução.}
     \label{fig:instantngp_encoding}
+    \fbox{\includegraphics[width=0.95\textwidth]{figuras/muller_fig2.png}}
+    \legend{Fonte: \cite{muller2022}.}
 \end{figure}
 
 O avanço apresentado por esse trabalho foi relevante porque atenuou uma das principais restrições do NeRF original: o elevado custo de otimização. Ao reduzir o tempo necessário para treinamento, o Instant-NGP reposicionou os campos neurais como ferramentas mais acessíveis em contextos experimentais, prototipagem rápida e reconstrução iterativa. Além disso, o método evidenciou que ganhos de desempenho poderiam ser obtidos não apenas por mudanças na formulação do modelo, mas sobretudo por escolhas de representação e implementação alinhadas ao hardware disponível.
@@ -120,9 +122,10 @@ A Figura \ref{fig:vrnerf_overview} evidenciou o caráter sistêmico da proposta.
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.98\textwidth]{figuras/xu_2023_fig1.png}}
-    \caption{Visão geral do sistema VR-NeRF, contemplando captura, modelagem da cena e renderização em \textit{eyebuffers} binoculares para realidade virtual. Fonte: \cite{xu2023}.}
+    \caption{Visão geral do sistema VR-NeRF, contemplando captura, modelagem da cena e renderização em \textit{eyebuffers} binoculares para realidade virtual.}
     \label{fig:vrnerf_overview}
+    \fbox{\includegraphics[width=0.98\textwidth]{figuras/xu_2023_fig1.png}}
+    \legend{Fonte: \cite{xu2023}.}
 \end{figure}
 
 Um dos diferenciais centrais do VR-NeRF foi a preocupação com limitações específicas da realidade virtual. Em vez de tratar o problema apenas como síntese de novas vistas, os autores consideraram exigências como liberdade de exploração espacial, estabilidade visual, alta resolução binocular, preservação de detalhes finos e compatibilidade com renderização interativa. Para isso, o trabalho combinou adaptações na linha do Instant-NGP, como tratamento mais adequado de imagens HDR, mecanismos de \textit{level of detail} e estratégias de renderização multi-GPU.
@@ -131,9 +134,10 @@ A Figura \ref{fig:vrnerf_scaling} complementou a discussão ao tornar visível a
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.72\textwidth]{figuras/xu_2023_fig3.png}}
-    \caption{Escalabilidade do VR-NeRF em função do número de GPUs, com indicação dos patamares de desempenho associados à renderização imersiva em diferentes resoluções binoculares. Fonte: \cite{xu2023}.}
+    \caption{Escalabilidade do VR-NeRF em função do número de GPUs, com indicação dos patamares de desempenho associados à renderização imersiva em diferentes resoluções binoculares.}
     \label{fig:vrnerf_scaling}
+    \fbox{\includegraphics[width=0.72\textwidth]{figuras/xu_2023_fig3.png}}
+    \legend{Fonte: \cite{xu2023}.}
 \end{figure}
 
 Para o presente trabalho, essa dualidade foi importante. O VR-NeRF funcionou como prova de conceito de que campos neurais poderiam, em condições apropriadas, sustentar experiências imersivas de alta fidelidade. Contudo, também expôs a necessidade de investigar soluções mais pragmáticas, seja por representações mais leves, seja por estruturas explícitas mais compatíveis com renderização em tempo real. Dessa forma, o artigo serviu como referência de alto nível para delimitar o potencial e as limitações da linha implícita em VR.
@@ -146,18 +150,20 @@ A Figura \ref{fig:3dgs_pipeline} explicitou a principal mudança de paradigma in
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.92\textwidth]{figuras/kerbl2023_fig2.png}}
-    \caption{Esquema do \textit{pipeline} do 3D Gaussian Splatting, incluindo inicialização a partir de pontos de SfM, projeção, rasterização diferenciável e controle adaptativo de densidade. Fonte: \cite{kerbl2023}.}
+    \caption{Esquema do \textit{pipeline} do 3D Gaussian Splatting, incluindo inicialização a partir de pontos de SfM, projeção, rasterização diferenciável e controle adaptativo de densidade.}
     \label{fig:3dgs_pipeline}
+    \fbox{\includegraphics[width=0.92\textwidth]{figuras/kerbl2023_fig2.png}}
+    \legend{Fonte: \cite{kerbl2023}.}
 \end{figure}
 
 A Figura \ref{fig:3dgs_comparison} reforça empiricamente esse reposicionamento do problema. A comparação evidencia que o método proposto pelos autores busca ocupar um ponto intermediário particularmente valioso para aplicações interativas: mantém uma qualidade visual elevada, ao mesmo tempo em que alcança taxas de renderização muito superiores às de abordagens implícitas de maior custo. Nesse sentido, a imagem não funciona apenas como ilustração de resultado, mas como síntese visual da principal tese do artigo: a representação explícita pode reformular de maneira favorável o equilíbrio entre fidelidade e desempenho.
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.97\textwidth]{figuras/kerbl2023_fig1.png}}
-    \caption{Comparação visual e de desempenho entre métodos de síntese de novas vistas, evidenciando o compromisso entre tempo de treinamento, taxa de quadros e fidelidade visual. Fonte: \cite{kerbl2023}.}
+    \caption{Comparação visual e de desempenho entre métodos de síntese de novas vistas, evidenciando o compromisso entre tempo de treinamento, taxa de quadros e fidelidade visual.}
     \label{fig:3dgs_comparison}
+    \fbox{\includegraphics[width=0.97\textwidth]{figuras/kerbl2023_fig1.png}}
+    \legend{Fonte: \cite{kerbl2023}.}
 \end{figure}
 
 No escopo desta pesquisa, o trabalho de Kerbl et al. foi decisivo por tornar plausível uma estratégia de visualização mais aderente às restrições da realidade virtual. Embora o artigo não resolvesse, isoladamente, todos os desafios da implantação em ambientes imersivos, ele forneceu uma base metodológica para o uso de representações explícitas em cenários nos quais latência, taxa de quadros e previsibilidade de execução assumiam papel central.
@@ -170,9 +176,10 @@ A Figura \ref{fig:uegs_qualitative} foi pertinente porque evidenciou um tipo de 
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.50\textwidth]{figuras/jin2025_fig1.png}}
-    \caption{Comparação qualitativa entre 3D-GS, a proposta de UE-GS e a imagem de referência, com ampliações destacando detalhes finos. Fonte: \cite{jin2024}.}
+    \caption{Comparação qualitativa entre 3D-GS, a proposta de UE-GS e a imagem de referência, com ampliações destacando detalhes finos.}
     \label{fig:uegs_qualitative}
+    \fbox{\includegraphics[width=0.50\textwidth]{figuras/jin2025_fig1.png}}
+    \legend{Fonte: \cite{jin2024}.}
 \end{figure}
 
 A pertinência do estudo decorreu do papel dos motores gráficos na produção de experiências interativas, aplicações de visualização e ambientes virtuais. Assim, a integração do 3D-GS à \textit{engine} constituiu um passo na direção de \textit{pipelines} aplicados, nos quais a representação da cena foi avaliada não apenas por métricas de qualidade de imagem, mas também por sua compatibilidade com ferramentas e rotinas de renderização.
@@ -187,11 +194,12 @@ A Figura \ref{fig:vrsplat_pipeline} sintetizou a principal contribuição metodo
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.80\textwidth]{figuras/tu2025_fig1.png}}
     \caption{Visão geral do pipeline do VRSplat para renderização de alta fidelidade
     em realidade virtual, incluindo modelo base eficiente, etapa de fine-tuning com
-    rasterização livre de artefatos e renderização foveada. Fonte: \cite{tu2025}.}
+    rasterização livre de artefatos e renderização foveada.}
     \label{fig:vrsplat_pipeline}
+    \fbox{\includegraphics[width=0.80\textwidth]{figuras/tu2025_fig1.png}}
+    \legend{Fonte: \cite{tu2025}.}
 \end{figure}
 
 Essa combinação evidenciou uma mudança de maturidade da área: a discussão deixou de tratar apenas da rapidez da renderização e passou a considerar sua estabilidade e seu conforto em VR.
@@ -269,6 +277,7 @@ O Quadro \ref{qua:comparativo_estudos} sintetizou as principais características
 \hline
 
 \end{tabularx}
+\legend{Fonte: Elaborado pelo autor com base nos estudos comparados.}
 \end{quadro}
 
 A análise sintetizada no Quadro \ref{qua:comparativo_estudos} evidenciou uma transição metodológica no campo das representações neurais de cena. O trabalho de Mildenhall et al. \cite{mildenhall2020} estabeleceu a base conceitual das representações implícitas, demonstrando elevada capacidade de síntese de novas vistas à custa de alto esforço computacional. Em seguida, Müller et al. \cite{muller2022} mostraram que esse custo poderia ser reduzido por estratégias mais eficientes de codificação, tornando os campos neurais mais viáveis em contextos experimentais.

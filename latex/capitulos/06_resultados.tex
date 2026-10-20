@@ -54,12 +54,12 @@ A diferença média pareada (Splatfacto menos Nerfacto) foi de 14,245 dB em PSNR
 
 \begin{figure}[H]
 \centering
+\caption[Comparação visual pareada entre NeRF e 3D-GS.]{Vista central da avaliação pareada, correspondente à imagem retida \textit{frame\_00107}: referência, Nerfacto e Splatfacto, da esquerda para a direita.}
+\label{fig:nerf_3dgs_pareada_vista_central}
 \fbox{\includegraphics[width=0.29\textwidth]{figuras/resultados/nerf_3dgs_paired_reference_v02.png}}\hfill
 \fbox{\includegraphics[width=0.29\textwidth]{figuras/resultados/nerf_3dgs_paired_nerfacto_v02.png}}\hfill
 \fbox{\includegraphics[width=0.29\textwidth]{figuras/resultados/nerf_3dgs_paired_splatfacto_v02.png}}\\[1mm]
 \footnotesize Referência \hfill Nerfacto \hfill Splatfacto
-\caption[Comparação visual pareada entre NeRF e 3D-GS.]{Vista central da avaliação pareada, correspondente à imagem retida \textit{frame\_00107}: referência, Nerfacto e Splatfacto, da esquerda para a direita.}
-\label{fig:nerf_3dgs_pareada_vista_central}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
@@ -116,9 +116,9 @@ A \textit{baseline} apresentou DP de 3,431 ms entre as médias de intervalo de s
 
 \begin{figure}[H]
 \centering
-\fbox{\includegraphics[width=0.92\textwidth]{figuras/resultados/quest_tradeoff_v03.png}}
 \caption{Relação descritiva entre número de gaussianas e FPS derivado do tempo de quadro na execução nativa.}
 \label{fig:quest_tradeoff}
+\fbox{\includegraphics[width=0.92\textwidth]{figuras/resultados/quest_tradeoff_v03.png}}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
@@ -126,9 +126,9 @@ As capturas estéreo da Figura \ref{fig:quest_capturas_estereo} ofereceram evid�
 
 \begin{figure}[H]
 \centering
-\fbox{\includegraphics[height=0.78\textheight,keepaspectratio]{figuras/resultados/quest_stereo_comparison_v01.png}}
 \caption{Capturas estéreo da execução nativa no Quest, na mesma cena e pose fixa: \textit{baseline}, poda 100k e poda 50k, de cima para baixo.}
 \label{fig:quest_capturas_estereo}
+\fbox{\includegraphics[height=0.78\textheight,keepaspectratio]{figuras/resultados/quest_stereo_comparison_v01.png}}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
@@ -136,9 +136,9 @@ Uma segunda captura da \textit{baseline}, obtida em outra execução, mostrou pe
 
 \begin{figure}[H]
 \centering
-\fbox{\includegraphics[width=0.92\textwidth]{figuras/resultados/quest_baseline_alternate_framing_v01.png}}
 \caption{Captura estéreo da \textit{baseline} em outra execução nativa, com enquadramento ligeiramente diferente da série visual principal.}
 \label{fig:quest_baseline_enquadramento}
+\fbox{\includegraphics[width=0.92\textwidth]{figuras/resultados/quest_baseline_alternate_framing_v01.png}}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
@@ -148,23 +148,23 @@ As quatro trajetórias orbitais nativas constituíram a avaliação de movimenta
 
 \begin{figure}[H]
 \centering
+\caption{Capturas nativas no mesmo ponto orbital de 0 grau: \textit{baseline} e 100k acima; 50k e \textit{splatfacto-big} abaixo.}
+\label{fig:quest_orbita_0}
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/quest_orbit_baseline_pose_0000_print_v01.jpg}}\hfill
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/quest_orbit_pruned100k_pose_0000_print_v01.jpg}}\\[2mm]
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/quest_orbit_pruned50k_pose_0000_print_v01.jpg}}\hfill
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/quest_orbit_splatfacto_big_pose_0000_print_v01.jpg}}
-\caption{Capturas nativas no mesmo ponto orbital de 0 grau: \textit{baseline} e 100k acima; 50k e \textit{splatfacto-big} abaixo.}
-\label{fig:quest_orbita_0}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
 \begin{figure}[H]
 \centering
+\caption{Capturas nativas no ponto orbital de 180 graus, na mesma ordem da Figura \ref{fig:quest_orbita_0}.}
+\label{fig:quest_orbita_180}
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/quest_orbit_baseline_pose_0072_print_v01.jpg}}\hfill
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/quest_orbit_pruned100k_pose_0072_print_v01.jpg}}\\[2mm]
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/quest_orbit_pruned50k_pose_0072_print_v01.jpg}}\hfill
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/quest_orbit_splatfacto_big_pose_0072_print_v01.jpg}}
-\caption{Capturas nativas no ponto orbital de 180 graus, na mesma ordem da Figura \ref{fig:quest_orbita_0}.}
-\label{fig:quest_orbita_180}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
@@ -203,9 +203,9 @@ A Figura \ref{fig:quest_big_captura} documentou o quadro estéreo da execução 
 
 \begin{figure}[H]
 \centering
-\fbox{\includegraphics[width=0.92\textwidth]{figuras/resultados/quest_splatfacto_big_stereo_v01.png}}
 \caption{Captura estéreo da variante \textit{splatfacto-big} na execução nativa diagnóstica histórica.}
 \label{fig:quest_big_captura}
+\fbox{\includegraphics[width=0.92\textwidth]{figuras/resultados/quest_splatfacto_big_stereo_v01.png}}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
@@ -219,9 +219,9 @@ A Figura \ref{fig:pcvr_big_captura} apresentou uma captura diagnóstica anterior
 
 \begin{figure}[H]
 \centering
-\fbox{\includegraphics[width=0.92\textwidth]{figuras/resultados/pcvr_splatfacto_big_stereo_v01.png}}
 \caption{Captura estéreo da variante \textit{splatfacto-big} renderizada no computador e exibida no Quest por Meta Horizon Link.}
 \label{fig:pcvr_big_captura}
+\fbox{\includegraphics[width=0.92\textwidth]{figuras/resultados/pcvr_splatfacto_big_stereo_v01.png}}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
@@ -273,23 +273,23 @@ As quatro órbitas PCVR concluíram 144 de 144 pontos de vista cada uma. Os alvo
 
 \begin{figure}[H]
 \centering
+\caption{Capturas PCVR no ponto orbital de 0 grau: \textit{baseline} e 100k acima; 50k e \textit{splatfacto-big} abaixo.}
+\label{fig:pcvr_orbita_0}
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/pcvr_orbit_baseline_pose_0000_print_v01.jpg}}\hfill
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/pcvr_orbit_pruned100k_pose_0000_print_v01.jpg}}\\[2mm]
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/pcvr_orbit_pruned50k_pose_0000_print_v01.jpg}}\hfill
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/pcvr_orbit_splatfacto_big_pose_0000_print_v01.jpg}}
-\caption{Capturas PCVR no ponto orbital de 0 grau: \textit{baseline} e 100k acima; 50k e \textit{splatfacto-big} abaixo.}
-\label{fig:pcvr_orbita_0}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
 \begin{figure}[H]
 \centering
+\caption{Capturas PCVR no ponto orbital de 180 graus, na mesma ordem da Figura \ref{fig:pcvr_orbita_0}.}
+\label{fig:pcvr_orbita_180}
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/pcvr_orbit_baseline_pose_0072_print_v01.jpg}}\hfill
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/pcvr_orbit_pruned100k_pose_0072_print_v01.jpg}}\\[2mm]
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/pcvr_orbit_pruned50k_pose_0072_print_v01.jpg}}\hfill
 \fbox{\includegraphics[width=0.46\textwidth]{figuras/resultados/pcvr_orbit_splatfacto_big_pose_0072_print_v01.jpg}}
-\caption{Capturas PCVR no ponto orbital de 180 graus, na mesma ordem da Figura \ref{fig:pcvr_orbita_0}.}
-\label{fig:pcvr_orbita_180}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
@@ -318,17 +318,17 @@ A Tabela \ref{tab:comparacao_nativo_pcvr} e as Figuras \ref{fig:comparacao_tempo
 
 \begin{figure}[H]
 \centering
-\fbox{\includegraphics[width=0.94\textwidth]{figuras/resultados/quest_pcvr_frame_time_v02.png}}
 \caption{Intervalo médio entre quadros da aplicação no Quest nativo e no PCVR.}
 \label{fig:comparacao_tempo_pcvr}
+\fbox{\includegraphics[width=0.94\textwidth]{figuras/resultados/quest_pcvr_frame_time_v02.png}}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\fbox{\includegraphics[width=0.94\textwidth]{figuras/resultados/quest_pcvr_frame_rate_v02.png}}
 \caption{Taxa derivada do intervalo médio entre quadros no Quest nativo e no PCVR.}
 \label{fig:comparacao_taxa_pcvr}
+\fbox{\includegraphics[width=0.94\textwidth]{figuras/resultados/quest_pcvr_frame_rate_v02.png}}
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
