@@ -10,45 +10,45 @@ As métricas offline foram calculadas sobre as mesmas 13 imagens de teste retida
 
 Para consolidar os resultados, as medições originais foram mantidas separadas das tabelas e dos gráficos, e foi conferida a correspondência entre as representações avaliadas e as configurações de cada execução.
 
-A apresentação seguiu a ordem do procedimento: primeiro foram examinadas as imagens retidas e a complexidade dos modelos; depois, os tempos de quadro e as capturas na execução nativa; por fim, a contingência renderizada no computador. As imagens ilustraram o que foi observado nas condições registradas. Os gráficos resumiram tendências numéricas e os quadros apresentaram os valores correspondentes; nenhuma captura isolada foi usada como estimativa de variabilidade temporal.
+A apresentação seguiu a ordem do procedimento: primeiro foram examinadas as imagens retidas e a complexidade dos modelos; depois, os tempos de quadro e as capturas na execução nativa; por fim, a contingência renderizada no computador. As imagens ilustraram o que foi observado nas condições registradas. Os gráficos resumiram tendências numéricas e as tabelas apresentaram os valores correspondentes; nenhuma captura isolada foi usada como estimativa de variabilidade temporal.
 
 \subsection{Comparação offline entre NeRF e 3D-GS}
 
-Nerfacto (NeRF) e Splatfacto (3D-GS) foram treinados separadamente com as mesmas imagens do conjunto \textit{poster}, a mesma divisão explícita de treino e teste, 30 mil passos e semente 42. O Quadro \ref{qua:comparacao_nerf_3dgs} apresentou os resultados originais do \textit{ns-eval} para as 13 vistas retidas e a duração registrada de cada treinamento. O NeRF constituiu uma referência metodológica de representação implícita; essa designação não pressupôs que obteria métricas superiores às da representação explícita.
+Nerfacto (NeRF) e Splatfacto (3D-GS) foram treinados separadamente com as mesmas imagens do conjunto \textit{poster}, a mesma divisão explícita de treino e teste, 30 mil passos e semente 42. A Tabela \ref{tab:comparacao_nerf_3dgs} apresentou os resultados originais do \textit{ns-eval} para as 13 vistas retidas e a duração registrada de cada treinamento. O NeRF constituiu uma referência metodológica de representação implícita; essa designação não pressupôs que obteria métricas superiores às da representação explícita.
 
-\begin{quadro}[H]
+\begin{table}[H]
 \centering
 \footnotesize
 \caption{Avaliação offline original de NeRF e 3D-GS no estudo de caso \textit{poster}.}
-\label{qua:comparacao_nerf_3dgs}
+\label{tab:comparacao_nerf_3dgs}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{|p{3.1cm}|C{1.45cm}|C{1.45cm}|C{1.45cm}|X|}
+\begin{tabularx}{\textwidth}{p{3.1cm}C{1.45cm}C{1.45cm}C{1.45cm}X}
 \hline
 \textbf{Método} & \textbf{PSNR $\uparrow$} & \textbf{SSIM $\uparrow$} & \textbf{LPIPS $\downarrow$} & \textbf{Treinamento (s)} \\ \hline
-Nerfacto (NeRF) & 19,668 & 0,82261 & 0,20656 & 2.752,8 \\ \hline
+Nerfacto (NeRF) & 19,668 & 0,82261 & 0,20656 & 2.752,8 \\
 Splatfacto (3D-GS) & 32,989 & 0,95363 & 0,10495 & 1.357,7 \\ \hline
 \end{tabularx}
 \legend{Fonte: Elaborado pelo autor.}
-\end{quadro}
+\end{table}
 
 Nos resultados registrados, o Splatfacto apresentou PSNR e SSIM maiores e LPIPS menor que o Nerfacto. Assim, neste treinamento e nesta cena, o NeRF não representou um limite superior de fidelidade para o 3D-GS. Essa constatação não demonstrou superioridade geral de um paradigma: as duas avaliações usaram a mesma lista de 13 vistas retidas, porém o \textit{ns-eval} gerou pares de imagem de 540$\times$960 pixels para o Nerfacto e 539$\times$959 para o Splatfacto. As configurações também diferiram no modo de otimização de câmeras durante o treinamento. Essas diferenças e os tratamentos internos de renderização impediram considerar os valores como uma comparação fotométrica estritamente harmonizada. Os tempos de treinamento descreveram essas duas execuções no Colab; não foram tempos de renderização no Quest. Somente as representações 3D-GS foram integradas e medidas no headset, de modo que não houve comparação direta de FPS nativo entre NeRF e 3D-GS.
 
-A reavaliação pareada eliminou a diferença de resolução e de referência de imagem no momento da comparação: os dois modelos receberam a mesma câmera e a mesma referência RGB em cada uma das 13 vistas, com resolução de 539$\times$959 pixels. O Quadro \ref{qua:comparacao_nerf_3dgs_pareada} apresentou médias e desvios-padrão amostrais entre vistas. Esses valores não substituíram os do Quadro \ref{qua:comparacao_nerf_3dgs}, obtidos pelo protocolo original de cada método.
+A reavaliação pareada eliminou a diferença de resolução e de referência de imagem no momento da comparação: os dois modelos receberam a mesma câmera e a mesma referência RGB em cada uma das 13 vistas, com resolução de 539$\times$959 pixels. A Tabela \ref{tab:comparacao_nerf_3dgs_pareada} apresentou médias e desvios-padrão amostrais entre vistas. Esses valores não substituíram os da Tabela \ref{tab:comparacao_nerf_3dgs}, obtidos pelo protocolo original de cada método.
 
-\begin{quadro}[H]
+\begin{table}[H]
 \centering
 \scriptsize
 \caption{Avaliação offline pareada nas 13 vistas retidas do conjunto \textit{poster}: média $\pm$ desvio-padrão amostral entre vistas.}
-\label{qua:comparacao_nerf_3dgs_pareada}
+\label{tab:comparacao_nerf_3dgs_pareada}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{|p{3.1cm}|C{2.4cm}|C{3.3cm}|X|}
+\begin{tabularx}{\textwidth}{p{3.1cm}C{2.4cm}C{3.3cm}X}
 \hline
 \textbf{Método} & \textbf{PSNR (dB) $\uparrow$} & \textbf{SSIM $\uparrow$} & \textbf{LPIPS $\downarrow$} \\ \hline
-Nerfacto (NeRF) & 18,743 $\pm$ 3,440 & 0,78477 $\pm$ 0,05848 & 0,20918 $\pm$ 0,07597 \\ \hline
+Nerfacto (NeRF) & 18,743 $\pm$ 3,440 & 0,78477 $\pm$ 0,05848 & 0,20918 $\pm$ 0,07597 \\
 Splatfacto (3D-GS) & 32,989 $\pm$ 3,805 & 0,95277 $\pm$ 0,02510 & 0,10495 $\pm$ 0,06115 \\ \hline
 \end{tabularx}
 \legend{Fonte: Elaborado pelo autor.}
-\end{quadro}
+\end{table}
 
 A diferença média pareada (Splatfacto menos Nerfacto) foi de 14,245 dB em PSNR, 0,16800 em SSIM e $-0{,}10422$ em LPIPS. O Splatfacto teve PSNR e SSIM maiores nas 13 vistas e LPIPS menor em 12 delas. A exceção foi a primeira vista: o LPIPS do Nerfacto foi 0,28431, ante 0,29202 do Splatfacto, embora PSNR e SSIM favorecessem o Splatfacto. A Figura \ref{fig:nerf_3dgs_pareada_vista_central} mostrou, sem recorte, a vista central por índice da sequência de teste, escolhida antes da interpretação visual. Nela, o quadro e os elementos ao fundo apareceram mais próximos da referência no render Splatfacto; o Nerfacto preservou a composição geral, com menor definição em detalhes locais. Essa inspeção de uma vista ilustrou, mas não substituiu, os valores das 13 imagens.
 
@@ -67,52 +67,52 @@ A avaliação pareada tornou comparáveis câmera, referência, resolução, rec
 
 \subsection{Qualidade offline e complexidade das representações}
 
-O Quadro \ref{qua:resultados_offline} reuniu as métricas das representações no mesmo conjunto de imagens retidas. Como fatos medidos, a regularização de escala teve menos gaussianas que a \textit{baseline}, menor PSNR e SSIM e maior LPIPS. A configuração \textit{splatfacto-big} teve SSIM mais alto e LPIPS mais baixo, embora PSNR ligeiramente inferior ao da \textit{baseline}, e seu arquivo PLY foi maior.
+A Tabela \ref{tab:resultados_offline} reuniu as métricas das representações no mesmo conjunto de imagens retidas. Como fatos medidos, a regularização de escala teve menos gaussianas que a \textit{baseline}, menor PSNR e SSIM e maior LPIPS. A configuração \textit{splatfacto-big} teve SSIM mais alto e LPIPS mais baixo, embora PSNR ligeiramente inferior ao da \textit{baseline}, e seu arquivo PLY foi maior.
 
-\begin{quadro}[H]
+\begin{table}[H]
 \centering
 \footnotesize
 \caption{Qualidade offline e complexidade das representações no estudo de caso \textit{poster}.}
-\label{qua:resultados_offline}
+\label{tab:resultados_offline}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{|p{2.5cm}|C{1.75cm}|C{1.55cm}|C{1.55cm}|C{1.8cm}|C{1.7cm}|X|}
+\begin{tabularx}{\textwidth}{p{2.5cm}C{1.75cm}C{1.55cm}C{1.55cm}C{1.8cm}C{1.7cm}X}
 \hline
 \textbf{Representação} & \textbf{PSNR} & \textbf{SSIM} & \textbf{LPIPS} & \textbf{Gaussianas} & \textbf{PLY (MB)} & \textbf{Tempo de treinamento} \\ \hline
-\textit{baseline} & 32,989 & 0,95363 & 0,10495 & 195.760 & 48,55 & 1.357,7 s \\ \hline
-\textit{top-k} 100k & 22,716 & 0,80851 & 0,31945 & 100.000 & 24,80 & -- \\ \hline
-\textit{top-k} 50k & 17,514 & 0,60303 & 0,51890 & 50.000 & 12,40 & -- \\ \hline
-Regularização de escala & 32,945 & 0,95310 & 0,11010 & 181.163 & 44,93 & 1.281,5 s \\ \hline
+\textit{baseline} & 32,989 & 0,95363 & 0,10495 & 195.760 & 48,55 & 1.357,7 s \\
+\textit{top-k} 100k & 22,716 & 0,80851 & 0,31945 & 100.000 & 24,80 & -- \\
+\textit{top-k} 50k & 17,514 & 0,60303 & 0,51890 & 50.000 & 12,40 & -- \\
+Regularização de escala & 32,945 & 0,95310 & 0,11010 & 181.163 & 44,93 & 1.281,5 s \\
 \textit{splatfacto-big} & 32,764 & 0,95407 & 0,08538 & 470.962 & 116,80 & 1.913,5 s \\ \hline
 \end{tabularx}
 \legend{Fonte: Elaborado pelo autor.}
-\end{quadro}
+\end{table}
 
 As variantes por poda determinística \textit{top-k} foram derivadas da \textit{baseline}; portanto, não representaram novo treinamento. Para avaliá-las, a configuração \textit{splatfacto} da \textit{baseline} foi carregada e seus parâmetros gaussianos foram substituídos pelos PLYs podados, preservando as mesmas 13 poses, imagens e resolução de teste. A reavaliação da \textit{baseline} reproduziu as médias registradas anteriormente. Como fatos medidos, a poda para 100 mil gaussianas resultou em PSNR 22,716, SSIM 0,80851 e LPIPS 0,31945; a poda para 50 mil gaussianas resultou em PSNR 17,514, SSIM 0,60303 e LPIPS 0,51890. Nesse conjunto de teste e nesse critério de seleção por opacidade, a redução do PLY não preservou as métricas offline da \textit{baseline}. A regularização de escala não foi levada ao Quest porque seus resultados offline não justificaram ampliar a série de execução no dispositivo.
 
 \subsection{Desempenho em execução nativa no Quest}
 
-O Quadro \ref{qua:resultados_quest} reuniu a série de cinco execuções por variante. Os valores de intervalo entre quadros e de GPU foram calculados como médias das cinco médias por execução, acompanhadas pelo desvio-padrão amostral (DP) entre essas médias; não foram desvios calculados sobre quadros individuais agrupados. O FPS principal foi derivado do intervalo médio registrado pela aplicação. O FPS e o tempo de GPU do OVR Metrics foram contadores complementares calculados sobre todas as linhas dos CSVs, que incluíram amostras fora da janela interna exata de 30 segundos. Na série retida, as variantes com menos gaussianas apresentaram menores tempos médios de quadro e maiores FPS derivados.
+A Tabela \ref{tab:resultados_quest} reuniu a série de cinco execuções por variante. Os valores de intervalo entre quadros e de GPU foram calculados como médias das cinco médias por execução, acompanhadas pelo desvio-padrão amostral (DP) entre essas médias; não foram desvios calculados sobre quadros individuais agrupados. O FPS principal foi derivado do intervalo médio registrado pela aplicação. O FPS e o tempo de GPU do OVR Metrics foram contadores complementares calculados sobre todas as linhas dos CSVs, que incluíram amostras fora da janela interna exata de 30 segundos. Na série retida, as variantes com menos gaussianas apresentaram menores tempos médios de quadro e maiores FPS derivados.
 
-\begin{quadro}[H]
+\begin{table}[H]
 \centering
 \scriptsize
 \caption{Desempenho no Meta Quest 3S em condição de referência estática, com cinco execuções por variante.}
-\label{qua:resultados_quest}
+\label{tab:resultados_quest}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{|p{2.3cm}|C{2.05cm}|C{1.4cm}|C{1.4cm}|C{2.05cm}|X|}
+\begin{tabularx}{\textwidth}{p{2.3cm}C{2.05cm}C{1.4cm}C{1.4cm}C{2.05cm}X}
 \hline
 \textbf{Representação} & \textbf{Intervalo médio $\pm$ DP (ms)} & \textbf{FPS da aplicação} & \textbf{FPS OVR} & \textbf{GPU OVR média $\pm$ DP (ms)} & \textbf{Quadros obsoletos} \\ \hline
-\textit{baseline} & 45,053 $\pm$ 3,431 & 22,20 & 25,14 & 39,84 $\pm$ 2,41 & 47,93 \\ \hline
-\textit{top-k} 100k & 26,301 $\pm$ 0,007 & 38,02 & 40,49 & 23,07 $\pm$ 0,26 & 33,76 \\ \hline
-\textit{top-k} 50k & 17,133 $\pm$ 0,018 & 58,37 & 59,64 & 15,11 $\pm$ 0,22 & 13,41 \\ \hline
+\textit{baseline} & 45,053 $\pm$ 3,431 & 22,20 & 25,14 & 39,84 $\pm$ 2,41 & 47,93 \\
+\textit{top-k} 100k & 26,301 $\pm$ 0,007 & 38,02 & 40,49 & 23,07 $\pm$ 0,26 & 33,76 \\
+\textit{top-k} 50k & 17,133 $\pm$ 0,018 & 58,37 & 59,64 & 15,11 $\pm$ 0,22 & 13,41 \\
 \textit{splatfacto-big} & 65,620 $\pm$ 0,038 & 15,24 & 19,51 & 55,65 $\pm$ 0,74 & -- \\ \hline
 \end{tabularx}
 \legend{Fonte: Elaborado pelo autor.}
-\end{quadro}
+\end{table}
 
-Como fatos medidos, a \textit{baseline} registrou 22,20 FPS, a poda 100k registrou 38,02 FPS, a poda 50k registrou 58,37 FPS e a \textit{splatfacto-big} registrou 15,24 FPS derivados. Nenhuma média atingiu a referência de 90 FPS definida no protocolo. A poda 50k apresentou o menor custo de renderização da série, mas não constituiu uma seleção definitiva para VR: seus valores de PSNR e SSIM foram os menores, enquanto o LPIPS foi o maior e as capturas qualitativas mostraram mais fragmentação. A \textit{splatfacto-big} preservou melhor o detalhe em observações visuais, mas teve o maior custo. A condição estacionária não permitiu inferir fluidez, conforto ou estabilidade durante movimento de cabeça. A média de GPU OVR da \textit{splatfacto-big} foi calculada dos CSVs da série atual pelo mesmo critério das demais variantes; seu contador de quadros obsoletos não foi consolidado neste quadro e o traço não deve ser interpretado como zero.
+Como fatos medidos, a \textit{baseline} registrou 22,20 FPS, a poda 100k registrou 38,02 FPS, a poda 50k registrou 58,37 FPS e a \textit{splatfacto-big} registrou 15,24 FPS derivados. Nenhuma média atingiu a referência de 90 FPS definida no protocolo. A poda 50k apresentou o menor custo de renderização da série, mas não constituiu uma seleção definitiva para VR: seus valores de PSNR e SSIM foram os menores, enquanto o LPIPS foi o maior e as capturas qualitativas mostraram mais fragmentação. A \textit{splatfacto-big} preservou melhor o detalhe em observações visuais, mas teve o maior custo. A condição estacionária não permitiu inferir fluidez, conforto ou estabilidade durante movimento de cabeça. A média de GPU OVR da \textit{splatfacto-big} foi calculada dos CSVs da série atual pelo mesmo critério das demais variantes; seu contador de quadros obsoletos não foi consolidado nesta tabela e o traço não deve ser interpretado como zero.
 
-A \textit{baseline} apresentou DP de 3,431 ms entre as médias de intervalo de suas cinco execuções, maior que o das outras três variantes. Sua primeira média foi de 51,190 ms, enquanto as quatro seguintes ficaram entre 43,497 e 43,533 ms. O registro foi mantido na série válida; a diferença observada não foi atribuída a aquecimento, estado térmico ou outra causa sem medição que a isolasse. Para as sessões orbitais do Quadro \ref{qua:diagnostico_orbita_nativa}, houve uma execução por representação, de modo que não foi calculado DP entre execuções.
+A \textit{baseline} apresentou DP de 3,431 ms entre as médias de intervalo de suas cinco execuções, maior que o das outras três variantes. Sua primeira média foi de 51,190 ms, enquanto as quatro seguintes ficaram entre 43,497 e 43,533 ms. O registro foi mantido na série válida; a diferença observada não foi atribuída a aquecimento, estado térmico ou outra causa sem medição que a isolasse. Para as sessões orbitais da Tabela \ref{tab:diagnostico_orbita_nativa}, houve uma execução por representação, de modo que não foi calculado DP entre execuções.
 
 \begin{figure}[H]
 \centering
@@ -172,24 +172,24 @@ Nas duas vistas e na inspeção uniforme do restante da volta, a cadeira permane
 
 As versões incluídas nas figuras foram redimensionadas para apresentação, sem recorte; as capturas integrais permaneceram preservadas para consulta e não foram substituídas por essas cópias.
 
-O Quadro \ref{qua:diagnostico_orbita_nativa} reuniu os intervalos de quadro registrados pela aplicação durante cada sessão orbital. Todas as médias excederam os 13,89 ms correspondentes a 72 Hz. Entretanto, as sessões incluíram espera por confirmação, captura ADB e transições entre pontos de vista; por isso, seus intervalos não foram agregados às cinco repetições estacionárias nem usados para estimar fluidez durante movimento natural da cabeça. Os vídeos foram montados com os 144 PNGs a oito quadros por segundo apenas para consulta visual, sem representar o tempo real da execução.
+A Tabela \ref{tab:diagnostico_orbita_nativa} reuniu os intervalos de quadro registrados pela aplicação durante cada sessão orbital. Todas as médias excederam os 13,89 ms correspondentes a 72 Hz. Entretanto, as sessões incluíram espera por confirmação, captura ADB e transições entre pontos de vista; por isso, seus intervalos não foram agregados às cinco repetições estacionárias nem usados para estimar fluidez durante movimento natural da cabeça. Os vídeos foram montados com os 144 PNGs a oito quadros por segundo apenas para consulta visual, sem representar o tempo real da execução.
 
-\begin{quadro}[H]
+\begin{table}[H]
 \centering
 \footnotesize
 \caption{Diagnóstico complementar das sessões orbitais nativas, uma por representação.}
-\label{qua:diagnostico_orbita_nativa}
+\label{tab:diagnostico_orbita_nativa}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{|p{3.2cm}|X|X|X|}
+\begin{tabularx}{\textwidth}{p{3.2cm}XXX}
 \hline
 \textbf{Representação} & \textbf{Intervalo médio (ms)} & \textbf{p95 (ms)} & \textbf{Poses confirmadas} \\ \hline
-\textit{baseline} & 40,04 & 43,93 & 144/144 \\ \hline
-\textit{top-k} 100k & 24,26 & 26,66 & 144/144 \\ \hline
-\textit{top-k} 50k & 15,90 & 17,82 & 144/144 \\ \hline
+\textit{baseline} & 40,04 & 43,93 & 144/144 \\
+\textit{top-k} 100k & 24,26 & 26,66 & 144/144 \\
+\textit{top-k} 50k & 15,90 & 17,82 & 144/144 \\
 \textit{splatfacto-big} & 64,30 & 71,88 & 144/144 \\ \hline
 \end{tabularx}
 \legend{Fonte: Elaborado pelo autor.}
-\end{quadro}
+\end{table}
 
 \subsection{Variante de maior capacidade}
 
@@ -211,7 +211,7 @@ A Figura \ref{fig:quest_big_captura} documentou o quadro estéreo da execução 
 
 \subsection{Contingência diagnóstica por PCVR}
 
-Como contingência distinta da execução \textit{standalone}, foram realizadas execuções em Windows com transmissão para o Meta Quest 3S via Meta Horizon Link. O \textit{build} utilizou Direct3D12 e IL2CPP, com taxa de atualização reportada de 72 Hz. A série final reuniu cinco execuções estacionárias tecnicamente válidas por variante, sob driver NVIDIA 591.59, sem reinício do serviço OVR entre as sessões. Os canários e as tentativas com falha não integraram essas médias. O Quadro \ref{qua:resultados_pcvr} usa cada execução como unidade de repetição; o desvio-padrão refere-se às cinco médias por execução, não aos quadros como se fossem observações independentes.
+Como contingência distinta da execução \textit{standalone}, foram realizadas execuções em Windows com transmissão para o Meta Quest 3S via Meta Horizon Link. O \textit{build} utilizou Direct3D12 e IL2CPP, com taxa de atualização reportada de 72 Hz. A série final reuniu cinco execuções estacionárias tecnicamente válidas por variante, sob driver NVIDIA 591.59, sem reinício do serviço OVR entre as sessões. Os canários e as tentativas com falha não integraram essas médias. A Tabela \ref{tab:resultados_pcvr} usa cada execução como unidade de repetição; o desvio-padrão refere-se às cinco médias por execução, não aos quadros como se fossem observações independentes.
 
 O computador de avaliação tinha processador AMD Ryzen 7 5700G, GPU NVIDIA GeForce RTX 3060 e Windows 11 Pro de 64 bits. O processador contava com oito núcleos e 16 processadores lógicos. Foram mantidas a cena, as representações e a condição de pose fixa utilizadas na avaliação nativa. No PCVR, o computador renderizou a aplicação, enquanto o Meta Quest 3S recebeu as imagens transmitidas e forneceu o rastreamento. Essa configuração permitiu observar o comportamento das mesmas representações em uma plataforma de processamento distinta.
 
@@ -225,45 +225,45 @@ A Figura \ref{fig:pcvr_big_captura} apresentou uma captura diagnóstica anterior
 \legend{Fonte: Elaborado pelo autor.}
 \end{figure}
 
-\begin{quadro}[H]
+\begin{table}[H]
 \centering
 \footnotesize
 \caption{Desempenho da aplicação no PCVR via Meta Horizon Link em pose fixa, com cinco execuções por variante.}
-\label{qua:resultados_pcvr}
+\label{tab:resultados_pcvr}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{|p{2.7cm}|C{1.5cm}|C{2.2cm}|C{1.5cm}|C{1.5cm}|X|}
+\begin{tabularx}{\textwidth}{p{2.7cm}C{1.5cm}C{2.2cm}C{1.5cm}C{1.5cm}X}
 \hline
 \textbf{Representação} & \textbf{Gaussianas} & \textbf{Intervalo médio $\pm$ DP (ms)} & \textbf{p95 médio (ms)} & \textbf{Taxa derivada (quadros/s)} & \textbf{Quadros $\leq$ 13,889 ms} \\ \hline
-\textit{baseline} & 195.760 & 28,910 $\pm$ 0,076 & 30,962 & 34,59 & 0,0\% \\ \hline
-\textit{top-k} 100k & 100.000 & 23,909 $\pm$ 0,491 & 28,600 & 41,83 & 0,0\% \\ \hline
-\textit{top-k} 50k & 50.000 & 13,891 $\pm$ 0,006 & 14,340 & 71,99 & 49,4\% \\ \hline
+\textit{baseline} & 195.760 & 28,910 $\pm$ 0,076 & 30,962 & 34,59 & 0,0\% \\
+\textit{top-k} 100k & 100.000 & 23,909 $\pm$ 0,491 & 28,600 & 41,83 & 0,0\% \\
+\textit{top-k} 50k & 50.000 & 13,891 $\pm$ 0,006 & 14,340 & 71,99 & 49,4\% \\
 \textit{splatfacto-big} & 470.962 & 55,551 $\pm$ 0,010 & 56,209 & 18,00 & 0,0\% \\ \hline
 \end{tabularx}
 \legend{Fonte: Elaborado pelo autor.}
-\end{quadro}
+\end{table}
 
 Como fato medido no computador, a poda para 50 mil gaussianas foi a única variante cujo intervalo médio se aproximou do orçamento de 13,889 ms para 72 Hz. Entretanto, somente 49,4\% dos quadros registrados ficaram dentro desse orçamento em média, e o p95 de cada execução excedeu 13,889 ms. Portanto, a taxa derivada de 71,99 quadros/s não demonstrou apresentação sustentada a 72 Hz no headset. Na inspeção das capturas estéreo, a cadeira permaneceu reconhecível, enquanto fragmentação e perda de detalhe no piso e no fundo foram mais aparentes com a poda; a variante \textit{splatfacto-big} aparentou maior continuidade visual que as podas, porém obteve o maior tempo de quadro. Essa leitura visual foi descritiva e não mediu conforto ou latência do streaming.
 
 Esses dados não mediram o desempenho do Quest: os tempos e os contadores de processo pertenceram ao computador que renderizou a aplicação, e o caminho incluiu codificação, transmissão e decodificação de vídeo. Também não houve CSV novo do OVR Metrics nas sessões por Link. Assim, a contingência demonstrou o comportamento da representação em hardware de desktop e auxiliou o diagnóstico do compromisso entre custo e qualidade, mas não alterou a conclusão da avaliação nativa no Meta Quest 3S.
 
-O Quadro \ref{qua:recursos_pcvr} complementou os intervalos da aplicação com os tempos de GPU informados pela Unity e os contadores de memória associados ao processo da aplicação no Windows. Para o tempo de GPU, foram calculados a média e o DP das cinco médias por execução, como no Quadro \ref{qua:resultados_pcvr}; o intervalo entre quadros da aplicação, com sua dispersão, foi informado naquele quadro. As médias de memória foram obtidas das amostras disponíveis durante a coleta externa, cuja janela podia incluir inicialização e captura visual além da janela interna de medição. O conjunto residente correspondeu ao contador \textit{Working Set}; o uso dedicado de GPU correspondeu ao contador \textit{Dedicated Usage} associado ao processo. Esses contadores não representaram a memória do headset nem incluíram necessariamente todos os processos envolvidos na transmissão.
+A Tabela \ref{tab:recursos_pcvr} complementou os intervalos da aplicação com os tempos de GPU informados pela Unity e os contadores de memória associados ao processo da aplicação no Windows. Para o tempo de GPU, foram calculados a média e o DP das cinco médias por execução, como na Tabela \ref{tab:resultados_pcvr}; o intervalo entre quadros da aplicação, com sua dispersão, foi informado naquela tabela. As médias de memória foram obtidas das amostras disponíveis durante a coleta externa, cuja janela podia incluir inicialização e captura visual além da janela interna de medição. O conjunto residente correspondeu ao contador \textit{Working Set}; o uso dedicado de GPU correspondeu ao contador \textit{Dedicated Usage} associado ao processo. Esses contadores não representaram a memória do headset nem incluíram necessariamente todos os processos envolvidos na transmissão.
 
-\begin{quadro}[H]
+\begin{table}[H]
 \centering
 \footnotesize
 \caption{Tempos de GPU e contadores de memória do processo de renderização no computador.}
-\label{qua:recursos_pcvr}
+\label{tab:recursos_pcvr}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{|p{3.0cm}|X|X|X|}
+\begin{tabularx}{\textwidth}{p{3.0cm}XXX}
 \hline
 \textbf{Representação} & \textbf{GPU Unity média $\pm$ DP (ms)} & \textbf{Conjunto residente médio (MiB)} & \textbf{Uso dedicado de GPU médio (MiB)} \\ \hline
-\textit{baseline} & 28,62 $\pm$ 0,07 & 673,59 & 954,54 \\ \hline
-\textit{top-k} 100k & 16,42 $\pm$ 0,07 & 661,00 & 964,88 \\ \hline
-\textit{top-k} 50k & 10,58 $\pm$ 0,10 & 638,18 & 954,34 \\ \hline
+\textit{baseline} & 28,62 $\pm$ 0,07 & 673,59 & 954,54 \\
+\textit{top-k} 100k & 16,42 $\pm$ 0,07 & 661,00 & 964,88 \\
+\textit{top-k} 50k & 10,58 $\pm$ 0,10 & 638,18 & 954,34 \\
 \textit{splatfacto-big} & 38,64 $\pm$ 0,12 & 691,01 & 1.018,40 \\ \hline
 \end{tabularx}
 \legend{Fonte: Elaborado pelo autor.}
-\end{quadro}
+\end{table}
 
 A redução do número de gaussianas foi acompanhada por menores tempos médios de GPU nas três variantes principais. Entretanto, os contadores de memória do processo não acompanharam proporcionalmente a redução do PLY. Os dados disponíveis não isolaram a contribuição do modelo, dos recursos da Unity e dos demais recursos gráficos; por isso, não permitiram atribuir todo o uso de memória às gaussianas.
 
@@ -297,24 +297,24 @@ Nas duas vistas, a cadeira permaneceu reconhecível. As podas revelaram fragment
 
 \subsubsection{Comparação descritiva entre execução nativa e PCVR}
 
-O Quadro \ref{qua:comparacao_nativo_pcvr} e as Figuras \ref{fig:comparacao_tempo_pcvr} e \ref{fig:comparacao_taxa_pcvr} reuniram as mesmas representações nas duas rotas, com cinco execuções estacionárias por representação em cada uma. Para a comparação, foram utilizados o intervalo entre quadros registrado pela aplicação e sua taxa derivada, calculada como mil dividido da média dos intervalos em milissegundos. Os contadores OVR da execução nativa não foram usados como substitutos desses valores. A diferença percentual foi descritiva e não foi interpretada como efeito causal da plataforma.
+A Tabela \ref{tab:comparacao_nativo_pcvr} e as Figuras \ref{fig:comparacao_tempo_pcvr} e \ref{fig:comparacao_taxa_pcvr} reuniram as mesmas representações nas duas rotas, com cinco execuções estacionárias por representação em cada uma. Para a comparação, foram utilizados o intervalo entre quadros registrado pela aplicação e sua taxa derivada, calculada pela divisão de mil pela média dos intervalos em milissegundos. Os contadores OVR da execução nativa não foram usados como substitutos desses valores. A diferença percentual foi descritiva e não foi interpretada como efeito causal da plataforma.
 
-\begin{quadro}[H]
+\begin{table}[H]
 \centering
 \footnotesize
 \caption{Comparação descritiva do intervalo médio entre quadros nas duas rotas.}
-\label{qua:comparacao_nativo_pcvr}
+\label{tab:comparacao_nativo_pcvr}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\textwidth}{|p{3.0cm}|X|X|X|}
+\begin{tabularx}{\textwidth}{p{3.0cm}XXX}
 \hline
 \textbf{Representação} & \textbf{Quest nativo: média $\pm$ DP (ms)} & \textbf{PCVR: média $\pm$ DP (ms)} & \textbf{Redução descritiva (\%)} \\ \hline
-\textit{baseline} & 45,053 $\pm$ 3,431 & 28,910 $\pm$ 0,076 & 35,83 \\ \hline
-\textit{top-k} 100k & 26,301 $\pm$ 0,007 & 23,909 $\pm$ 0,491 & 9,10 \\ \hline
-\textit{top-k} 50k & 17,133 $\pm$ 0,018 & 13,891 $\pm$ 0,006 & 18,92 \\ \hline
+\textit{baseline} & 45,053 $\pm$ 3,431 & 28,910 $\pm$ 0,076 & 35,83 \\
+\textit{top-k} 100k & 26,301 $\pm$ 0,007 & 23,909 $\pm$ 0,491 & 9,10 \\
+\textit{top-k} 50k & 17,133 $\pm$ 0,018 & 13,891 $\pm$ 0,006 & 18,92 \\
 \textit{splatfacto-big} & 65,620 $\pm$ 0,038 & 55,551 $\pm$ 0,010 & 15,34 \\ \hline
 \end{tabularx}
 \legend{Fonte: Elaborado pelo autor.}
-\end{quadro}
+\end{table}
 
 \begin{figure}[H]
 \centering

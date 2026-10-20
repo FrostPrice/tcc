@@ -60,7 +60,7 @@ As variantes podadas foram geradas por seleção determinística dos registros b
 
 O Algoritmo \ref{lst:poda_opacidade} registrou a lógica central. O pseudocódigo sintetizou a seleção e a preservação dos parâmetros das gaussianas, aspectos necessários à validade da comparação.
 
-\begin{lstlisting}[caption={Pseudocódigo da poda determinística por opacidade.},label={lst:poda_opacidade}]
+\begin{lstlisting}[caption={Poda determinística por opacidade.},label={lst:poda_opacidade},captionpos=t]
 procedure GenerateOpacityTopK(sourcePly, k)
     header, count, stride, opacityOffset <- ReadAndValidateHeader(sourcePly)
     ranked <- empty list
@@ -79,6 +79,7 @@ procedure GenerateOpacityTopK(sourcePly, k)
     SaveReport(sourcePly, outputPly, selected, SHA256(sourcePly), SHA256(outputPly))
 end procedure
 \end{lstlisting}
+\noindent\footnotesize Fonte: Elaborado pelo autor.\normalsize
 
 O algoritmo foi apresentado como pseudocódigo, com entrada, critério de ordenação, desempate e saída explícitos, sem reproduzir a implementação inteira. A leitura do cabeçalho verificou o formato binário, o número de vértices e a posição do campo de opacidade; a validação de tamanho protegeu contra registros truncados. Após a escrita, a quantidade de registros, o tamanho do arquivo e as somas SHA-256 foram conferidos. Assim, a operação preservou os atributos de cada gaussiana selecionada e alterou apenas o subconjunto representado.
 
