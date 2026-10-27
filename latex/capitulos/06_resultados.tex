@@ -91,7 +91,7 @@ As variantes por poda determinística \textit{top-k} foram derivadas da \textit{
 
 \subsection{Desempenho em execução nativa no Quest}
 
-A Tabela \ref{tab:resultados_quest} reuniu a série de cinco execuções por variante. Os valores de intervalo entre quadros e de GPU foram calculados como médias das cinco médias por execução, acompanhadas pelo desvio-padrão amostral (DP) entre essas médias; não foram desvios calculados sobre quadros individuais agrupados. O FPS principal foi derivado do intervalo médio registrado pela aplicação. O FPS e o tempo de GPU do OVR Metrics foram contadores complementares calculados sobre todas as linhas dos CSVs, que incluíram amostras fora da janela interna exata de 30 segundos. Na série retida, as variantes com menos gaussianas apresentaram menores tempos médios de quadro e maiores FPS derivados.
+A Tabela \ref{tab:resultados_quest} reuniu a série de cinco execuções por variante. Os valores de intervalo entre quadros e de GPU foram calculados como médias das cinco médias por execução, acompanhadas pelo desvio-padrão amostral (DP) entre essas médias; não foram desvios calculados sobre quadros individuais agrupados. O FPS principal foi derivado do intervalo médio registrado pela aplicação. O FPS e o tempo de GPU do OVR Metrics foram contadores complementares calculados sobre todas as linhas dos CSVs, que incluíram amostras fora da janela interna exata de 30 segundos. Nos relatórios da aplicação das 20 execuções nativas, a taxa de atualização XR reportada foi aproximadamente 72 Hz, com variações inferiores a 0,002 Hz. Portanto, o orçamento de referência dessas sessões foi 13,89 ms por quadro. A meta desejável de 90 FPS do protocolo corresponderia a 11,11 ms por quadro, mas não houve sessão configurada ou medida a 90 Hz. Na série retida, as variantes com menos gaussianas apresentaram menores tempos médios de quadro e maiores FPS derivados.
 
 \begin{table}[H]
 \centering
@@ -110,9 +110,37 @@ A Tabela \ref{tab:resultados_quest} reuniu a série de cinco execuções por var
 \legend{Fonte: Elaborado pelo autor.}
 \end{table}
 
-Como fatos medidos, a \textit{baseline} registrou 22,20 FPS, a poda 100k registrou 38,02 FPS, a poda 50k registrou 58,37 FPS e a \textit{splatfacto-big} registrou 15,24 FPS derivados. Nenhuma média atingiu a referência de 90 FPS definida no protocolo. A poda 50k apresentou o menor custo de renderização da série, mas não constituiu uma seleção definitiva para VR: seus valores de PSNR e SSIM foram os menores, enquanto o LPIPS foi o maior e as capturas qualitativas mostraram mais fragmentação. A \textit{splatfacto-big} preservou melhor o detalhe em observações visuais, mas teve o maior custo. A condição estacionária não permitiu inferir fluidez, conforto ou estabilidade durante movimento de cabeça. A média de GPU OVR da \textit{splatfacto-big} foi calculada dos CSVs da série atual pelo mesmo critério das demais variantes; seu contador de quadros obsoletos não foi consolidado nesta tabela e o traço não deve ser interpretado como zero.
+Como fatos medidos, a \textit{baseline} registrou 22,20 FPS, a poda 100k registrou 38,02 FPS, a poda 50k registrou 58,37 FPS e a \textit{splatfacto-big} registrou 15,24 FPS derivados. Até a variante 50k, a mais rápida, excedeu o orçamento médio de 13,89 ms da configuração reportada de 72 Hz; nenhuma média alcançou esse orçamento nem a referência desejável de 90 FPS definida no protocolo. A poda 50k apresentou o menor custo de renderização da série, mas não constituiu uma seleção definitiva para VR: seus valores de PSNR e SSIM foram os menores, enquanto o LPIPS foi o maior e as capturas qualitativas mostraram mais fragmentação. A \textit{splatfacto-big} preservou melhor o detalhe em observações visuais, mas teve o maior custo. A condição estacionária não permitiu inferir fluidez, conforto ou estabilidade durante movimento de cabeça. A média de GPU OVR da \textit{splatfacto-big} foi calculada dos CSVs da série atual pelo mesmo critério das demais variantes; seu contador de quadros obsoletos não foi consolidado nesta tabela e o traço não deve ser interpretado como zero.
 
 A \textit{baseline} apresentou DP de 3,431 ms entre as médias de intervalo de suas cinco execuções, maior que o das outras três variantes. Sua primeira média foi de 51,190 ms, enquanto as quatro seguintes ficaram entre 43,497 e 43,533 ms. O registro foi mantido na série válida; a diferença observada não foi atribuída a aquecimento, estado térmico ou outra causa sem medição que a isolasse. Para as sessões orbitais da Tabela \ref{tab:diagnostico_orbita_nativa}, houve uma execução por representação, de modo que não foi calculado DP entre execuções.
+
+A Tabela \ref{tab:memoria_quest} apresentou os contadores de memória disponíveis nos CSVs do OVR Metrics Tool para as mesmas cinco execuções nativas de cada variante. Para cada contador, calculou-se primeiro a média das leituras disponíveis em cada CSV e, depois, a média das cinco execuções, inclusive amostras externas à janela interna exata de 30 segundos. As unidades MB são as reportadas pela ferramenta, sem conversão. As séries \textit{baseline}, 100k e 50k foram coletadas em setembro; a série atual da \textit{splatfacto-big}, em outubro, sob outro \textit{build} do sistema do Quest. Assim, as diferenças entre linhas não isolam o efeito da quantidade de gaussianas.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Contadores de memória do OVR Metrics Tool na execução nativa, com cinco execuções por representação.}
+\label{tab:memoria_quest}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{p{2.8cm}C{1.65cm}C{1.65cm}C{1.65cm}X}
+\hline
+\textbf{Representação} & \textbf{PSS (MB)} & \textbf{RSS (MB)} & \textbf{USS (MB)} & \textbf{GPU física (MB)} \\ \hline
+\textit{baseline} & 761,26 & 899,71 & 746,75 & 402,11 \\
+\textit{top-k} 100k & 752,50 & 890,32 & 737,26 & 400,77 \\
+\textit{top-k} 50k & 739,94 & 876,25 & 725,81 & 394,06 \\
+\textit{splatfacto-big} & 814,92 & 945,22 & 792,76 & 421,84 \\ \hline
+\end{tabularx}
+\legend{Fonte: Elaborado pelo autor a partir dos CSVs do OVR Metrics Tool.}
+\end{table}
+
+Os contadores PSS, RSS e USS descreveram estimativas de memória do processo da aplicação segundo o OVR Metrics Tool. A coluna de GPU física foi atribuída à aplicação pela mesma ferramenta. Os nomes exatos dos campos nos CSVs foram:
+
+\begin{itemize}[nosep]
+    \item PSS: \texttt{app\_pss\_MB}; RSS: \texttt{app\_rss\_MB};
+    \item USS: \texttt{app\_uss\_MB}; GPU física: \texttt{app\_gpu\_physical\_MB}.
+\end{itemize}
+
+A redução de 195.760 para 50.000 gaussianas coincidiu com queda de 402,11 para 394,06 MB neste último contador, muito menor que a redução do tamanho do PLY. A medição incluiu outros recursos da aplicação e do sistema, não isolou o custo das gaussianas e não deve ser denominada VRAM do Quest. As séries sob \textit{builds} distintos e sem controle de estado térmico também não sustentaram atribuição causal da diferença à representação.
 
 \begin{figure}[H]
 \centering
