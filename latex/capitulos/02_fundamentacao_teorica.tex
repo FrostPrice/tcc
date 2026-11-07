@@ -1,6 +1,6 @@
 \chapter[Fundamentação Teórica]{Fundamentação Teórica}
 
-Inicialmente, foram discutidas a síntese de novas vistas, a reconstrução multivista a partir de imagens RGB e a distinção entre representações implícitas e explícitas. Em seguida, foram apresentados os dois métodos centrais do \textit{pipeline}, \textit{Neural Radiance Fields} (NeRF) e \textit{3D Gaussian Splatting} (3D-GS), bem como as restrições de VR \textit{standalone}, as métricas de avaliação, a plataforma Meta Quest 3S e as \textit{engines} consideradas para integração.
+Este capítulo apresenta a síntese de novas vistas, a reconstrução multivista a partir de imagens RGB e a distinção entre representações implícitas e explícitas. Em seguida, discute os dois métodos centrais do \textit{pipeline}, \textit{Neural Radiance Fields} (NeRF) e \textit{3D Gaussian Splatting} (3D-GS), bem como as restrições de VR \textit{standalone}, as métricas de avaliação, a plataforma Meta Quest 3S e as \textit{engines} consideradas para integração.
 
 \section{Síntese de Novas Vistas e Representação de Cenas}
 
@@ -10,7 +10,7 @@ Tradicionalmente, a NVS foi tratada por técnicas baseadas em geometria explíci
 
 Nesse contexto, a renderização neural ganhou relevância ao representar simultaneamente geometria aparente e radiância por funções aprendidas a partir de imagens calibradas \cite{sitzmann2019srn,mildenhall2020}. Entre essas abordagens, os \textit{Neural Radiance Fields} (NeRF) consolidaram a representação implícita de alta fidelidade, enquanto o \textit{3D Gaussian Splatting} (3D-GS) se destacou como alternativa explícita voltada à renderização em tempo real \cite{mildenhall2020,kerbl2023,fei2025survey3dgs}.
 
-Neste trabalho, a síntese de novas vistas foi analisada em relação a um objetivo aplicado: reconstruir cenas estáticas e torná-las visualizáveis em Realidade Virtual (VR) \textit{standalone}, cenário que exigia qualidade visual, baixa latência e renderização interativa \cite{xu2023,tu2025,metaquest3s2024}.
+Neste trabalho, a síntese de novas vistas se relaciona ao objetivo aplicado de reconstruir cenas estáticas e visualizá-las em Realidade Virtual (VR) \textit{standalone}, cenário que exige qualidade visual, baixa latência e renderização interativa \cite{xu2023,tu2025,metaquest3s2024}.
 
 \section{Reconstrução Multivista a partir de Imagens RGB}
 
@@ -56,13 +56,7 @@ A comparação entre representações implícitas e explícitas envolve um \text
 
 Representações explícitas favorecem velocidade de renderização e integração com pipelines gráficos convencionais, mas demandam estratégias de escalabilidade, poda, compressão e seleção de nível de detalhe quando executadas em plataformas restritas \cite{kerbl2023,fei2025survey3dgs,wu2025,fan2024lightgaussian}.
 
-Outra diferença está no acesso à geometria. Em representações implícitas, ela emerge indiretamente da função aprendida; nas explícitas, os elementos da cena são acessíveis como primitivas discretas, facilitando manipulação, inspeção e integração com sistemas gráficos.
-
-\subsection{Relação com o escopo deste trabalho}
-
-No contexto deste trabalho, essa distinção estruturou o \textit{pipeline} proposto. O NeRF foi adotado como referência de reconstrução de cenas estáticas, enquanto o 3D Gaussian Splatting foi investigado como representação explícita mais compatível com renderização interativa em Realidade Virtual \cite{sitzmann2019srn,mildenhall2020,kerbl2023,xu2023,tu2025}.
-
-Dessa forma, o problema investigado consistiu em articular dois paradigmas no mesmo fluxo de reconstrução e visualização, equilibrando qualidade visual e desempenho em hardware de VR \textit{standalone} \cite{muller2022,kerbl2023,xu2023,metaquest3s2024}.
+Outra diferença está no acesso à geometria. Em representações implícitas, ela emerge indiretamente da função aprendida; nas explícitas, os elementos da cena são acessíveis como primitivas discretas, facilitando manipulação, inspeção e integração com sistemas gráficos \cite{sitzmann2019srn,mildenhall2020,kerbl2023,fei2025survey3dgs}.
 
 \section{Neural Radiance Fields}
 
@@ -82,9 +76,9 @@ T_i &= \exp\left(-\sum_{j=1}^{i-1}\sigma_j \delta_j\right).
 
 Na Equação \ref{eq:nerf_renderizacao_volumetrica}, $\hat{C}(\mathbf{r})$ representa a cor sintetizada para o raio $\mathbf{r}$, $\sigma_i$ é a densidade da amostra, $\mathbf{c}_i$ é sua cor, $\delta_i$ é a distância entre amostras e $T_i$ representa a transmitância acumulada até a amostra $i$.
 
-Essa característica explica sua relevância para este trabalho: o NeRF é adequado como referência de fidelidade visual, pois tende a preservar aparência, dependência de vista e consistência multivista em cenas estáticas. Ao mesmo tempo, sua renderização depende de amostragem volumétrica e múltiplas consultas por pixel, o que aumenta o custo de execução em alta resolução, renderização estereoscópica e movimentos contínuos de câmera \cite{mildenhall2020,xu2023}.
+O NeRF é adequado como referência de fidelidade visual, pois tende a preservar aparência, dependência de vista e consistência multivista em cenas estáticas. Ao mesmo tempo, sua renderização depende de amostragem volumétrica e múltiplas consultas por pixel, o que aumenta o custo de execução em alta resolução, renderização estereoscópica e movimentos contínuos de câmera \cite{mildenhall2020,xu2023}.
 
-Variantes como Instant-NGP reduziram de forma significativa o tempo de treinamento por meio de codificações espaciais mais eficientes \cite{muller2022}. Ainda assim, no objetivo de visualização imersiva em VR \textit{standalone}, o paradigma implícito foi considerado limitado por custo de inferência, latência e exigência de hardware. Por isso, neste trabalho o NeRF não foi tratado como representação final de execução no headset, mas como linha de base visual para orientar a comparação com 3D-GS.
+Variantes como Instant-NGP reduziram de forma significativa o tempo de treinamento por meio de codificações espaciais mais eficientes \cite{muller2022}. Ainda assim, para a visualização imersiva em VR \textit{standalone}, o custo de inferência, a latência e a exigência de hardware limitam o uso direto de representações implícitas. Neste trabalho, o NeRF serve como referência de fidelidade visual para a comparação com 3D-GS, sem constituir a representação destinada à execução no headset.
 
 \section{3D Gaussian Splatting}
 
@@ -129,16 +123,6 @@ O treinamento do 3D-GS inclui otimização, densificação e poda de gaussianas.
 
 A literatura e o ecossistema de ferramentas indicam que 3D-GS já deixou de ser apenas uma formulação acadêmica isolada. Há métodos voltados a compressão, escalabilidade e integração, como LightGaussian e Scaffold-GS \cite{lu2024scaffoldgs,fan2024lightgaussian}, estudos de integração da técnica em motores gráficos \cite{jin2024} e ferramentas comerciais ou comunitárias que apoiam captura, edição, exportação e uso de gaussianas \cite{kiri3dgs}. Portanto, o foco deste trabalho não é propor uma nova técnica de 3D-GS, mas avaliar a sua adoção em um \textit{pipeline} aplicado de VR \textit{standalone}.
 
-A Figura \ref{fig:3dgs_pipeline_kerbl} ilustra o fluxo geral do 3D-GS, no qual pontos iniciais estimados por reconstrução multivista são convertidos em gaussianas otimizáveis e posteriormente renderizados por projeção e composição.
-
-\begin{figure}[H]
-    \centering
-    \caption{Visão geral do pipeline do 3D-GS, desde a inicialização com pontos de SfM até a projeção, o controle adaptativo de densidade e a rasterização diferenciável.}
-    \label{fig:3dgs_pipeline_kerbl}
-    \fbox{\includegraphics[width=0.97\textwidth]{figuras/kerbl2023_fig2.png}}
-    \fonte{Adaptado de \cite{kerbl2023}.}
-\end{figure}
-
 O Quadro \ref{qua:comparacao_metodos_3dgs} sintetiza métodos relevantes para a passagem de representações implícitas ou híbridas a estruturas mais adequadas à visualização interativa \cite{mildenhall2020,kerbl2023,chen2024survey3dgs}.
 
 \begin{quadro}[H]
@@ -166,23 +150,29 @@ Scaffold-GS / LightGaussian & Explícito otimizado & Redução de redundância, 
 \fonte{Elaboração própria com base em \cite{mildenhall2020,muller2022,yu2021plenoctrees,hedman2021snerg,kerbl2023,lu2024scaffoldgs,fan2024lightgaussian,fei2025survey3dgs}.}
 \end{quadro}
 
+A Figura \ref{fig:3dgs_pipeline_kerbl} ilustra o fluxo geral do 3D-GS, no qual pontos iniciais estimados por reconstrução multivista são convertidos em gaussianas otimizáveis e posteriormente renderizados por projeção e composição.
+
+\begin{figure}[H]
+    \centering
+    \caption{Visão geral do pipeline do 3D-GS, desde a inicialização com pontos de SfM até a projeção, o controle adaptativo de densidade e a rasterização diferenciável.}
+    \label{fig:3dgs_pipeline_kerbl}
+    \fbox{\includegraphics[width=0.97\textwidth]{figuras/kerbl2023_fig2.png}}
+    \fonte{Adaptado de \cite{kerbl2023}.}
+\end{figure}
+
+A passagem dos pontos reconstruídos às gaussianas renderizáveis conecta a representação da cena à sua visualização. Em VR \textit{standalone}, essa etapa também precisa atender às restrições de desempenho e estabilidade da plataforma.
+
 \subsection{Relação com Realidade Virtual e com o escopo deste trabalho}
 
 Em Realidade Virtual, a vantagem de renderização do 3D-GS torna-se especialmente relevante, pois aplicações imersivas exigem renderização estereoscópica, baixa latência e estabilidade durante movimentos de cabeça. A literatura de VR-NeRF mostra que mesmo abordagens baseadas em NeRF precisam combinar captura multivista densa, representação eficiente, nível de detalhe e renderização otimizada para alcançar taxas interativas \cite{xu2023}, reforçando o interesse por representações próximas do pipeline gráfico \cite{kerbl2023,tu2025}.
 
 Ainda assim, a adoção de 3D-GS em VR \textit{standalone} não é direta. Dispositivos móveis impõem restrições de memória, consumo energético, largura de banda e processamento gráfico; por isso, compressão, poda, seleção de nível de detalhe, renderização foveada e controle de artefatos tornam-se componentes do problema \cite{metaquest3s2024,qualcommxr2gen2,tu2025,fan2024lightgaussian,huang2025}.
 
-Neste trabalho, o 3D-GS foi compreendido como mudança de paradigma representacional: a reconstrução inicial e a visualização interativa utilizaram modelos treinados separadamente sobre as mesmas imagens, e a última exigiu uma estrutura explícita compatível com rasterização \cite{mildenhall2020,muller2022,kerbl2023}. Outras formas possíveis de transição, como \textit{baking}, destilação ou inicialização por SfM, foram consideradas na fundamentação, mas não foram executadas neste estudo \cite{yu2021plenoctrees,hedman2021snerg,kerbl2023,fei2025survey3dgs}.
-
-Dessa forma, o 3D-GS fornece a base teórica para transformar uma cena reconstruída em ativo visual executável, mas suas limitações de memória, estabilidade perceptual e escalabilidade exigem avaliação específica em VR \textit{standalone} \cite{kerbl2023,xu2023,tu2025,metaquest3s2024,qualcommxr2gen2}.
+Essas restrições motivam avaliar a representação 3D-GS no dispositivo-alvo, além da qualidade das imagens sintetizadas em condições offline.
 
 \section{NeRF e 3D-GS como Representações Complementares}
 
-Embora frequentemente apresentados como abordagens concorrentes, NeRF e 3D-GS podem ser compreendidos como representações complementares. O NeRF se destaca por sua natureza implícita e contínua, enquanto o 3D-GS se destaca por primitivas gaussianas rasterizáveis e desempenho de renderização \cite{sitzmann2019srn,mildenhall2020,muller2022,kerbl2023,fei2025survey3dgs}.
-
-Essa complementaridade sustenta a lógica do trabalho: uma representação implícita serve como referência de reconstrução, enquanto uma explícita favorece a execução interativa em VR.
-
-A Figura \ref{fig:nerf_vs_3dgs} sintetiza a passagem de um modelo baseado em amostragem volumétrica para uma estrutura projetável e rasterizável \cite{muller2022,yu2021plenoctrees,hedman2021snerg,kerbl2023,xu2023,tu2025}.
+Neste trabalho, a complementaridade é metodológica: NeRF e 3D-GS podem ser treinados separadamente sobre as mesmas imagens e poses, com o primeiro como referência de fidelidade visual e o segundo como representação para visualização interativa. Essa organização permite comparar os modelos sem pressupor a conversão direta de NeRF em 3D-GS. A Figura \ref{fig:nerf_vs_3dgs} ilustra as duas formas de sintetizar novas vistas \cite{mildenhall2020,kerbl2023,chen2024survey3dgs}.
 
 \begin{figure}[H]
     \centering
@@ -191,8 +181,6 @@ A Figura \ref{fig:nerf_vs_3dgs} sintetiza a passagem de um modelo baseado em amo
     \fbox{\includegraphics[width=0.72\textwidth]{figuras/nerf_vs_3dgs.png}}
     \fonte{Adaptado de \cite{chen2024survey3dgs}.}
 \end{figure}
-
-Essa relação evidenciou um \textit{trade-off}: representações implícitas favoreciam continuidade, mas dependiam de renderização volumétrica; representações explícitas favoreciam velocidade e integração gráfica, mas aumentavam exigências de memória, largura de banda e gerenciamento da cena \cite{mildenhall2020,muller2022,kerbl2023,fei2025survey3dgs,fan2024lightgaussian}. O objetivo do estudo foi compreender como essas características poderiam ser articuladas em VR \textit{standalone} \cite{xu2023,tu2025,metaquest3s2024,qualcommxr2gen2}.
 
 \section{Restrições da Realidade Virtual Standalone}
 
@@ -273,22 +261,16 @@ t_{quadro} = \frac{1000}{FPS},
 
 em que $t_{quadro}$ é medido em milissegundos. Essa relação indica o custo temporal de renderização: quanto maior o FPS, menor o tempo disponível para gerar cada quadro. Em VR, esse limite é mais restritivo porque cada quadro precisa refletir a pose atualizada do usuário \cite{xu2023,tu2025}.
 
-No Meta Quest 3S, o protocolo exigiu registrar a taxa de atualização junto aos resultados. Para este trabalho, 90 FPS foram adotados como referência desejável de fluidez em VR \textit{standalone}, correspondendo a aproximadamente 11,1 ms por quadro. Resultados abaixo desse patamar foram interpretados com cautela: 30 FPS, por exemplo, não foram tratados como meta suficiente para VR, mas como evidência de limitação técnica ou de execução sob contingência, como reprojeção, transmissão assistida ou visualização não nativa.
+No Meta Quest 3S, a interpretação do desempenho exige registrar a taxa de atualização configurada junto aos resultados. Neste trabalho, 90 FPS constituem uma referência desejável de fluidez em VR \textit{standalone}, correspondente a aproximadamente 11,1 ms por quadro. Taxas abaixo dessa referência exigem análise contextual; uma taxa próxima de 30 FPS, por exemplo, não atende à meta de fluidez e pode indicar limitação técnica ou uma condição de execução distinta, como transmissão assistida ou visualização não nativa.
 
 Além da taxa de quadros, o uso de memória é relevante, sobretudo em representações explícitas como 3D-GS. Número de gaussianas, atributos armazenados, grau dos harmônicos esféricos e organização espacial impactam a viabilidade em plataformas móveis \cite{kerbl2023,fei2025survey3dgs,wu2025,fang2024,huang2025,fan2024lightgaussian}. Por isso, FPS deve ser observado em conjunto com tempo de quadro, consumo de memória e estabilidade.
 
 Em dispositivos \textit{standalone}, o desempenho também deve ser interpretado à luz das restrições de energia, dissipação térmica e capacidade gráfica, pois rastreamento, renderização estereoscópica, aplicação e sistema compartilham recursos \cite{metaquest3s2024,qualcommxr2gen2,xu2023}.
 
-\subsection{Estabilidade visual e percepção qualitativa}
-
-Além das métricas numéricas, o protocolo previu registrar artefatos e falhas percebidas durante a visualização. Essa análise não configurou estudo formal com usuários, mas uma observação qualitativa estruturada do protótipo. Foram previstos registros de \textit{floaters}, borramentos, cintilação, inconsistências entre os olhos, sensação de escala inadequada, travamentos, quedas abruptas de quadros e estranhamento perceptual associado ao movimento de cabeça. A série controlada de movimento natural, porém, não foi executada.
-
-Desse modo, as métricas adotadas cobrem três dimensões complementares: qualidade da reconstrução, viabilidade técnica da execução e estabilidade perceptual da visualização imersiva em VR \textit{standalone} \cite{mildenhall2020,wang2004,zhang2018,kerbl2023,xu2023,tu2025,metaquest3s2024}.
-
 \section{Meta Quest 3S como Plataforma-Alvo}
 \label{sec:meta_quest_3s}
 
-Como o hardware-alvo deste trabalho foi o Meta Quest 3S, suas características técnicas influenciaram a viabilidade da visualização imersiva proposta. Em VR \textit{standalone}, o headset acumulou as funções de exibição, processamento gráfico, rastreamento e interação \cite{metaquest3s2024,qualcommxr2gen2,xu2023,tu2025}.
+Como o hardware-alvo deste trabalho é o Meta Quest 3S, suas características técnicas condicionam a viabilidade da visualização imersiva. Em VR \textit{standalone}, o headset acumula as funções de exibição, processamento gráfico, rastreamento e interação \cite{metaquest3s2024,qualcommxr2gen2,xu2023,tu2025}.
 
 Essa condição difere de uma estação de trabalho com GPU dedicada: no Meta Quest 3S, processamento gráfico, rastreamento, composição estereoscópica, lógica da aplicação e \textit{runtime} XR compartilham os mesmos recursos. A avaliação torna-se mais próxima de um cenário real de uso, mas também mais restritiva \cite{metaquest3s2024,qualcommxr2gen2,xu2023}.
 
@@ -329,15 +311,11 @@ Essas especificações reforçam que o Quest 3S é adequado como plataforma expe
 
 Do ponto de vista comparativo, a documentação oficial indica que o Quest 3S compartilha com o Quest 3 a mesma classe de chipset e a mesma quantidade de memória, embora tenha resolução e campo de visão mais modestos. Essa combinação delimita experimentalmente o problema e evita uma análise restrita a condições ideais de hardware desktop \cite{metaquest3s2024,qualcommxr2gen2}.
 
-\subsection{Implicações do hardware para NeRF e 3D Gaussian Splatting}
+\subsection{Implicações do hardware para a avaliação}
 
-A adoção do Meta Quest 3S afeta diretamente a escolha da representação visual e a avaliação da solução. Embora o NeRF ofereça elevada fidelidade, sua formulação volumétrica é onerosa para execução \textit{on-device}, especialmente com renderização estereoscópica e atualização em alta frequência \cite{mildenhall2020,muller2022,xu2023,metaquest3s2024}.
+A resolução de 1832$\times$1920 pixels por olho e o suporte a até 120 Hz definem limites concretos para a renderização no Quest 3S, mas não garantem que a aplicação atinja a taxa máxima. A avaliação deve relacionar o tempo de quadro à taxa de atualização efetivamente configurada no dispositivo, pois o orçamento temporal muda com essa configuração \cite{metaquest3s2024,xu2023}.
 
-Nesse cenário, o Quest 3S reforça a motivação para investigar representações explícitas. O 3D Gaussian Splatting dispensa amostragem densa ao longo do raio e se apoia em rasterização diferenciável \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs}, mas número de gaussianas, largura de banda e memória continuam críticos em cenas complexas \cite{wu2025,fang2024,huang2025,fan2024lightgaussian}.
-
-O suporte a até 120 Hz deve ser entendido como referência de exigência, não como garantia de desempenho. Em aplicações imersivas, estabilidade da taxa de quadros e previsibilidade do tempo de renderização são tão importantes quanto a qualidade visual. Trabalhos como VR-NeRF evidenciam a pressão imposta por resolução por olho, renderização estereoscópica e fluidez \cite{xu2023}, especialmente quando se busca execução \textit{standalone} \cite{metaquest3s2024,qualcommxr2gen2,tu2025}.
-
-Portanto, a adequação ao Quest 3S depende de observar se a cena mantém qualidade visual, estabilidade e consumo de memória compatíveis com uma aplicação imersiva real, possivelmente exigindo compressão, poda, hierarquização, seleção de nível de detalhe e organização espacial \cite{lu2024scaffoldgs,fan2024lightgaussian,fei2025survey3dgs,wu2025}.
+Os 8 GB de memória embarcada também são compartilhados com o sistema, o \textit{runtime} XR e os demais recursos da aplicação; não correspondem à memória livre para armazenar gaussianas. Assim, a contagem e o tamanho do modelo precisam ser interpretados junto aos contadores de memória disponíveis no dispositivo e à estabilidade da execução, sem atribuir todo o consumo observado ao 3D-GS \cite{metaquest3s2024,qualcommxr2gen2,fei2025survey3dgs}.
 
 \subsection{Quest 3S como referência experimental do trabalho}
 
@@ -357,7 +335,7 @@ A integração de uma cena reconstruída em um ambiente de Realidade Virtual dep
 
 No caso de representações neurais ou derivadas, como NeRF e 3D Gaussian Splatting, essa camada de integração torna-se ainda mais relevante. O NeRF depende de renderização volumétrica e múltiplas consultas por raio, enquanto o 3D-GS utiliza primitivas explícitas projetadas e compostas por rasterização diferenciável. Embora o 3D-GS seja mais compatível com renderização interativa, sua execução prática ainda depende de suporte adequado a shaders, estruturas de dados, gerenciamento de memória e integração com o pipeline gráfico da aplicação \cite{mildenhall2020,muller2022,kerbl2023,fei2025survey3dgs,chen2024survey3dgs}.
 
-Do ponto de vista da Fundamentação Teórica, a análise das \textit{engines} foi tratada como caracterização das possibilidades técnicas de integração em VR, e não como decisão de projeto. A escolha específica da \textit{engine} e sua justificativa metodológica foram descritas no Desenvolvimento, onde também se registraram as decisões de implementação e as contingências. Nesta seção, portanto, foram apresentados apenas os critérios gerais e as alternativas de integração.
+Esta seção caracteriza critérios gerais e alternativas de integração em VR. A escolha da \textit{engine}, sua justificativa metodológica, as decisões de implementação e as contingências são discutidas no Desenvolvimento.
 
 \subsection{Critérios de caracterização das engines}
 
@@ -412,6 +390,7 @@ O Quadro \ref{qua:comparativo_engines_vr} sintetiza as características gerais d
 \begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
 \hline
 \textbf{Engine / abordagem} & \textbf{Características gerais} & \textbf{Pontos de atenção} \\ \hline
+Unreal Engine & Engine voltada a aplicações gráficas de alta fidelidade, com suporte a XR, renderização em tempo real e registros recentes de integração com 3D-GS. & Maior complexidade de integração, dependência de plugins, versões do motor, shaders e fluxo de \textit{build} para Quest. \\ \hline
 Unity & Engine associada a prototipagem rápida, aplicações interativas e desenvolvimento multiplataforma em XR. & Necessidade de adaptar o pipeline de 3D-GS a formatos, renderizadores e rotinas compatíveis com a engine. \\ \hline
 Godot & Engine aberta, flexível e customizável, com interesse acadêmico para experimentação e controle do pipeline. & Menor disponibilidade de fluxos consolidados para 3D-GS em VR \textit{standalone} e possível aumento do esforço de implementação. \\ \hline
 Visualizador desktop + Quest Link & Execução assistida por desktop com exibição imersiva no headset, útil para comparação com cenários de maior capacidade computacional. & Não representa integralmente a execução \textit{on-device}, pois desloca processamento, memória e carga gráfica para o computador. \\ \hline
