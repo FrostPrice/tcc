@@ -1,6 +1,6 @@
 \section{Implementação}
 
-Esta seção descreveu a execução efetiva do protótipo e as decisões tomadas durante sua implementação. Diferentemente da seção de Projeto, que registrou o fluxo planejado, aqui foram detalhados os componentes utilizados, a mudança de rota de integração e os artefatos preservados para reprodução. Os resultados quantitativos, as observações qualitativas e suas interpretações foram reservados à seção de Resultados, sem antecipar conclusões de desempenho ou fidelidade.
+Esta seção descreveu a execução efetiva do protótipo e as decisões tomadas durante sua implementação.
 
 \subsection{Arquitetura efetivamente implementada}
 
@@ -40,19 +40,47 @@ A Figura \ref{fig:arquitetura_desenvolvida} resumiu a arquitetura utilizada no e
 
 Os arquivos derivados organizaram os dados para consulta e geração de tabelas, mas não substituíram os manifestos nem as medições brutas. A ramificação Windows/Meta Horizon Link preservou as mesmas representações, porém mudou a plataforma de renderização e acrescentou transmissão. Por essa razão, capturas da Unity e medidas de GPU do desktop não foram reutilizadas como métricas offline ou medidas de memória do Quest.
 
-Na arquitetura implementada, o conjunto de imagens e poses constituiu a entrada comum aos treinamentos. O NeRF e o Splatfacto foram treinados separadamente sobre essa entrada; o arquivo exportado do NeRF não alimentou o Splatfacto. A saída 3D-GS em PLY formou a ligação com o protótipo XR. A avaliação offline utilizou imagens de teste retidas e não dependeu da renderização da Unity. Já os medidores da aplicação e do dispositivo foram associados ao identificador da representação carregada em cada \textit{build}. Essa divisão impediu atribuir ao modelo diferenças que pertenciam ao renderizador ou à plataforma.
+As mesmas imagens e poses alimentaram separadamente os treinamentos de NeRF e Splatfacto. Apenas os PLYs 3D-GS seguiram para a Unity; as imagens retidas foram avaliadas no Colab. Cada \textit{build} e medição no headset foi associado à variante carregada, mantendo distintas as evidências de qualidade offline e de execução em VR.
 
-No Colab, a configuração da experiência definiu as entradas e os identificadores das variantes. O treinamento e a avaliação produziram configurações, modelos, métricas e imagens de teste; a exportação gerou os PLYs consumidos pela Unity. Os arquivos de origem foram preservados, e as podas criaram novos PLYs identificados em vez de alterar o artefato de referência. A ligação entre as etapas foi verificada por identificadores, contagens de gaussianas e somas de verificação, o que permitiu recusar uma execução com representação diferente da prevista.
+No Colab, as configurações e os identificadores ligaram treinamento, avaliação e exportação aos artefatos produzidos. Os arquivos de origem foram preservados; cada poda gerou um novo PLY, com contagem de gaussianas e soma de verificação próprias.
 
-Na Unity, cada cena de avaliação combinou um ativo 3D-GS com o rig XR, o alinhamento de pose e o registrador de tempos de quadro. O alinhamento \textit{FullPoseOnce} aguardou rastreamento antes de fixar a relação entre a pose de referência e o visor; o marcador gravou a pose-alvo, a observada e o erro após a estabilização. O registrador separou aquecimento e janela de medição e salvou estatísticas e configuração do renderizador junto ao identificador da variante. Fora da aplicação, os coletores confirmaram o identificador esperado e preservaram relatórios, CSVs do OVR Metrics quando disponíveis e capturas. Para as órbitas, uma sequência distinta avançou somente depois do marcador de prontidão e da confirmação da captura, preservando as poses sem confundi-las com a medição estacionária.
+Na Unity, a cena de avaliação reuniu o ativo 3D-GS, o rig XR, o alinhamento de pose e o registro de tempos de quadro. A coleta separou aquecimento de medição e preservou configuração, identificador da variante, relatórios e capturas. As órbitas usaram uma sequência própria de marcadores e capturas, distinta da medição estacionária.
 
 \subsection{Implementação do pipeline experimental}
 
-O estudo de caso adotado foi o conjunto \textit{poster} disponibilizado pelo Nerfstudio. As etapas de pré-processamento, treinamento, avaliação e exportação foram executadas no Google Colab, com os modelos e registros de configuração preservados em armazenamento externo. O modelo NeRF foi mantido como referência de fidelidade visual, enquanto as representações 3D-GS foram treinadas ou derivadas a partir da mesma cena para a avaliação de custo e desempenho.
+O estudo de caso adotado foi o conjunto \textit{poster} disponibilizado pelo Nerfstudio. As etapas de pré-processamento, treinamento, avaliação e exportação foram executadas no Google Colab, com os modelos e registros de configuração preservados. O modelo NeRF foi mantido como referência de fidelidade visual, enquanto as representações 3D-GS foram treinadas ou derivadas a partir da mesma cena para a avaliação de custo e desempenho.
 
-A execução foi organizada de modo incremental. Primeiro, foi preservada uma \textit{baseline} Splatfacto; depois, foram produzidas variantes de regularização de escala, de maior capacidade e de poda determinística por opacidade. As podas de 100 mil e 50 mil gaussianas foram geradas a partir do PLY congelado da \textit{baseline}, mantendo os registros binários completos das gaussianas selecionadas. Cada artefato recebeu identificador de variante, contagem de gaussianas, tamanho e soma de verificação registrados em seus manifestos.
+O recorte utilizado continha 100 imagens PNG de uma cena estática, com resolução original de 1080$\times$1920 pixels (largura $\times$ altura). Para o treinamento, as imagens foram reduzidas por um fator de dois, para 540$\times$960 pixels, sem recorte adicional nem máscaras. O conjunto foi obtido do espelho público do Nerfstudio no Hugging Face, na revisão \texttt{1be5b1b} \cite{nerfstudioPosterDataset}. O arquivo de poses fornecido nesse espelho referenciava 226 quadros, mas apenas 100 possuíam arquivos de imagem correspondentes; os 126 registros sem imagem foram excluídos antes de fixar a divisão experimental.
 
-Como o conjunto \textit{poster} já contém imagens organizadas e poses de câmera, o estudo não dependeu de uma nova captura nem de uma nova execução de COLMAP para esse caso. O processamento no Colab separou configurações editáveis, treinamento, avaliação e exportação; os resultados custosos foram persistidos fora do ambiente temporário. A variante de maior capacidade foi treinada separadamente, ao passo que as podas foram produzidas depois da exportação. Essa distinção foi mantida tanto nos registros de proveniência quanto na análise: diminuir a quantidade de registros do PLY não equivale a reotimizar as gaussianas restantes.
+Das 100 imagens disponíveis, 87 foram destinadas ao treinamento e 13 foram retidas para avaliação. A divisão foi gerada após a filtragem dos quadros, selecionando cada oitava imagem da sequência ordenada por nome para o conjunto de teste; as mesmas 13 imagens constaram dos conjuntos de validação e teste. Os treinamentos de NeRF e Splatfacto utilizaram essa mesma divisão e as poses de câmera fornecidas com o conjunto, sem nova estimativa por COLMAP.
+
+A Figura \ref{fig:proveniencia_variantes_implementadas} distingue os treinamentos independentes das podas derivadas do PLY da \textit{baseline}. Também foi testada uma configuração com regularização de escala, restrita à avaliação offline. Os manifestos preservaram identificador, contagem de gaussianas, tamanho e soma de verificação de cada artefato.
+
+\begin{figure}[H]
+\centering
+\caption{Proveniência do Nerfacto e das variantes 3D-GS levadas ao Quest.}
+\label{fig:proveniencia_variantes_implementadas}
+\resizebox{0.94\textwidth}{!}{%
+\begin{tikzpicture}[
+    bloco/.style={rectangle, rounded corners, draw, align=center, text width=3.2cm, minimum height=1.05cm, inner sep=5pt, font=\footnotesize},
+    derivado/.style={rectangle, draw, align=center, text width=2.7cm, minimum height=0.85cm, inner sep=4pt, font=\footnotesize, fill=black!6},
+    seta/.style={-{Latex[length=2.2mm]}, thick}
+]
+\node[bloco] (dados) at (0,0) {Conjunto \textit{poster}\\100 imagens e poses};
+\node[bloco] (nerfacto) at (4.5,2) {Nerfacto\\referência visual};
+\node[bloco] (baseline) at (4.5,0) {Splatfacto \textit{baseline}\\PLY original};
+\node[bloco] (big) at (4.5,-2) {\textit{splatfacto-big}\\treino separado};
+\node[derivado] (poda100) at (8.8,0.8) {Poda \textit{top-k}\\100 mil gaussianas};
+\node[derivado] (poda50) at (8.8,-0.8) {Poda \textit{top-k}\\50 mil gaussianas};
+\draw[seta] (dados) -- (nerfacto);
+\draw[seta] (dados) -- (baseline);
+\draw[seta] (dados) -- (big);
+\draw[seta] (baseline) -- (poda100);
+\draw[seta] (baseline) -- (poda50);
+\end{tikzpicture}%
+}
+\legend{Fonte: Elaborado pelo autor a partir dos manifestos dos experimentos.}
+\end{figure}
 
 \subsection{Poda determinística por opacidade}
 
@@ -83,7 +111,7 @@ end procedure
 
 O algoritmo foi apresentado como pseudocódigo, com entrada, critério de ordenação, desempate e saída explícitos, sem reproduzir a implementação inteira. A leitura do cabeçalho verificou o formato binário, o número de vértices e a posição do campo de opacidade; a validação de tamanho protegeu contra registros truncados. Após a escrita, a quantidade de registros, o tamanho do arquivo e as somas SHA-256 foram conferidos. Assim, a operação preservou os atributos de cada gaussiana selecionada e alterou apenas o subconjunto representado.
 
-As podas não foram tratadas como modelos treinados novamente. Na avaliação offline, a configuração da \textit{baseline} foi carregada e seus parâmetros gaussianos foram substituídos pelo conteúdo dos PLYs derivados nas mesmas poses e imagens retidas. Assim, a alteração da representação e a proveniência de cada arquivo permaneceram explícitas.
+As podas não foram tratadas como modelos treinados novamente. Na avaliação offline, a configuração da \textit{baseline} foi carregada e seus parâmetros gaussianos foram substituídos pelo conteúdo dos PLYs derivados nas mesmas poses e imagens retidas.
 
 \subsection{Mudança da rota de integração}
 
@@ -97,30 +125,53 @@ Na implementação, a cena de avaliação foi mantida sem elementos interativos 
 
 Os APKs foram gerados para Android/Vulkan e instalados no Meta Quest 3S em execução nativa. A coleta utilizou uma condição estacionária de referência, com alinhamento \textit{FullPoseOnce}: após o rastreamento, a pose completa foi fixada para reduzir a variação entre repetições. Essa condição mediu o custo de renderização estacionária e não constituiu avaliação de locomoção, conforto durante movimento ou comportamento térmico prolongado.
 
-Cada execução retida preservou metadados do APK, identificador esperado de variante, relatório de medições da aplicação, marcador de pose e, quando disponível, arquivo CSV do OVR Metrics. Capturas e observações visuais foram mantidas como evidência qualitativa separada das métricas offline. A execução por desktop via Meta Horizon Link foi também realizada como contingência diagnóstica em Windows, com \textit{build} Direct3D12 e IL2CPP; seus registros permaneceram separados da série Android e foram apresentados apenas como resultado complementar.
+Cada execução retida preservou metadados do APK, identificador da variante, relatório da aplicação, marcador de pose e, quando disponível, CSV do OVR Metrics. Capturas e observações visuais foram mantidas separadas das métricas offline.
 
-O procedimento de teste seguiu a mesma sequência para cada variante: instalação e abertura do aplicativo, espera pelo rastreamento inicial, fixação da pose, coleta na janela interna da aplicação e preservação dos contadores externos e das capturas. As quatro representações tiveram cinco execuções na condição estacionária. Na variante de maior capacidade, uma primeira execução diagnóstica foi seguida de cinco coletas adicionais sob o mesmo \textit{build} do sistema do Quest; somente essas cinco compuseram a série comparativa atual, enquanto a primeira permaneceu como registro histórico de observação visual. Para a análise de qualidade offline, foram usadas as mesmas 13 imagens retidas, poses e resolução em todas as variantes. A inspeção visual foi registrada por critérios de fundo, cadeira, artefatos, cor, estereoscopia e fluidez percebida, sem converter essas anotações em uma escala quantitativa de conforto.
+O teste estacionário seguiu a mesma sequência para cada variante: instalação, rastreamento inicial, fixação da pose e coleta na janela interna da aplicação. Foram retidas cinco execuções por variante. A inspeção visual considerou fundo, cadeira, artefatos, cor, estereoscopia e fluidez percebida.
 
-Como complemento visual à pose fixa, foi implementada uma movimentação virtual orbital controlada em torno de um pivô aproximado da cadeira, preservando o restante da cena no enquadramento. Quatro APKs nativos, um por representação, executaram os mesmos 144 pontos de vista de uma volta completa, em passos de 2,5 graus e raio relativo de 1,25. Em cada ponto, a aplicação registrou a pose-alvo e a pose observada; somente após o marcador de prontidão o computador capturou o framebuffer do Quest por ADB e confirmou a passagem ao ponto seguinte. Os 144 PNGs de cada execução foram preservados sem seleção. Folhas de contato com amostragem uniforme a cada 30 graus e vídeos com todos os PNGs em ordem facilitaram a inspeção, mas a taxa de reprodução desses vídeos não correspondeu à taxa de quadros da aplicação. A escala do pivô não foi calibrada em metros, e o procedimento não substituiu a avaliação estacionária nem mediu conforto durante movimento natural da cabeça.
+Como complemento à pose fixa, quatro APKs nativos executaram uma órbita virtual de 144 pontos por variante, em passos de 2,5 graus e raio relativo de 1,25 em torno da cadeira. Em cada ponto, a aplicação registrou a pose-alvo e a observada; após o marcador de prontidão, a captura por ADB foi confirmada antes de avançar. A Figura \ref{fig:condicoes_coleta_implementacao} resume as condições de coleta, que permanecem distintas da avaliação offline nas 13 imagens retidas.
+
+\begin{figure}[H]
+\centering
+\caption{Condições de coleta para as variantes 3D-GS em execução nativa e PCVR.}
+\label{fig:condicoes_coleta_implementacao}
+\resizebox{0.95\textwidth}{!}{%
+\begin{tikzpicture}[
+    bloco/.style={rectangle, rounded corners, draw, align=center, text width=3.3cm, minimum height=0.95cm, inner sep=5pt, font=\footnotesize},
+    condicao/.style={rectangle, draw, align=center, text width=2.9cm, minimum height=0.95cm, inner sep=4pt, font=\footnotesize, fill=black!6},
+    seta/.style={-{Latex[length=2.2mm]}, thick}
+]
+\node[bloco] (variantes) at (0,0) {Quatro variantes 3D-GS};
+\node[bloco] (nativo) at (-3.8,-1.7) {Quest 3S nativo\\Android / Vulkan};
+\node[bloco] (pcvr) at (3.8,-1.7) {PCVR / Meta Horizon Link\\GPU do computador};
+\node[condicao] (nativoestatico) at (-5.8,-3.5) {Pose fixa\\5 execuções por variante};
+\node[condicao] (nativoorbita) at (-2,-3.5) {Órbita controlada\\144 poses por variante};
+\node[condicao] (pcvrestatico) at (2,-3.5) {Pose fixa\\5 execuções por variante};
+\node[condicao] (pcvrorbita) at (5.8,-3.5) {Órbita controlada\\144 poses por variante};
+\draw[seta] (variantes) -- (nativo);
+\draw[seta] (variantes) -- (pcvr);
+\draw[seta] (nativo) -- (nativoestatico);
+\draw[seta] (nativo) -- (nativoorbita);
+\draw[seta] (pcvr) -- (pcvrestatico);
+\draw[seta] (pcvr) -- (pcvrorbita);
+\end{tikzpicture}%
+}
+\legend{Fonte: Elaborado pelo autor a partir dos registros das execuções.}
+\end{figure}
 
 \subsection{Testes preliminares e contingências}
 
-Os testes preliminares ajudaram a definir a configuração comparativa final, mas não foram agregados à série principal. Foram realizados diagnósticos de modo monoscópico, ordenação por \textit{renderer}, alinhamento de pose e maior capacidade da representação. Nesses testes, foram registrados artefatos de fundo, cintilação e limitações de desempenho que motivaram a padronização posterior da condição \textit{FullPoseOnce} e das repetições comparáveis. Essas observações orientaram decisões de implementação, mas não foram tratadas como medidas comparáveis da série final.
+Diagnósticos preliminares de renderização e alinhamento orientaram a configuração final, mas não integraram a série comparativa. Artefatos visuais e limitações de desempenho motivaram o uso da condição \textit{FullPoseOnce} e de repetições sob o mesmo protocolo.
 
-A execução nativa no Quest permaneceu o cenário-alvo. A renderização em desktop com transmissão para o headset foi mantida como contingência diagnóstica, separada metodologicamente da série Android. A tentativa Linux com WiVRn foi preservada como falha: embora o pareamento do headset tenha sido concluído, o jogador Unity não carregou o componente OpenXR, não recebeu rastreamento do HMD e não estabeleceu uma sessão VR válida. Logo, ela não gerou resultado comparável nem substituiu a avaliação \textit{standalone}.
+Como contingência diagnóstica, a mesma cena foi renderizada em Windows e transmitida ao Quest por Meta Horizon Link. Os PLYs e a condição de pose fixa foram mantidos, mas a rota PCVR exigiu \textit{builds} próprios para Direct3D12 e IL2CPP. Seus registros ficaram separados da série Android nativa.
 
-Para continuar a investigação sem modificar o mecanismo de renderização do protótipo, a contingência foi executada em Windows com Meta Horizon Link. O computador renderizou a cena e transmitiu as imagens ao mesmo headset, que forneceu pose e exibição estereoscópica. Foram mantidos os mesmos PLYs e a condição de referência estática, mas foram produzidos \textit{builds} próprios para Direct3D12 e IL2CPP. Tentativas preliminares identificaram sessões sem atualização da imagem no headset, problemas de inicialização do Link e risco de reutilização de um executável de variante incorreta. Essas tentativas foram preservadas fora da série final; a coleta passou a verificar o identificador da variante, o executável e o encerramento do processo entre sessões.
-
-Após a estabilização da conexão, foram retidas cinco execuções estacionárias por representação, sem reiniciar o serviço OVR entre elas. Cada repetição preservou o relatório interno da aplicação, amostras do processo Windows, \textit{logs} e capturas do framebuffer recebidas no Quest. O conjunto final foi validado por execução, sem incorporar canários ou sessões com falha. Também foram produzidas quatro órbitas PC/VR com os mesmos 144 índices e alvos de câmera das órbitas nativas; em cada índice, a captura ADB foi feita após o marcador de prontidão e antes da confirmação para avançar. As órbitas documentaram a cena em ângulos pareados, mas a espera pela captura impede interpretar seus intervalos como FPS durante movimento livre. A mudança de sistema operacional, API gráfica, hardware e presença de transmissão impede interpretar a diferença entre rotas como efeito isolado de um único componente. Contadores do processo no Windows não foram usados como medidas de memória do Quest.
+Na rota PCVR, foram retidas cinco execuções estacionárias por variante, com relatório da aplicação, amostras do processo Windows, \textit{logs} e capturas. Quatro órbitas repetiram os 144 alvos de câmera da rota nativa, com captura após cada marcador de prontidão. A espera pela captura impede tratar os intervalos dessas órbitas como FPS de movimento livre. Sistema operacional, API gráfica, hardware e transmissão também diferiram entre as rotas; seus resultados não isolam o efeito de um único componente, e os contadores do Windows não medem a memória do Quest.
 
 \subsection{Rastreabilidade e limitações de implementação}
 
 Os manifestos do treinamento, das podas, dos APKs e das execuções permitiram relacionar cada resultado a uma cena, uma representação e uma condição de teste. A consolidação derivada não alterou os dados brutos e distinguiu as séries estacionárias de cinco execuções nas duas rotas das órbitas instrumentadas e dos diagnósticos históricos. Essa distinção impediu que uma observação pontual de maior fidelidade ou uma falha preliminar fosse apresentada como média comparável.
 
-As podas determinísticas foram avaliadas offline nas mesmas imagens de teste por substituição dos parâmetros gaussianos na configuração da baseline. Essa avaliação foi mantida separada das capturas da Unity e do Quest. Persiste a limitação de que a condição de pose fixa não caracteriza estabilidade durante movimento.
-
-Para conferir a comparação entre NeRF e 3D-GS, os dois modelos originais foram carregados novamente em uma avaliação pareada no Colab, sem novo treinamento. Antes da renderização, foram conferidos os mesmos 13 nomes e conteúdos de imagens retidas, a transformação e a escala do pré-processamento e as poses-base correspondentes. Em cada vista, a mesma câmera e a mesma imagem de referência provenientes da avaliação Splatfacto foram fornecidas aos dois modelos. Imagens RGB de oito bits foram divididas por 255; as saídas de ponto flutuante foram mantidas na escala original. PSNR, SSIM e LPIPS foram calculados com a mesma implementação, em toda a imagem, sem recorte ou máscara. Foram preservados os resultados individuais, os três PNGs de cada vista e as somas de verificação das configurações e dos modelos. A avaliação original de cada método permaneceu separada para permitir conferir eventuais diferenças de protocolo.
+A comparação entre NeRF e 3D-GS utilizou as mesmas 13 imagens retidas, com poses, transformação e escala de pré-processamento correspondentes. Em cada vista, os dois modelos receberam a mesma câmera e a mesma imagem de referência da avaliação Splatfacto. As imagens RGB de oito bits foram divididas por 255, enquanto as saídas de ponto flutuante foram mantidas em sua escala original. PSNR, SSIM e LPIPS foram calculados com a mesma implementação, sobre a imagem inteira, sem recorte ou máscara. Os resultados individuais e as imagens de cada vista foram preservados para permitir a conferência da comparação.
 
 Para verificar a execução integral do procedimento, todas as etapas foram executadas novamente em um ambiente Google Colab limpo, com uma GPU Tesla T4 e 30 mil passos por modelo. As sete etapas de treinamento, avaliação e exportação foram concluídas na primeira tentativa, e o tamanho e a soma de verificação SHA-256 de nove artefatos produzidos foram conferidos. Nessa validação, foram reutilizadas as poses existentes do conjunto \textit{poster}, sem executar uma nova estimativa por COLMAP. Os modelos resultantes foram preservados como evidência de validação operacional, e os modelos originais foram mantidos na comparação experimental.
 
-A descrição dos procedimentos próprios concentrou-se na arquitetura, nas decisões técnicas e nas consequências metodológicas da implementação. O pseudocódigo apresentado sintetizou a operação central da poda e permitiu compreender como os parâmetros das gaussianas selecionadas foram preservados.
