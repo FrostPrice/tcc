@@ -12,11 +12,11 @@ O projeto previu o NeRF como referência inicial para reconstrução de cenas es
 
 A entrada prevista da solução consistia em imagens RGB de uma cena real estática, com sobreposição suficiente entre pontos de vista. Esse conjunto permitiria estimar poses de câmera, organizar os dados de treinamento e produzir uma reconstrução inicial. Imagens com baixa cobertura, variação brusca de iluminação ou movimento poderiam introduzir inconsistências no NeRF e no 3D-GS.
 
-A etapa baseada em NeRF foi concebida como referência de qualidade visual para a síntese de novas vistas. Em seguida, previa-se reconstruir a mesma cena como 3D-GS, mais aderente a estratégias de rasterização e renderização em tempo real; não se pressupôs que o arquivo exportado do NeRF alimentaria o treinamento das gaussianas.
+A etapa baseada em NeRF foi concebida como referência de qualidade visual para a síntese de novas vistas. Em seguida, previa-se reconstruir a mesma cena como 3D-GS, mais aderente a estratégias de rasterização e renderização em tempo real.
 
 Após essa etapa, previa-se integrar o modelo 3D-GS a um protótipo mínimo em Unity, com suporte a VR. O protótipo deveria carregar a cena, permitir sua visualização imersiva e coletar evidências de desempenho, estabilidade e limitações técnicas; as métricas de qualidade de imagem seriam obtidas separadamente na avaliação offline.
 
-Os principais artefatos previstos eram o conjunto de imagens organizado por cena, os modelos NeRF treinados, os modelos 3D-GS preparados, o protótipo avaliativo em VR, os registros de configuração, os resultados experimentais e a análise das limitações encontradas. A construção de uma ferramenta completa de captura, edição e publicação de cenas 3D-GS ficou fora da entrega e foi mantida como possibilidade de trabalho futuro.
+Os principais artefatos previstos eram o conjunto de imagens organizado por cena, os modelos NeRF treinados, os modelos 3D-GS preparados, o protótipo avaliativo em VR, os registros de configuração, os resultados experimentais e a análise das limitações encontradas.
 
 \subsection{Etapas do pipeline proposto}
 
@@ -172,9 +172,9 @@ Avaliação offline em desktop & Referência de qualidade visual & Facilitaria a
 
 \subsubsection{Captura de imagens RGB}
 
-A primeira etapa do projeto previa a obtenção das imagens RGB para reconstrução da cena. Em uma captura própria, seriam priorizados ambientes ou objetos estáticos, evitando movimentação de pessoas, alterações de posição dos objetos e mudanças bruscas de iluminação entre as imagens. Essa restrição foi considerada necessária porque tanto a estimativa de poses quanto o treinamento das representações pressupunham uma cena consistente ao longo da aquisição. No estudo de caso, foram utilizadas imagens públicas já disponibilizadas com poses.
+A primeira etapa do projeto definiu como entrada imagens RGB de uma cena estática, acompanhadas de poses de câmera. Para o estudo de caso, foi selecionado o conjunto público \textit{poster} do Nerfstudio, que disponibiliza quadros da mesma cena sob diferentes pontos de vista e suas poses associadas \cite{nerfstudioPosterDataset}.
 
-O protocolo de captura inicialmente previsto exigia múltiplos pontos de vista, variação gradual da posição da câmera e sobreposição visual entre imagens consecutivas. Previa-se um percurso controlado da câmera, cobrindo diferentes ângulos e distâncias para que superfícies, contornos e regiões de interesse aparecessem em mais de uma imagem. Essa cobertura favoreceria a reconstrução multivista e reduziria regiões mal observadas, que poderiam comprometer a estimativa de geometria e aparência.
+Os requisitos para essa entrada incluíam cobertura da cena, sobreposição entre vistas e estabilidade dos objetos e da iluminação. Essas condições favorecem a reconstrução multivista e permitem treinar e comparar NeRF e 3D-GS sobre os mesmos dados.
 
 A Figura \ref{fig:captura_rgb_poster} ilustra esse princípio a partir de diferentes quadros de uma mesma cena, evidenciando a variação gradual de ponto de vista necessária para que o pipeline disponha de sobreposição visual entre imagens consecutivas.
 
@@ -186,15 +186,13 @@ A Figura \ref{fig:captura_rgb_poster} ilustra esse princípio a partir de difere
     \legend{Fonte: Adaptado do dataset \textit{poster} do Nerfstudio \cite{nerfstudioPosterDataset}.}
 \end{figure}
 
-Para uma captura própria, previu-se observar desfoque, exposição, reflexos, sombras intensas e superfícies com pouca textura, além de priorizar iluminação estável. O protocolo também previa registrar quantidade de imagens, resolução, dispositivo utilizado, características da cena e dificuldades encontradas. O resultado esperado era um conjunto bruto consistente para alimentar o pré-processamento e a reconstrução multivista; esses procedimentos de aquisição não foram executados para o conjunto público adotado.
-
 \subsubsection{Pré-processamento e organização dos dados}
 
 A segunda etapa foi planejada para o pré-processamento e a organização dos dados. Previa-se separar imagens originais, imagens processadas, poses de câmera, configurações, resultados intermediários e registros de execução por cena. Essa organização permitiria identificar as imagens, os parâmetros e as ferramentas utilizados em cada reconstrução.
 
-Para dados capturados pelo projeto, previu-se uma triagem de fotografias tremidas, duplicadas, desfocadas, excessivamente escuras, superexpostas ou com baixa sobreposição. Ajustes de exposição, padronização de resolução e renomeação sequencial poderiam ser aplicados, desde que documentados. Também se previu a divisão entre treinamento e teste. No estudo de caso, essa divisão foi aplicada ao conjunto público processado, sem uma nova triagem de fotografias próprias.
+Para dados capturados pelo projeto, previu-se uma triagem de fotografias tremidas, duplicadas, desfocadas, excessivamente escuras, superexpostas ou com baixa sobreposição. Ajustes de exposição, padronização de resolução e renomeação sequencial poderiam ser aplicados, desde que documentados. Também se previu a divisão entre treinamento e teste.
 
-Em seguida, previa-se estimar ou incorporar as poses de câmera necessárias ao treinamento, utilizando ferramentas de \textit{Structure-from-Motion} (SfM), como o COLMAP, quando aplicáveis. O plano previa preservar os arquivos de poses, registros e configurações, pois erros nessa fase poderiam se propagar para o NeRF e para o 3D-GS. No conjunto \textit{poster}, as poses foram incorporadas do material já processado; não se executou novamente o COLMAP. Assim, a estimativa de poses permaneceu parte do projeto geral, mas não da execução específica relatada.
+Em seguida, previa-se estimar ou incorporar as poses de câmera necessárias ao treinamento, utilizando ferramentas de \textit{Structure-from-Motion} (SfM), como o COLMAP, quando aplicáveis. O plano previa preservar os arquivos de poses, registros e configurações, pois erros nessa fase poderiam se propagar para o NeRF e para o 3D-GS. No conjunto \textit{poster}, as poses foram incorporadas do material já processado; não se executou novamente o COLMAP.
 
 A Figura \ref{fig:preprocessamento_colmap} exemplificou a etapa de pré-processamento baseada em SfM, na qual imagens são associadas a poses de câmera e a uma reconstrução esparsa inicial da cena. Esse resultado intermediário foi previsto como base para organizar os dados antes do treinamento das representações neurais ou gaussianas.
 
@@ -210,7 +208,7 @@ A Figura \ref{fig:preprocessamento_colmap} exemplificou a etapa de pré-processa
 
 A terceira etapa consiste no treinamento de um modelo NeRF para cada cena selecionada, estabelecendo uma linha de base de qualidade visual antes da conversão para uma representação explícita.
 
-O treinamento foi planejado com ferramentas como Nerfstudio ou Instant-NGP, conforme a disponibilidade computacional e a compatibilidade com os dados. Previu-se registrar quantidade de imagens, resolução, duração, hardware, número de iterações e qualidade visual. Na implementação relatada, a ferramenta efetivamente utilizada foi o Nerfstudio.
+O treinamento foi planejado com ferramentas como Nerfstudio ou Instant-NGP, conforme a disponibilidade computacional e a compatibilidade com os dados. Previu-se registrar quantidade de imagens, resolução, duração, hardware, número de iterações e qualidade visual. Na implementação, a ferramenta efetivamente utilizada foi o Nerfstudio.
 
 A Figura \ref{fig:viewer_nerfstudio} apresentou um exemplo de ambiente de visualização utilizado em fluxos com Nerfstudio. Esse tipo de interface foi considerado útil para a inspeção qualitativa do modelo durante o desenvolvimento, permitindo observar a cena reconstruída, a trajetória de câmeras e possíveis inconsistências antes da etapa de otimização.
 
@@ -270,7 +268,7 @@ Para limitações severas da execução nativa, previu-se uma contingência em d
 
 \subsection{Fluxo de implementação}
 
-O fluxo de implementação foi planejado de forma incremental: uma versão mínima deveria validar a integração antes do aumento da complexidade da cena ou do modelo. A Figura \ref{fig:fluxo_implementacao_projeto} registrou o ponto de decisão previsto entre manter a configuração e retornar à otimização. A execução efetiva permaneceu concentrada no estudo de caso \textit{poster}; a segunda cena prevista não foi acrescentada à série final.
+O fluxo de implementação foi planejado de forma incremental: uma versão mínima deveria validar a integração antes do aumento da complexidade da cena ou do modelo. A Figura \ref{fig:fluxo_implementacao_projeto} registrou o ponto de decisão previsto entre manter a configuração e retornar à otimização. A execução efetiva permaneceu concentrada no estudo de caso \textit{poster}.
 
 \begin{figure}[H]
 \centering
@@ -338,7 +336,7 @@ O fluxo da Figura \ref{fig:fluxo_implementacao_projeto} explicita o caráter ite
 
 A avaliação experimental foi planejada para considerar qualidade visual, desempenho computacional, estabilidade e percepção qualitativa. A qualidade visual seria analisada pela comparação entre imagens de referência e imagens renderizadas nas mesmas poses de teste, com PSNR, SSIM e LPIPS.
 
-O desempenho seria avaliado durante a execução em VR por tempo médio de quadro, taxa derivada de quadros, estabilidade estacionária, taxa de atualização configurada e contadores disponíveis de memória. O protocolo adotou 90 FPS como referência desejável para execução \textit{standalone}; taxas inferiores seriam analisadas como limitação, e 30 FPS não seriam tratados como resultado satisfatório. Também se previu registrar falhas, artefatos perceptíveis e sinais de estranhamento. A implementação efetiva não mediu uma série controlada de movimento natural da cabeça.
+O desempenho seria avaliado durante a execução em VR por tempo médio de quadro, taxa derivada de quadros, estabilidade estacionária, taxa de atualização configurada e contadores disponíveis de memória. O protocolo adotou 90 FPS como referência desejável para execução \textit{standalone}; taxas inferiores seriam analisadas como limitação, e 30 FPS não seriam tratados como resultado satisfatório. Também se previu registrar falhas, artefatos perceptíveis e sinais de estranhamento.
 
 A avaliação foi planejada com poses de teste previamente definidas e versões NeRF e 3D-GS da mesma cena. A Figura \ref{fig:fluxo_avaliacao_projeto} registrou a separação prevista entre análise offline de qualidade visual, execução em VR e observação perceptual. No estudo de caso, a avaliação offline foi realizada com imagens retidas, enquanto o headset forneceu tempos e capturas próprios.
 
@@ -429,7 +427,9 @@ Percepção qualitativa & Artefatos e estranhamento & Registrar \textit{floaters
 
 \subsection{Resultados esperados}
 
-Ao final do projeto, pretendia-se obter artefatos técnicos e experimentais suficientes para analisar a adequação do \textit{pipeline} ao cenário-alvo: imagens de entrada, modelos NeRF e 3D-GS, protótipo avaliativo em Unity, configurações, medições e limitações. O Quadro \ref{qua:artefatos_esperados} organizou os artefatos previstos e explicitou que a entrega seria avaliativa, não uma ferramenta completa de produção. A seção de Implementação distinguiu os artefatos efetivamente produzidos dos itens apenas planejados.
+Ao final do projeto, pretendia-se obter artefatos técnicos e experimentais suficientes para analisar a adequação do \textit{pipeline} ao cenário-alvo: imagens de entrada, modelos NeRF e 3D-GS, protótipo avaliativo em Unity, configurações, medições e limitações.
+
+O Quadro \ref{qua:artefatos_esperados} organizou os artefatos previstos e explicitou que a entrega seria avaliativa, não uma ferramenta completa de produção.
 
 \begin{quadro}[H]
 \centering
@@ -452,8 +452,6 @@ Protótipo VR mínimo & Cena em Unity com suporte a visualização imersiva do m
 Resultados de avaliação & Tabelas, imagens comparativas, registros de desempenho, estabilidade e observações qualitativas de artefatos. \\ \hline
 
 Registro de limitações & Documentação dos problemas encontrados, decisões técnicas adotadas, limitações de VR \textit{standalone} e possibilidades de melhoria. \\ \hline
-
-Trabalhos futuros & Indicação de evoluções possíveis, como ferramenta integrada de captura, conversão, edição e publicação de cenas 3D-GS. \\ \hline
 
 \end{tabularx}
 \legend{Fonte: Elaborado pelo autor.}
