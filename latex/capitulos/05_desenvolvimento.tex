@@ -50,7 +50,7 @@ Na Unity, a cena de avaliação reuniu o ativo 3D-GS, o rig XR, o alinhamento de
 
 O estudo de caso adotado foi o conjunto \textit{poster} disponibilizado pelo Nerfstudio. As etapas de pré-processamento, treinamento, avaliação e exportação foram executadas no Google Colab, com os modelos e registros de configuração preservados. O modelo NeRF foi mantido como referência de fidelidade visual, enquanto as representações 3D-GS foram treinadas ou derivadas a partir da mesma cena para a avaliação de custo e desempenho.
 
-O recorte utilizado continha 100 imagens PNG de uma cena estática, com resolução original de 1080$\times$1920 pixels (largura $\times$ altura). Para o treinamento, as imagens foram reduzidas por um fator de dois, para 540$\times$960 pixels, sem recorte adicional nem máscaras. O conjunto foi obtido do espelho público do Nerfstudio no Hugging Face, na revisão \texttt{1be5b1b} \cite{nerfstudioPosterDataset}. O arquivo de poses fornecido nesse espelho referenciava 226 quadros, mas apenas 100 possuíam arquivos de imagem correspondentes; os 126 registros sem imagem foram excluídos antes de fixar a divisão experimental.
+O recorte utilizado continha 100 imagens PNG de uma cena estática, com resolução original de 1080$\times$1920 pixels (largura $\times$ altura). Na preparação dos dados, as imagens foram reduzidas por um fator de dois, para 540$\times$960 pixels, sem recorte manual nem máscaras. O conjunto foi obtido do espelho público do Nerfstudio no Hugging Face, na revisão \texttt{1be5b1b} \cite{nerfstudioPosterDataset}. O arquivo de poses fornecido nesse espelho referenciava 226 quadros, mas apenas 100 possuíam arquivos de imagem correspondentes; os 126 registros sem imagem foram excluídos antes de fixar a divisão experimental.
 
 Das 100 imagens disponíveis, 87 foram destinadas ao treinamento e 13 foram retidas para avaliação. A divisão foi gerada após a filtragem dos quadros, selecionando cada oitava imagem da sequência ordenada por nome para o conjunto de teste; as mesmas 13 imagens constaram dos conjuntos de validação e teste. Os treinamentos de NeRF e Splatfacto utilizaram essa mesma divisão e as poses de câmera fornecidas com o conjunto, sem nova estimativa por COLMAP.
 
@@ -81,6 +81,33 @@ A Figura \ref{fig:proveniencia_variantes_implementadas} distingue os treinamento
 }
 \legend{Fonte: Elaborado pelo autor a partir dos manifestos dos experimentos.}
 \end{figure}
+
+\subsection{Configuração e reprodução do experimento}
+\label{sec:configuracao_reproducao}
+
+O Quadro \ref{qua:configuracao_experimental} reúne as condições registradas durante a execução. O aquecimento foi definido em quadros, de modo que sua duração em segundos variou com o desempenho. A instrumentação descartou os primeiros 180 quadros e acumulou os intervalos seguintes até completar 30 segundos. Cada execução foi a unidade de repetição estatística.
+
+\begin{quadro}[H]
+\centering
+\footnotesize
+\caption{Configurações registradas para reprodução do estudo de caso.}
+\label{qua:configuracao_experimental}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{|p{3.0cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Componente} & \textbf{Configuração e alcance do registro} \\ \hline
+Treinamento de referência & Google Colab, Tesla T4; Python 3.10.20, PyTorch 2.1.2/CUDA 11.8, Nerfstudio 1.1.5 e gsplat 1.4.0; semente 42 e 30 mil passos. \\ \hline
+Integração & Unity 6000.5.8f1; URP 17.5.0; OpenXR 1.17.1; Meta OpenXR 2.5.1; UnitySplats 1.1.0, revisão \texttt{4db31be}. \\ \hline
+Renderizador & Importação Spark, harmônicos esféricos de grau 3, conversão gamma para linear habilitada, brilho 1 e parâmetro \texttt{SplatDownscaleFactor}=0. Ordenação por renderizador em modo \texttt{Always}, a cada quadro, na configuração final. \\ \hline
+Rotas de execução & Quest 3S: Android 14/API 34 e Vulkan. PCVR: Windows 11 Pro, Ryzen 7 5700G, RTX 3060, driver 591.59, Direct3D12/IL2CPP e Meta Horizon Link. \\ \hline
+Resolução & Entrada reduzida: 540$\times$960. Escala URP configurada em 1. As capturas orbitais tinham 3664$\times$1920 pixels. \\ \hline
+Coleta estacionária & Pose \textit{FullPoseOnce}; 180 quadros de aquecimento; janela interna de 30 s; cinco execuções por variante e rota; atualização de aproximadamente 72 Hz. \\ \hline
+Instrumentação & Intervalos da aplicação por \texttt{Time.unscaledDeltaTime}; tempos disponíveis pelo \texttt{FrameTimingManager}; CSV do OVR Metrics na rota nativa; contadores de processo do Windows na rota PCVR. \\ \hline
+\end{tabularx}
+\legend{Fonte: Elaborado pelo autor.}
+\end{quadro}
+
+A rastreabilidade foi mantida por registros que associaram cada modelo às configurações de treinamento, à variante exportada e às execuções de avaliação. Esses registros reuniram identificadores, versões de software e somas de verificação, permitindo conferir a correspondência entre os artefatos utilizados e os resultados apresentados.
 
 \subsection{Poda determinística por opacidade}
 
@@ -170,7 +197,5 @@ Na rota PCVR, foram retidas cinco execuções estacionárias por variante, com r
 \subsection{Rastreabilidade e limitações de implementação}
 
 Os manifestos do treinamento, das podas, dos APKs e das execuções permitiram relacionar cada resultado a uma cena, uma representação e uma condição de teste. A consolidação derivada não alterou os dados brutos e distinguiu as séries estacionárias de cinco execuções nas duas rotas das órbitas instrumentadas e dos diagnósticos históricos. Essa distinção impediu que uma observação pontual de maior fidelidade ou uma falha preliminar fosse apresentada como média comparável.
-
-A comparação entre NeRF e 3D-GS utilizou as mesmas 13 imagens retidas, com poses, transformação e escala de pré-processamento correspondentes. Em cada vista, os dois modelos receberam a mesma câmera e a mesma imagem de referência da avaliação Splatfacto. As imagens RGB de oito bits foram divididas por 255, enquanto as saídas de ponto flutuante foram mantidas em sua escala original. PSNR, SSIM e LPIPS foram calculados com a mesma implementação, sobre a imagem inteira, sem recorte ou máscara. Os resultados individuais e as imagens de cada vista foram preservados para permitir a conferência da comparação.
 
 Para verificar a execução integral do procedimento, todas as etapas foram executadas novamente em um ambiente Google Colab limpo, com uma GPU Tesla T4 e 30 mil passos por modelo. As sete etapas de treinamento, avaliação e exportação foram concluídas na primeira tentativa, e o tamanho e a soma de verificação SHA-256 de nove artefatos produzidos foram conferidos. Nessa validação, foram reutilizadas as poses existentes do conjunto \textit{poster}, sem executar uma nova estimativa por COLMAP. Os modelos resultantes foram preservados como evidência de validação operacional, e os modelos originais foram mantidos na comparação experimental.

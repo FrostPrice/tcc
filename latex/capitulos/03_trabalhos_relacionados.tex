@@ -50,7 +50,7 @@ forma representativa da string empregada foi apresentada a seguir:
 \end{quote}
 \endgroup
 
-Em buscas complementares, foram utilizados termos adicionais, como \texttt{"scene \newline reconstruction"}, \texttt{"novel view synthesis"} e \texttt{"immersive rendering"}, \\ com o objetivo de refinar os resultados e ampliar a aderência ao escopo da pesquisa.
+Em buscas complementares, foram utilizados os termos \textit{scene reconstruction}, \textit{novel view synthesis} e \textit{immersive rendering}.
 
 \subsection{Critérios de inclusão e exclusão}
 
@@ -114,8 +114,6 @@ O avanço apresentado por esse trabalho foi relevante porque atenuou uma das pri
 
 No contexto desta pesquisa, a relevância do Instant-NGP residiu em funcionar como elo intermediário entre a formulação original do NeRF e os esforços posteriores de aproximação ao tempo real. O artigo não eliminou integralmente os obstáculos à adoção em realidade virtual, mas demonstrou que a fronteira entre qualidade visual e viabilidade computacional era mais flexível do que sugeria a formulação inicial dos campos neurais. Isso foi importante para o trabalho, que avaliou técnicas neurais em um \textit{pipeline} orientado à visualização imersiva.
 
-Outro aspecto relevante foi a influência do Instant-NGP em trabalhos posteriores voltados à captura e renderização de cenas complexas, inclusive em contextos de alta resolução e amplo alcance espacial. Mais do que uma técnica de aceleração isolada, o artigo representou uma mudança de perspectiva: mostrou que a discussão sobre representações neurais de cena deveria considerar, simultaneamente, a formulação matemática, a estrutura de dados e a eficiência de execução.
-
 \subsection{\textit{VR-NeRF: High-Fidelity Virtualized Walkable Spaces}}
 
 Xu et al. \cite{xu2023} apresentaram um dos trabalhos mais próximos do problema investigado nesta pesquisa, ao propor um sistema de ponta a ponta para captura, reconstrução e visualização de espaços caminháveis em realidade virtual. A contribuição do estudo não se limitou à modelagem da cena, mas abrangeu todo o \textit{pipeline}, desde a aquisição de imagens em alta resolução e alta faixa dinâmica até a renderização em tempo compatível com uma experiência imersiva. Esse caráter sistêmico tornou o trabalho particularmente relevante, pois aproximou a discussão acadêmica de um cenário de uso efetivo.
@@ -142,8 +140,6 @@ A Figura \ref{fig:vrnerf_scaling} complementou a discussão ao tornar visível a
     \legend{Fonte: \cite{xu2023}.}
 \end{figure}
 
-Para o presente trabalho, essa dualidade foi importante. O VR-NeRF funcionou como prova de conceito de que campos neurais poderiam, em condições apropriadas, sustentar experiências imersivas de alta fidelidade. Contudo, também expôs a necessidade de investigar soluções mais pragmáticas, seja por representações mais leves, seja por estruturas explícitas mais compatíveis com renderização em tempo real. Dessa forma, o artigo serviu como referência de alto nível para delimitar o potencial e as limitações da linha implícita em VR.
-
 \subsection{\textit{3D Gaussian Splatting for Real-Time Radiance Field Rendering}}
 
 Kerbl et al. \cite{kerbl2023} introduziram o 3D Gaussian Splatting como alternativa explícita aos campos neurais implícitos para síntese de novas vistas e renderização de campos radiantes. O método partiu de uma nuvem inicial de pontos obtida por calibração e estruturou a cena como conjunto de gaussianas 3D anisotrópicas, cada uma com posição, covariância, opacidade e atributos de aparência. A renderização foi realizada por rasterização diferenciável e \textit{visibility-aware}, com composição ordenada das contribuições na imagem.
@@ -158,7 +154,7 @@ A Figura \ref{fig:3dgs_pipeline} explicitou a principal mudança de paradigma in
     \legend{Fonte: \cite{kerbl2023}.}
 \end{figure}
 
-A Figura \ref{fig:3dgs_comparison} reforça empiricamente esse reposicionamento do problema. A comparação evidencia que o método proposto pelos autores busca ocupar um ponto intermediário particularmente valioso para aplicações interativas: mantém uma qualidade visual elevada, ao mesmo tempo em que alcança taxas de renderização muito superiores às de abordagens implícitas de maior custo. Nesse sentido, a imagem não funciona apenas como ilustração de resultado, mas como síntese visual da principal tese do artigo: a representação explícita pode reformular de maneira favorável o equilíbrio entre fidelidade e desempenho.
+A Figura \ref{fig:3dgs_comparison} reúne as comparações visuais e de desempenho apresentadas pelos autores.
 
 \begin{figure}[H]
     \centering

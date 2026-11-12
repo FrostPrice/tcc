@@ -30,8 +30,6 @@ A Figura \ref{fig:reconstrucao_multivista_pipeline} sintetiza esse fluxo de reco
 
 Conceitualmente, essa etapa conecta o domínio das imagens ao domínio da cena: as fotografias precisam ser interpretadas como amostras coerentes de uma mesma estrutura espacial. Essa premissa delimita o escopo deste trabalho a cenas estáticas capturadas por imagens RGB, excluindo dinâmicas 4D, \textit{relighting} complexo e outros fatores que ampliariam a ambiguidade do problema \cite{seitz2006mvs,schoenberger2016sfm,xu2023}.
 
-Em cenas estáticas, a consistência entre observações permite agregar diferentes imagens no aprendizado de uma representação única. Assim, a preparação dos dados não é apenas operacional, mas condição para comparar representações implícitas e explícitas no pipeline proposto \cite{sitzmann2019srn,mildenhall2020,kerbl2023,fei2025survey3dgs}.
-
 \subsection{Representações implícitas}
 
 Representações implícitas descrevem uma cena por funções contínuas definidas sobre o espaço, em vez de armazená-la diretamente como uma coleção de vértices, superfícies ou primitivas geométricas. Nesse paradigma, a cena é codificada nos parâmetros de uma função aprendida, capaz de receber coordenadas espaciais e retornar propriedades locais, como densidade, ocupação, cor ou radiância \cite{sitzmann2019srn,mildenhall2020}.
@@ -196,13 +194,9 @@ Assim, a reconstrução visualmente convincente não é suficiente: a representa
 
 Além do desempenho bruto, a estabilidade visual também precisa ser considerada. Em VR, artefatos pouco perceptíveis em monitor podem se tornar evidentes pelo campo de visão ampliado e pela movimentação contínua da cabeça. No 3D-GS, \textit{floaters}, aliasing, instabilidades de profundidade e inconsistências entre vistas podem afetar a percepção espacial e gerar sensação de estranhamento \cite{kerbl2023,fei2025survey3dgs,chen2024survey3dgs,tu2025}.
 
-Por isso, a avaliação deve observar qualidade visual, desempenho, estabilidade e percepção qualitativa. PSNR, SSIM e LPIPS indicam a fidelidade das vistas renderizadas \cite{wang2004,zhang2018,mildenhall2020,kerbl2023}; FPS, tempo de quadro e memória indicam viabilidade técnica; e o registro de artefatos, travamentos e estranhamento perceptual ajuda a interpretar problemas que métricas numéricas isoladas não capturam \cite{xu2023,tu2025,metaquest3s2024}.
-
 \section{Métricas de Avaliação de Qualidade Visual, Desempenho e Percepção}
 
-A análise do pipeline exige observar conjuntamente qualidade visual, desempenho e estabilidade perceptual. Métricas apenas visuais não determinam a viabilidade de uma aplicação imersiva, enquanto métricas apenas computacionais não capturam a fidelidade perceptual da reconstrução. Por isso, adotam-se PSNR, SSIM, LPIPS, FPS, tempo de quadro, uso de memória e registros qualitativos de artefatos como dimensões complementares de avaliação \cite{mildenhall2020,kerbl2023,xu2023,fei2025survey3dgs,chen2024survey3dgs}.
-
-PSNR, SSIM e LPIPS comparam imagens sintetizadas e imagens de referência sob perspectivas complementares: erro pixel a pixel, preservação estrutural e similaridade perceptual. Já FPS, tempo de quadro, uso de memória e estabilidade indicam se a representação pode ser executada em contexto interativo, especialmente em dispositivos de VR \textit{standalone} \cite{mildenhall2020,kerbl2023,wang2004,zhang2018,xu2023,tu2025,metaquest3s2024}.
+A avaliação combina PSNR, SSIM e LPIPS para comparar imagens sintetizadas com referências; FPS, tempo de quadro e memória para caracterizar a execução; e observações qualitativas para registrar artefatos e instabilidade perceptual \cite{wang2004,zhang2018,xu2023,tu2025}. As subseções seguintes definem essas medidas.
 
 \subsection{PSNR}
 
@@ -239,8 +233,6 @@ SSIM(x,y)=
 
 em que $\mu_x$ e $\mu_y$ são as médias locais das imagens comparadas, $\sigma_x^2$ e $\sigma_y^2$ são suas variâncias, $\sigma_{xy}$ é a covariância entre elas e $C_1$, $C_2$ são constantes de estabilização. Em síntese de novas vistas, o SSIM complementa o PSNR por penalizar distorções estruturais que podem não gerar grande erro absoluto, mas que afetam a coerência visual da cena reconstruída \cite{wang2004,mildenhall2020,kerbl2023}.
 
-No contexto deste trabalho, o SSIM é relevante por observar estruturas visuais importantes para a percepção espacial \cite{wang2004,xu2023,tu2025}.
-
 \subsection{LPIPS}
 
 O \textit{Learned Perceptual Image Patch Similarity} (LPIPS) mede a distância perceptiva entre duas imagens utilizando ativações internas de redes neurais profundas treinadas para tarefas de visão computacional. Em vez de se basear apenas na diferença direta entre pixels, a métrica compara representações de mais alto nível, associadas a textura, contornos e padrões perceptivos \cite{zhang2018}. Na prática, valores menores de LPIPS indicam maior similaridade perceptual entre a imagem sintetizada e a imagem de referência.
@@ -271,8 +263,6 @@ Em dispositivos \textit{standalone}, o desempenho também deve ser interpretado 
 \label{sec:meta_quest_3s}
 
 Como o hardware-alvo deste trabalho é o Meta Quest 3S, suas características técnicas condicionam a viabilidade da visualização imersiva. Em VR \textit{standalone}, o headset acumula as funções de exibição, processamento gráfico, rastreamento e interação \cite{metaquest3s2024,qualcommxr2gen2,xu2023,tu2025}.
-
-Essa condição difere de uma estação de trabalho com GPU dedicada: no Meta Quest 3S, processamento gráfico, rastreamento, composição estereoscópica, lógica da aplicação e \textit{runtime} XR compartilham os mesmos recursos. A avaliação torna-se mais próxima de um cenário real de uso, mas também mais restritiva \cite{metaquest3s2024,qualcommxr2gen2,xu2023}.
 
 \subsection{Características técnicas do Meta Quest 3S}
 
@@ -307,8 +297,6 @@ Suporte ao Meta Quest Link & Permite comparação entre execução \textit{stand
 \fonte{Elaboração própria com base em \cite{metaquest3s2024,qualcommxr2gen2}.}
 \end{quadro}
 
-Essas especificações reforçam que o Quest 3S é adequado como plataforma experimental por combinar recursos contemporâneos de interação e visualização com orçamento computacional móvel. Portanto, a avaliação deve considerar não apenas fidelidade visual, mas também custo prático de execução \cite{metaquest3s2024,qualcommxr2gen2,xu2023,tu2025}.
-
 Do ponto de vista comparativo, a documentação oficial indica que o Quest 3S compartilha com o Quest 3 a mesma classe de chipset e a mesma quantidade de memória, embora tenha resolução e campo de visão mais modestos. Essa combinação delimita experimentalmente o problema e evita uma análise restrita a condições ideais de hardware desktop \cite{metaquest3s2024,qualcommxr2gen2}.
 
 \subsection{Implicações do hardware para a avaliação}
@@ -319,15 +307,7 @@ Os 8 GB de memória embarcada também são compartilhados com o sistema, o \text
 
 \subsection{Quest 3S como referência experimental do trabalho}
 
-A escolha do Meta Quest 3S possui relevância metodológica por se tratar de um dispositivo comercial, \textit{standalone} e representativo de headsets móveis contemporâneos. Seu uso obriga o pipeline a enfrentar limites reais de memória, renderização estereoscópica, consumo energético, dissipação térmica e sensibilidade a quedas de desempenho \cite{metaquest3s2024,qualcommxr2gen2,xu2023}.
-
-Nesse sentido, o dispositivo funciona como referência concreta para analisar a relação entre qualidade visual, memória, estabilidade e interatividade \cite{mildenhall2020,muller2022,kerbl2023,metaquest3s2024}.
-
-A plataforma também permite diferenciar dois níveis de avaliação: qualidade visual, por PSNR, SSIM e LPIPS \cite{wang2004,zhang2018,mildenhall2020,kerbl2023}, e execução, por FPS, tempo de quadro, uso de memória e estabilidade durante a navegação \cite{xu2023,tu2025,metaquest3s2024}. Essa separação é necessária porque uma representação pode ser visualmente adequada em avaliação offline e ainda assim inadequada para uso interativo.
-
-Por fim, o suporte ao Meta Quest Link preserva uma contingência metodológica: caso a execução nativa seja limitada, a execução conectada ao computador pode servir como referência comparativa entre desempenho \textit{on-device} e desempenho assistido por hardware externo \cite{metaquest3s2024}. A meta principal, entretanto, permanece a avaliação em contexto \textit{standalone}.
-
-Uma vez delimitadas as características da plataforma-alvo, torna-se necessário discutir como diferentes \textit{engines} podem mediar a integração entre representação da cena, \textit{runtime} XR e execução prática em VR \cite{jin2024,kerbl2023,tu2025,metaquest3s2024}.
+O Quest 3S permite investigar a execução nativa sob restrições de hardware móvel e, por meio do Quest Link, observar uma condição assistida por computador \cite{metaquest3s2024}. Essa distinção orienta a avaliação: as métricas de cada rota devem ser associadas à plataforma que efetivamente renderiza a cena. A seção seguinte apresenta as alternativas de integração entre representação, motor gráfico e ambiente XR.
 
 \section{Engines para Integração em Realidade Virtual}
 

@@ -46,7 +46,11 @@ Os treinamentos diferiram no modo de otimização de câmeras. As 13 vistas pert
 
 \subsection{Qualidade offline e complexidade das representações}
 
-A Tabela \ref{tab:resultados_offline} reuniu as métricas da \textit{baseline}, das variantes por poda e da \textit{splatfacto-big} no mesmo conjunto de imagens retidas. A \textit{splatfacto-big} teve SSIM mais alto e LPIPS mais baixo que a \textit{baseline}, embora seu PSNR tenha sido ligeiramente inferior e seu arquivo PLY maior.
+A Tabela \ref{tab:resultados_offline} reuniu as métricas da \textit{baseline}, das variantes por poda e da \textit{splatfacto-big} no mesmo conjunto de imagens retidas.
+
+As métricas desta tabela foram obtidas pela rotina de avaliação do Splatfacto. O SSIM utilizou \texttt{pytorch-msssim}, versão 1.0.0 com \texttt{data\_range}=1, três canais e média dos resultados \cite{nerfstudio115Splatfacto}.
+
+A \textit{splatfacto-big} teve SSIM mais alto e LPIPS mais baixo que a \textit{baseline}, embora seu PSNR tenha sido ligeiramente inferior e seu arquivo PLY maior.
 
 \begin{table}[H]
 \centering
@@ -350,7 +354,7 @@ Na \textit{baseline}, a taxa derivada passou de 22,20 quadros/s na execução na
 
 A Figura \ref{fig:comparacao_tempo_pcvr} evidenciou que a diferença absoluta de tempo de quadro não foi uniforme: 16,143 ms na \textit{baseline}, 2,392 ms na poda 100k, 3,242 ms na 50k e 10,069 ms na variante de maior capacidade. O gráfico de taxas derivou desses mesmos intervalos e não representou uma medição independente.
 
-O resultado médio de 71,99 quadros/s da poda 50k foi interpretado considerando a atualização reportada de 72 Hz nessas sessões. O p95 médio de 14,340 ms ultrapassou o orçamento de 13,889 ms, assim como o p95 individual de todas as cinco execuções. Apenas 49,4\% dos intervalos da aplicação ficaram dentro do orçamento, em média. Portanto, a proximidade da média com a atualização do visor não demonstrou regularidade de todos os quadros.
+O resultado médio de 71,99 quadros/s da poda 50k foi interpretado considerando a atualização de 72 Hz nessas sessões. O p95 médio de 14,340 ms ultrapassou o orçamento de 13,889 ms, assim como o p95 individual de todas as cinco execuções. Apenas 49,4\% dos intervalos da aplicação ficaram dentro do orçamento, em média. Portanto, a proximidade da média com a atualização do visor não demonstrou regularidade de todos os quadros.
 
 A comparação foi descritiva: as duas rotas tiveram cinco execuções por variante, mas não constituíram pares executados simultaneamente nem sob o mesmo sistema operacional e API gráfica. As diferenças também envolveram hardware e transmissão. Assim, os percentuais apresentados expressaram diferenças entre as condições observadas, sem isolar um efeito causal da GPU ou do \textit{streaming}. A renderização no computador não eliminou a perda de fidelidade das representações podadas nem estabeleceu a adequação da execução nativa no headset.
 
